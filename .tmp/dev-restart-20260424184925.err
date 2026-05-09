@@ -1,0 +1,77 @@
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <RedirectBoundary>
+      <RedirectErrorBoundary router={{...}}>
+        <InnerLayoutRouter url="/admin/log..." tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
+          <SegmentViewNode type="page" pagePath="admin/logi...">
+            <SegmentTrieNode>
+            <ClientPageRoot Component={function AdminLoginPage} serverProvidedParams={{...}}>
+              <AdminLoginPage params={Promise} searchParams={Promise}>
+                <Suspense fallback={<PageLoader>}>
+                  <AdminLoginForm>
+                    <div className="min-h-scre...">
+                      <div>
+                      <div className="w-full max...">
+                        <LinkComponent>
+                        <div>
+                        <div className="bg-slate-9...">
+                          <form onSubmit={function} className="space-y-6">
+                            <div>
+                              <label>
+                              <input
+                                id="admin-email"
+                                type="text"
+                                name="identifier"
+                                onChange={function onChange}
+                                onBlur={function onChange}
+                                ref={function ref}
+                                className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-3.5 text-..."
+                                placeholder="admin@matrimony.com or Admin User"
+-                               fdprocessedid="jjs0mg"
+                              >
+                            <div>
+                              <label>
+                              <div className="relative">
+                                <input
+                                  id="admin-password"
+                                  type="password"
+                                  name="password"
+                                  onChange={function onChange}
+                                  onBlur={function onChange}
+                                  ref={function ref}
+                                  className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-3.5 pr-..."
+                                  placeholder="••••••••"
+-                                 fdprocessedid="n9dtq"
+                                >
+                                <button
+                                  type="button"
+                                  onClick={function onClick}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate..."
+-                                 fdprocessedid="2rr8r"
+                                >
+                            <button
+                              type="submit"
+                              disabled={false}
+                              className="w-full bg-gradient-to-r from-rose-600 to-indigo-600 text-white font-bold py-4..."
+-                             fdprocessedid="hgzg3o"
+                            >
+                        ...
+          ...
+        ...
+ 
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+^C^C
