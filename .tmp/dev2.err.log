@@ -1,0 +1,291 @@
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[31m[auth][error][0m UnknownAction: Unsupported action. Read more at https://errors.authjs.dev#unknownaction
+    at Object.signin (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_@auth_core_0g6bd~m._.js:2773:35)
+    at AuthInternal (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_@auth_core_0g6bd~m._.js:5147:31)
+    at async Auth (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_@auth_core_0g6bd~m._.js:5384:34)
+    at async AppRouteRouteModule.do (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:40115)
+    at async AppRouteRouteModule.handle (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:47321)
+    at async responseGenerator (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_next_05fqyxl._.js:18297:38)
+    at async AppRouteRouteModule.handleResponse (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:1:227216)
+    at async handleResponse (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_next_05fqyxl._.js:18360:32)
+    at async Module.handler (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_next_05fqyxl._.js:18414:13)
+    at async DevServer.renderToResponseWithComponentsImpl (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\base-server.js:1454:9)
+    at async DevServer.renderPageComponent (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\base-server.js:1506:24)
+    at async DevServer.renderToResponseImpl (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\base-server.js:1556:32)
+    at async DevServer.pipeImpl (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\base-server.js:1043:25)
+    at async NextNodeServer.handleCatchallRenderRequest (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\next-server.js:338:17)
+    at async DevServer.handleRequestImpl (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\base-server.js:934:17)
+    at async D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\dev\next-dev-server.js:394:20
+    at async Span.traceAsyncFn (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\trace\trace.js:164:20)
+    at async DevServer.handleRequest (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\dev\next-dev-server.js:390:24)
+    at async invokeRender (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\lib\router-server.js:266:21)
+    at async handleRequest (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\lib\router-server.js:465:24)
+    at async requestHandlerImpl (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\lib\router-server.js:514:13)
+    at async Server.requestListener (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\lib\start-server.js:225:13)
+[31m[auth][error][0m MissingCSRF: CSRF token was missing during an action callback. Read more at https://errors.authjs.dev#missingcsrf
+    at validateCSRF (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_@auth_core_0g6bd~m._.js:1228:11)
+    at AuthInternal (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_@auth_core_0g6bd~m._.js:5161:222)
+    at async Auth (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_@auth_core_0g6bd~m._.js:5384:34)
+    at async AppRouteRouteModule.do (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:40115)
+    at async AppRouteRouteModule.handle (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:47321)
+    at async responseGenerator (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_next_05fqyxl._.js:18297:38)
+    at async AppRouteRouteModule.handleResponse (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:1:227216)
+    at async handleResponse (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_next_05fqyxl._.js:18360:32)
+    at async Module.handler (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_next_05fqyxl._.js:18414:13)
+    at async DevServer.renderToResponseWithComponentsImpl (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\base-server.js:1454:9)
+    at async DevServer.renderPageComponent (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\base-server.js:1506:24)
+    at async DevServer.renderToResponseImpl (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\base-server.js:1556:32)
+    at async DevServer.pipeImpl (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\base-server.js:1043:25)
+    at async NextNodeServer.handleCatchallRenderRequest (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\next-server.js:338:17)
+    at async DevServer.handleRequestImpl (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\base-server.js:934:17)
+    at async D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\dev\next-dev-server.js:394:20
+    at async Span.traceAsyncFn (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\trace\trace.js:164:20)
+    at async DevServer.handleRequest (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\dev\next-dev-server.js:390:24)
+    at async invokeRender (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\lib\router-server.js:266:21)
+    at async handleRequest (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\lib\router-server.js:465:24)
+    at async requestHandlerImpl (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\lib\router-server.js:514:13)
+    at async Server.requestListener (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\lib\start-server.js:225:13)
+[31m[auth][error][0m MissingCSRF: CSRF token was missing during an action callback. Read more at https://errors.authjs.dev#missingcsrf
+    at validateCSRF (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_@auth_core_0g6bd~m._.js:1228:11)
+    at AuthInternal (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_@auth_core_0g6bd~m._.js:5161:222)
+    at async Auth (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_@auth_core_0g6bd~m._.js:5384:34)
+    at async AppRouteRouteModule.do (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:40115)
+    at async AppRouteRouteModule.handle (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:47321)
+    at async responseGenerator (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_next_05fqyxl._.js:18297:38)
+    at async AppRouteRouteModule.handleResponse (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:1:227216)
+    at async handleResponse (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_next_05fqyxl._.js:18360:32)
+    at async Module.handler (D:\matrimonial-project\matrimonial_website\.next\dev\server\chunks\node_modules_next_05fqyxl._.js:18414:13)
+    at async DevServer.renderToResponseWithComponentsImpl (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\base-server.js:1454:9)
+    at async DevServer.renderPageComponent (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\base-server.js:1506:24)
+    at async DevServer.renderToResponseImpl (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\base-server.js:1556:32)
+    at async DevServer.pipeImpl (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\base-server.js:1043:25)
+    at async NextNodeServer.handleCatchallRenderRequest (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\next-server.js:338:17)
+    at async DevServer.handleRequestImpl (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\base-server.js:934:17)
+    at async D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\dev\next-dev-server.js:394:20
+    at async Span.traceAsyncFn (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\trace\trace.js:164:20)
+    at async DevServer.handleRequest (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\dev\next-dev-server.js:390:24)
+    at async invokeRender (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\lib\router-server.js:266:21)
+    at async handleRequest (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\lib\router-server.js:465:24)
+    at async requestHandlerImpl (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\lib\router-server.js:514:13)
+    at async Server.requestListener (D:\matrimonial-project\matrimonial_website\node_modules\next\dist\server\lib\start-server.js:225:13)
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Image with src "/main.jpeg" has "fill" prop and "sizes" prop of "100vw", but image is not rendered at full viewport width. Please adjust "sizes" to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+Error: Route "/admin/profiles" used `cookies().get`. `cookies()` returns a Promise and must be unwrapped with `await` or `React.use()` before accessing its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at AdminProfilesPage (app\admin\(dashboard)\profiles\page.tsx:145:32)
+  143 |   const income = sp.income ?? "";
+  144 |   const limit = [10, 20, 50].includes(Number(sp.limit)) ? Number(sp.limit) : 20;
+> 145 |   const storedColumns = cookies().get(PROFILE_COLUMNS_COOKIE)?.value;
+      |                                ^
+  146 |   const selectedColumns = parseProfileColumns(sp.columns ?? sp.column ?? storedColumns);
+  147 |   const listReturnParams = new URLSearchParams();
+  148 |   const preservedParams: Array<[string, string | undefined]> = [
+⨯ TypeError: {imported module ./nodemodules/next/headers.js}.cookies(...).get is not a function
+    at AdminProfilesPage (app\admin\(dashboard)\profiles\page.tsx:145:35)
+  143 |   const income = sp.income ?? "";
+  144 |   const limit = [10, 20, 50].includes(Number(sp.limit)) ? Number(sp.limit) : 20;
+> 145 |   const storedColumns = cookies().get(PROFILE_COLUMNS_COOKIE)?.value;
+      |                                   ^
+  146 |   const selectedColumns = parseProfileColumns(sp.columns ?? sp.column ?? storedColumns);
+  147 |   const listReturnParams = new URLSearchParams();
+  148 |   const preservedParams: Array<[string, string | undefined]> = [ {
+  digest: '1569462822'
+}
+Error: Route "/admin/profiles" used `cookies().get`. `cookies()` returns a Promise and must be unwrapped with `await` or `React.use()` before accessing its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at AdminProfilesPage (app\admin\(dashboard)\profiles\page.tsx:145:32)
+  143 |   const income = sp.income ?? "";
+  144 |   const limit = [10, 20, 50].includes(Number(sp.limit)) ? Number(sp.limit) : 20;
+> 145 |   const storedColumns = cookies().get(PROFILE_COLUMNS_COOKIE)?.value;
+      |                                ^
+  146 |   const selectedColumns = parseProfileColumns(sp.columns ?? sp.column ?? storedColumns);
+  147 |   const listReturnParams = new URLSearchParams();
+  148 |   const preservedParams: Array<[string, string | undefined]> = [
+⨯ TypeError: {imported module ./nodemodules/next/headers.js}.cookies(...).get is not a function
+    at AdminProfilesPage (app\admin\(dashboard)\profiles\page.tsx:145:35)
+  143 |   const income = sp.income ?? "";
+  144 |   const limit = [10, 20, 50].includes(Number(sp.limit)) ? Number(sp.limit) : 20;
+> 145 |   const storedColumns = cookies().get(PROFILE_COLUMNS_COOKIE)?.value;
+      |                                   ^
+  146 |   const selectedColumns = parseProfileColumns(sp.columns ?? sp.column ?? storedColumns);
+  147 |   const listReturnParams = new URLSearchParams();
+  148 |   const preservedParams: Array<[string, string | undefined]> = [ {
+  digest: '1569462822'
+}
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+Error: Route "/admin/profiles" used `cookies().get`. `cookies()` returns a Promise and must be unwrapped with `await` or `React.use()` before accessing its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at AdminProfilesPage (app\admin\(dashboard)\profiles\page.tsx:145:32)
+  143 |   const income = sp.income ?? "";
+  144 |   const limit = [10, 20, 50].includes(Number(sp.limit)) ? Number(sp.limit) : 20;
+> 145 |   const storedColumns = cookies().get(PROFILE_COLUMNS_COOKIE)?.value;
+      |                                ^
+  146 |   const selectedColumns = parseProfileColumns(sp.columns ?? sp.column ?? storedColumns);
+  147 |   const listReturnParams = new URLSearchParams();
+  148 |   const preservedParams: Array<[string, string | undefined]> = [
+⨯ TypeError: {imported module ./nodemodules/next/headers.js}.cookies(...).get is not a function
+    at AdminProfilesPage (app\admin\(dashboard)\profiles\page.tsx:145:35)
+  143 |   const income = sp.income ?? "";
+  144 |   const limit = [10, 20, 50].includes(Number(sp.limit)) ? Number(sp.limit) : 20;
+> 145 |   const storedColumns = cookies().get(PROFILE_COLUMNS_COOKIE)?.value;
+      |                                   ^
+  146 |   const selectedColumns = parseProfileColumns(sp.columns ?? sp.column ?? storedColumns);
+  147 |   const listReturnParams = new URLSearchParams();
+  148 |   const preservedParams: Array<[string, string | undefined]> = [ {
+  digest: '1569462822'
+}
+Error: Route "/admin/profiles" used `cookies().get`. `cookies()` returns a Promise and must be unwrapped with `await` or `React.use()` before accessing its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at AdminProfilesPage (app\admin\(dashboard)\profiles\page.tsx:145:32)
+  143 |   const income = sp.income ?? "";
+  144 |   const limit = [10, 20, 50].includes(Number(sp.limit)) ? Number(sp.limit) : 20;
+> 145 |   const storedColumns = cookies().get(PROFILE_COLUMNS_COOKIE)?.value;
+      |                                ^
+  146 |   const selectedColumns = parseProfileColumns(sp.columns ?? sp.column ?? storedColumns);
+  147 |   const listReturnParams = new URLSearchParams();
+  148 |   const preservedParams: Array<[string, string | undefined]> = [
+⨯ TypeError: {imported module ./nodemodules/next/headers.js}.cookies(...).get is not a function
+    at AdminProfilesPage (app\admin\(dashboard)\profiles\page.tsx:145:35)
+  143 |   const income = sp.income ?? "";
+  144 |   const limit = [10, 20, 50].includes(Number(sp.limit)) ? Number(sp.limit) : 20;
+> 145 |   const storedColumns = cookies().get(PROFILE_COLUMNS_COOKIE)?.value;
+      |                                   ^
+  146 |   const selectedColumns = parseProfileColumns(sp.columns ?? sp.column ?? storedColumns);
+  147 |   const listReturnParams = new URLSearchParams();
+  148 |   const preservedParams: Array<[string, string | undefined]> = [ {
+  digest: '1569462822'
+}
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Image with src "/main.jpeg" has "fill" prop and "sizes" prop of "100vw", but image is not rendered at full viewport width. Please adjust "sizes" to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+⨯ ./app/admin/(dashboard)/profiles/page.tsx:403:5
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  [90m401 |[0m           </div>
+  [90m402 |[0m       ),
+[31m[1m>[0m [90m403 |[0m     },
+  [90m    |[0m     [31m[1m^[0m
+  [90m404 |[0m     {
+  [90m405 |[0m       key: [32m"career"[0m,
+  [90m406 |[0m       label: [32m"Career"[0m,
+
+Parsing ecmascript source code failed
+
+
+⨯ ./app/admin/(dashboard)/profiles/page.tsx:403:5
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  [90m401 |[0m           </div>
+  [90m402 |[0m       ),
+[31m[1m>[0m [90m403 |[0m     },
+  [90m    |[0m     [31m[1m^[0m
+  [90m404 |[0m     {
+  [90m405 |[0m       key: [32m"career"[0m,
+  [90m406 |[0m       label: [32m"Career"[0m,
+
+Parsing ecmascript source code failed
+
+
+[browser] Uncaught Error: ./app/admin/(dashboard)/profiles/page.tsx:403:5
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  401 |           </div>
+  402 |       ),
+> 403 |     },
+      |     ^
+  404 |     {
+  405 |       key: "career",
+  406 |       label: "Career",
+
+Parsing ecmascript source code failed
+
+
+    at <unknown> (Error: ./app/admin/(dashboard)/profiles/page.tsx:403:5)
+    at <unknown> (Error: (./app/admin/(dashboard)/profiles/page.tsx:403:5)
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+⨯ ./components/admin/AdminSelectableProfilesTable.tsx:219:19
+Expected '</', got 'jsx text'
+  [90m217 |[0m           </table>
+  [90m218 |[0m         </div>
+[31m[1m>[0m [90m219 |[0m           </table>
+  [90m    |[0m                   [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m220 |[0m         </div>
+  [90m    |[0m [31m[1m^^^^^^^^[0m
+  [90m221 |[0m         </div>
+  [90m222 |[0m
+  [90m223 |[0m       <div className=[32m"flex flex-col gap-3 border-t border-slate-100 px-4 pt-4 sm:flex-row...[0m
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./components/admin/AdminSelectableProfilesTable.tsx
+    ./app/admin/(dashboard)/profiles/page.tsx
+
+
+⨯ ./components/admin/AdminSelectableProfilesTable.tsx:219:19
+Expected '</', got 'jsx text'
+  [90m217 |[0m           </table>
+  [90m218 |[0m         </div>
+[31m[1m>[0m [90m219 |[0m           </table>
+  [90m    |[0m                   [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m220 |[0m         </div>
+  [90m    |[0m [31m[1m^^^^^^^^[0m
+  [90m221 |[0m         </div>
+  [90m222 |[0m
+  [90m223 |[0m       <div className=[32m"flex flex-col gap-3 border-t border-slate-100 px-4 pt-4 sm:flex-row...[0m
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./components/admin/AdminSelectableProfilesTable.tsx
+    ./app/admin/(dashboard)/profiles/page.tsx
+
+
+⨯ ./components/admin/AdminSelectableProfilesTable.tsx:219:19
+Expected '</', got 'jsx text'
+  [90m217 |[0m           </table>
+  [90m218 |[0m         </div>
+[31m[1m>[0m [90m219 |[0m           </table>
+  [90m    |[0m                   [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[31m[1m>[0m [90m220 |[0m         </div>
+  [90m    |[0m [31m[1m^^^^^^^^[0m
+  [90m221 |[0m         </div>
+  [90m222 |[0m
+  [90m223 |[0m       <div className=[32m"flex flex-col gap-3 border-t border-slate-100 px-4 pt-4 sm:flex-row...[0m
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./components/admin/AdminSelectableProfilesTable.tsx
+    ./app/admin/(dashboard)/profiles/page.tsx
+
+
+[browser] Uncaught Error: ./components/admin/AdminSelectableProfilesTable.tsx:219:19
+Expected '</', got 'jsx text'
+  217 |           </table>
+  218 |         </div>
+> 219 |           </table>
+      |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 220 |         </div>
+      | ^^^^^^^^
+  221 |         </div>
+  222 |
+  223 |       <div className="flex flex-col gap-3 border-t border-slate-100 px-4 pt-4 sm:flex-row...
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./components/admin/AdminSelectableProfilesTable.tsx
+    ./app/admin/(dashboard)/profiles/page.tsx
+
+
+    at <unknown> (Error: ./components/admin/AdminSelectableProfilesTable.tsx:219:19)
+    at <unknown> (Error: (./components/admin/AdminSelectableProfilesTable.tsx:219:19)
+⨯ Error: Module [project]/components/layout/AdminSidebar.tsx [app-ssr] (ecmascript) was instantiated because it was required from module [project]/node_modules/next/dist/esm/build/templates/app-page.js?page=/admin/(dashboard)/profiles/page { MODULE_0 => "[project]/app/layout.tsx [app-rsc] (ecmascript, Next.js Server Component)", MODULE_1 => "[project]/node_modules/next/dist/client/components/builtin/not-found.js [app-rsc] (ecmascript, Next.js Server Component)", MODULE_2 => "[project]/node_modules/next/dist/client/components/builtin/forbidden.js [app-rsc] (ecmascript, Next.js Server Component)", MODULE_3 => "[project]/node_modules/next/dist/client/components/builtin/unauthorized.js [app-rsc] (ecmascript, Next.js Server Component)", MODULE_4 => "[project]/node_modules/next/dist/client/components/builtin/global-error.js [app-rsc] (ecmascript, Next.js Server Component)", MODULE_5 => "[project]/app/admin/(dashboard)/layout.tsx [app-rsc] (ecmascript, Next.js Server Component)", MODULE_6 => "[project]/app/admin/(dashboard)/profiles/page.tsx [app-rsc] (ecmascript, Next.js Server Component)" } [app-rsc] (ecmascript) <locals>, but the module factory is not available.
+This is often caused by a stale browser cache, misconfigured Cache-Control headers, or a service worker serving outdated responses.
+To fix this, make sure your Cache-Control headers allow revalidation of chunks and review your service worker configuration. As an immediate workaround, try hard-reloading the page, clearing the browser cache, or unregistering any service workers.
+    at ignore-listed frames {
+  digest: '2758423156'
+}
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior

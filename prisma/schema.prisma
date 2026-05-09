@@ -1,0 +1,333 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum MaritalStatus {
+  NEVER_MARRIED
+  DIVORCED
+  WIDOWED
+  SEPARATED
+  AWAITING_DIVORCE
+}
+
+enum ProfileStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum FamilyType {
+  NUCLEAR
+  JOINT
+  EXTENDED
+}
+
+enum FamilyStatus {
+  MIDDLE_CLASS
+  UPPER_MIDDLE_CLASS
+  RICH
+  AFFLUENT
+}
+
+// ─── Auth / Users ────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          Role      @default(USER)
+  hasSeenDashboardIntro Boolean @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  profile  Profile?
+  payments Payment[]
+  unlocks  Unlock[]
+
+  @@index([email])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Profile ─────────────────────────────────────────────────────────────────
+
+model Profile {
+  id     String        @id @default(cuid())
+  userId String        @unique
+  status ProfileStatus @default(DRAFT)
+
+  // Personal
+  fullName      String
+  gender        Gender
+  dateOfBirth   DateTime
+  height        Float?        // in cm
+  maritalStatus MaritalStatus @default(NEVER_MARRIED)
+  phone         String?
+  education     String?       // Higher education
+  course        String?
+  profession    String?       // Occupation
+  employedIn    String?
+  income        String?       // Annual income
+  location      String?
+
+  // Address
+  houseNumber   String?
+  streetName    String?
+  city          String?
+  state         String?
+  pincode       String?
+  country       String        @default("India")
+  bio           String?       @db.Text
+
+  // Family
+  fatherName  String?
+  motherName  String?
+  familyType  FamilyType?
+  familyStatus FamilyStatus?
+  siblings    Int?
+
+  // Religious / Cultural
+  religion  String?
+  caste     String?
+  subCaste  String?
+  language  String?
+  star      String? // Nakshatra
+  rasi      String? // Zodiac sign / Rasi
+  timeOfBirth String?
+  placeOfBirth String?
+
+  // Lifestyle
+  diet             String? // Vegetarian/Non-Vegetarian/Vegan
+  smoking          String? // Never/Occasionally/Regularly
+  drinking         String? // Never/Occasionally/Regularly
+  hobbies          String?
+  physicalActivity String?
+  personalityType  String?
+  exercise         String?
+
+  // Profile Photos
+  profileImage   String?
+  horoscopeImage String?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photos      ProfilePhoto[]
+  preference  Preference?
+  likesSent   Like[]        @relation("LikeFrom")
+  likesReceived Like[]      @relation("LikeTo")
+  matchesAsA  Match[]       @relation("MatchProfileA")
+  matchesAsB  Match[]       @relation("MatchProfileB")
+
+  @@index([gender])
+  @@index([religion])
+  @@index([location])
+  @@index([caste])
+  @@index([status])
+  @@index([maritalStatus])
+}
+
+model ProfilePhoto {
+  id         String   @id @default(cuid())
+  profileId  String
+  url        String
+  publicId   String   // Cloudinary public ID
+  isPrimary  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+// ─── Preferences ─────────────────────────────────────────────────────────────
+
+model Preference {
+  id        String @id @default(cuid())
+  profileId String @unique
+
+  ageMin      Int?
+  ageMax      Int?
+  heightMin   Float?
+  heightMax   Float?
+  religion    String?
+  caste       String?
+  education   String?
+  profession  String?
+  location    String?
+  maritalStatus String?
+  language    String?
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+// ─── Likes & Matches ──────────────────────────────────────────────────────────
+
+model Like {
+  id            String   @id @default(cuid())
+  fromProfileId String
+  toProfileId   String
+  createdAt     DateTime @default(now())
+
+  fromProfile Profile @relation("LikeFrom", fields: [fromProfileId], references: [id], onDelete: Cascade)
+  toProfile   Profile @relation("LikeTo", fields: [toProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([fromProfileId, toProfileId])
+  @@index([fromProfileId])
+  @@index([toProfileId])
+}
+
+model Match {
+  id         String   @id @default(cuid())
+  profileAId String
+  profileBId String
+  createdAt  DateTime @default(now())
+
+  profileA Profile  @relation("MatchProfileA", fields: [profileAId], references: [id], onDelete: Cascade)
+  profileB Profile  @relation("MatchProfileB", fields: [profileBId], references: [id], onDelete: Cascade)
+  unlocks  Unlock[]
+
+  @@unique([profileAId, profileBId])
+  @@index([profileAId])
+  @@index([profileBId])
+}
+
+model DeletedMatch {
+  id              String   @id @default(cuid())
+  matchId         String   @unique
+  profileAId      String
+  profileBId      String
+  profileAName    String
+  profileAGender  String
+  profileACity    String?
+  profileALocation String?
+  profileAState   String?
+  profileBName    String
+  profileBGender  String
+  profileBCity    String?
+  profileBLocation String?
+  profileBState   String?
+  unlockCount     Int      @default(0)
+  matchCreatedAt  DateTime
+  deletedAt       DateTime @default(now())
+
+  @@index([deletedAt])
+  @@index([matchId])
+}
+
+// ─── Payments & Unlocks ───────────────────────────────────────────────────────
+
+model Payment {
+  id                 String   @id @default(cuid())
+  userId             String
+  matchId            String
+  razorpayOrderId    String   @unique
+  razorpayPaymentId  String?  @unique
+  razorpaySignature  String?
+  amount             Int      // in paise (₹1 = 100 paise)
+  currency           String   @default("INR")
+  status             String   @default("CREATED") // CREATED | PAID | FAILED
+  baseAmount         Int
+  profileAmount      Int
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  unlock Unlock?
+
+  @@index([userId])
+  @@index([matchId])
+  @@index([razorpayOrderId])
+}
+
+model Unlock {
+  id        String   @id @default(cuid())
+  userId    String
+  matchId   String
+  paymentId String   @unique
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match   Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, matchId])
+  @@index([userId])
+  @@index([matchId])
+}
+
+// ─── Admin Settings ───────────────────────────────────────────────────────────
+
+model AdminSettings {
+  id            String @id @default("singleton")
+  baseAmount    Int    @default(500)    // in rupees
+  profileAmount Int    @default(500)    // in rupees
+  updatedAt     DateTime @updatedAt
+}
