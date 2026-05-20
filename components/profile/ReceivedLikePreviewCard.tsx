@@ -110,11 +110,10 @@ export default function ReceivedLikePreviewCard({
             src={primaryPhoto}
             alt={`${item.profile.fullName} received like`}
             fill
-            className="object-cover"
+            className="scale-[1.04] object-cover blur-[4px]"
             style={{ objectPosition: "center 12%" }}
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
-            quality={100}
-            unoptimized
+            quality={75}
           />
         ) : (
           <div className="flex h-full items-center justify-center">

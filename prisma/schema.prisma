@@ -185,6 +185,9 @@ model Profile {
   likesReceived Like[]      @relation("LikeTo")
   matchesAsA  Match[]       @relation("MatchProfileA")
   matchesAsB  Match[]       @relation("MatchProfileB")
+  chatConversationsAsA ChatConversation[] @relation("ChatConversationProfileA")
+  chatConversationsAsB ChatConversation[] @relation("ChatConversationProfileB")
+  sentChatMessages ChatMessage[] @relation("ChatMessageSender")
 
   @@index([gender])
   @@index([religion])
@@ -259,6 +262,40 @@ model Match {
   @@index([profileBId])
 }
 
+model ChatConversation {
+  id            String   @id @default(cuid())
+  profileAId    String
+  profileBId    String
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  profileA Profile       @relation("ChatConversationProfileA", fields: [profileAId], references: [id], onDelete: Cascade)
+  profileB Profile       @relation("ChatConversationProfileB", fields: [profileBId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@unique([profileAId, profileBId])
+  @@index([profileAId])
+  @@index([profileBId])
+  @@index([lastMessageAt])
+}
+
+model ChatMessage {
+  id              String   @id @default(cuid())
+  conversationId  String
+  senderProfileId String
+  content         String   @db.Text
+  isRead          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  conversation  ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderProfile Profile          @relation("ChatMessageSender", fields: [senderProfileId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([senderProfileId])
+}
+
 model DeletedMatch {
   id              String   @id @default(cuid())
   matchId         String   @unique
@@ -296,6 +333,7 @@ model Payment {
   status             String   @default("CREATED") // CREATED | PAID | FAILED
   baseAmount         Int
   profileAmount      Int
+  perProfileChatAmount Int   @default(0)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
@@ -329,5 +367,8 @@ model AdminSettings {
   id            String @id @default("singleton")
   baseAmount    Int    @default(500)    // in rupees
   profileAmount Int    @default(500)    // in rupees
+  perProfileChatAmount Int @default(0)   // in rupees
+  heroImageUrl  String @default("/main.jpeg")
+  logoImageUrl  String @default("")
   updatedAt     DateTime @updatedAt
 }

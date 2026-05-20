@@ -166,7 +166,7 @@ export default function AdminProfileRowActions({
         ref={triggerRef}
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:border-rose-200 hover:text-rose-600"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:border-gray-300 hover:text-gray-700"
         aria-label="Profile actions"
         aria-haspopup="menu"
         aria-expanded={open}
@@ -189,7 +189,7 @@ export default function AdminProfileRowActions({
                 className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50"
                 onClick={() => setOpen(false)}
               >
-                <ShieldCheck className="h-4 w-4 text-rose-500" />
+                <ShieldCheck className="h-4 w-4 text-gray-500" />
                 View profile
               </a>
               <button

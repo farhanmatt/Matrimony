@@ -22,10 +22,6 @@ export default async function CreateProfilePage() {
       <h1 className="mb-2 text-[1.7rem] font-display font-bold text-gray-900">
         Create Your Profile
       </h1>
-      <p className="mb-8 text-[14px] text-gray-500">
-        Let&apos;s get to know you better! Please complete all the sections to
-        increase your chances of finding the perfect match.
-      </p>
       <ProfileForm />
     </div>
   );

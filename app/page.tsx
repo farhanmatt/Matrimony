@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import FullLandingPage from "@/components/landing/FullLandingPage";
 import { prisma } from "@/lib/prisma";
-import { isDatabaseConnectionError } from "@/lib/utils/errors";
+import { unstable_noStore as noStore } from "next/cache";
+import {
+  isDatabaseConnectionError,
+  isPrismaMissingTableError,
+} from "@/lib/utils/errors";
 import { calculateAge } from "@/lib/utils/helpers";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export const metadata: Metadata = {
   title: "Vivah Bandhan - Find Your Perfect Life Partner",
@@ -87,9 +92,9 @@ async function getFeaturedProfiles() {
       featuredProfilesUnavailable: false,
     };
   } catch (error) {
-    if (isDatabaseConnectionError(error)) {
+    if (isDatabaseConnectionError(error) || isPrismaMissingTableError(error)) {
       console.warn(
-        "Featured profiles are temporarily unavailable because the database connection failed.",
+        "Featured profiles are temporarily unavailable because the database is not ready.",
         error
       );
 
@@ -103,14 +108,32 @@ async function getFeaturedProfiles() {
   }
 }
 
+async function getLandingHeroImage() {
+  noStore();
+
+  try {
+    const settings = await prisma.adminSettings.findUnique({
+      where: { id: "singleton" },
+      select: { heroImageUrl: true },
+    });
+
+    return settings?.heroImageUrl?.trim() || "/main.jpeg";
+  } catch {
+    return "/main.jpeg";
+  }
+}
+
 export default async function HomePage() {
-  const { featuredProfiles, featuredProfilesUnavailable } =
-    await getFeaturedProfiles();
+  noStore();
+
+  const [{ featuredProfiles, featuredProfilesUnavailable }, heroImageUrl] =
+    await Promise.all([getFeaturedProfiles(), getLandingHeroImage()]);
 
   return (
     <FullLandingPage
       featuredProfiles={featuredProfiles}
       featuredProfilesUnavailable={featuredProfilesUnavailable}
+      heroImageUrl={heroImageUrl}
     />
   );
 }

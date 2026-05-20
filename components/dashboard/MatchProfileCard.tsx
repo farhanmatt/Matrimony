@@ -45,6 +45,7 @@ interface MatchProfileCardProps {
   isUnlocked: boolean;
   baseAmount: number;
   profileAmount: number;
+  perProfileChatAmount: number;
   onUnlock: (matchId: string) => void;
 }
 
@@ -54,6 +55,7 @@ export default function MatchProfileCard({
   isUnlocked,
   baseAmount,
   profileAmount,
+  perProfileChatAmount,
   onUnlock,
 }: MatchProfileCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -71,7 +73,7 @@ export default function MatchProfileCard({
     profile.photos.find((photo) => photo.isPrimary)?.url ??
     profile.photos[0]?.url ??
     null;
-  const totalAmount = baseAmount + profileAmount;
+  const totalAmount = baseAmount + profileAmount + perProfileChatAmount;
 
   useEffect(() => {
     if (!isMenuOpen) {
@@ -126,11 +128,10 @@ export default function MatchProfileCard({
               fill
               className={cn(
                 "object-cover object-center opacity-20",
-                isUnlocked ? "blur-0 opacity-90" : "blur-xl scale-110"
+                isUnlocked ? "blur-0 opacity-90" : "blur-md scale-105"
               )}
               sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 25vw"
-              quality={100}
-              unoptimized
+              quality={75}
             />
           ) : null}
 
@@ -212,7 +213,7 @@ export default function MatchProfileCard({
                 width={64}
                 height={64}
                 className="h-16 w-16 rounded-[12px] object-cover"
-                unoptimized
+                quality={70}
               />
             ) : (
               <Lock className="h-8 w-8" />
@@ -262,16 +263,16 @@ export default function MatchProfileCard({
             <Eye className="h-4.5 w-4.5" />
             Open Full Profile
           </Link>
-        ) : (
-          <button
-            type="button"
-            onClick={() => onUnlock(matchId)}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_16px_34px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5"
-          >
-            <Eye className="h-4.5 w-4.5" />
-            Unlock Full Profile - {formatCurrency(totalAmount)}
-          </button>
-        )}
+          ) : (
+            <button
+              type="button"
+              onClick={() => onUnlock(matchId)}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_16px_34px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5"
+            >
+              <Eye className="h-4.5 w-4.5" />
+              Unlock Full Profile - {formatCurrency(totalAmount)}
+            </button>
+          )}
 
         <div className="border-t border-slate-100 pt-1">
           <button
@@ -321,3 +322,4 @@ export default function MatchProfileCard({
     </article>
   );
 }
+

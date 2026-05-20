@@ -12,6 +12,7 @@ interface UnlockPaymentPageProps {
   profileName: string;
   baseAmount: number;
   profileAmount: number;
+  perProfileChatAmount: number;
   returnTo: string;
 }
 
@@ -20,11 +21,12 @@ export default function UnlockPaymentPage({
   profileName,
   baseAmount,
   profileAmount,
+  perProfileChatAmount,
   returnTo,
 }: UnlockPaymentPageProps) {
   const router = useRouter();
   const [status, setStatus] = useState<"idle" | "processing" | "success" | "error">("idle");
-  const totalAmount = baseAmount + profileAmount;
+  const totalAmount = baseAmount + profileAmount + perProfileChatAmount;
 
   const handlePay = async () => {
     if (status === "processing") {
@@ -105,7 +107,7 @@ export default function UnlockPaymentPage({
                   Profile unlocked
                 </h2>
                 <p className="mt-2 text-sm text-gray-600">
-                  We're taking you back to the profile now.
+                  We&apos;re taking you back to the profile now.
                 </p>
               </div>
             ) : status === "error" ? (
@@ -140,6 +142,10 @@ export default function UnlockPaymentPage({
                     <div className="flex items-center justify-between">
                       <span>Profile unlock amount</span>
                       <span className="font-semibold">{formatCurrency(profileAmount)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Per profile chat amount</span>
+                      <span className="font-semibold">{formatCurrency(perProfileChatAmount)}</span>
                     </div>
                     <div className="flex items-center justify-between border-t border-gray-200 pt-3 text-base">
                       <span className="font-semibold text-gray-900">Total</span>

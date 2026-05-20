@@ -19,9 +19,11 @@ export const metadata: Metadata = { title: "Payments â€” Admin" };
 
 type PaymentRow = {
   id: string;
+  href: string;
   amount: number;
   baseAmount: number;
   profileAmount: number;
+  perProfileChatAmount: number;
   status: string;
   razorpayOrderId: string;
   createdAt: Date;
@@ -197,6 +199,7 @@ export default async function AdminPaymentsPage({
         <div className="text-sm text-gray-600">
           <div>Base: {formatCurrency(payment.baseAmount)}</div>
           <div>Profile: {formatCurrency(payment.profileAmount)}</div>
+          <div>Chat: {formatCurrency(payment.perProfileChatAmount)}</div>
         </div>
       ),
     },
@@ -234,6 +237,8 @@ export default async function AdminPaymentsPage({
     params.set("limit", String(limit));
     return `?${params.toString()}`;
   };
+
+  const listReturnHref = `/admin/payments${buildPageHref(page)}`;
 
     return (
     <div className="flex min-h-[calc(100vh-8rem)] flex-col space-y-6">
@@ -301,9 +306,11 @@ export default async function AdminPaymentsPage({
               const row = payment as unknown as PaymentRow;
               return {
                 id: row.id,
+                href: `/admin/payments/${row.id}?returnTo=${encodeURIComponent(listReturnHref)}`,
                 amount: row.amount,
                 baseAmount: row.baseAmount,
                 profileAmount: row.profileAmount,
+                perProfileChatAmount: row.perProfileChatAmount,
                 status: row.status,
                 razorpayOrderId: row.razorpayOrderId,
                 createdAt: row.createdAt,

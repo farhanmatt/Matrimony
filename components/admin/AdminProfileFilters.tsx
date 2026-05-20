@@ -227,7 +227,7 @@ export default function AdminProfileFilters({ activeCount = 0 }: AdminProfileFil
         <SlidersHorizontal className="h-4 w-4" />
         Filters
         {totalActive > 0 ? (
-          <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-100 px-1 text-[11px] font-semibold text-rose-600">
+          <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gray-100 px-1 text-[11px] font-semibold text-gray-700">
             {totalActive}
           </span>
         ) : null}
@@ -243,7 +243,7 @@ export default function AdminProfileFilters({ activeCount = 0 }: AdminProfileFil
           <div className="relative z-10 w-full max-w-4xl rounded-3xl border border-gray-100 bg-white p-6 shadow-2xl sm:p-7">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-rose-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-gray-500">
                   Filter Profiles
                 </p>
                 <h2 className="mt-2 font-display text-2xl font-bold text-gray-900">
@@ -257,7 +257,7 @@ export default function AdminProfileFilters({ activeCount = 0 }: AdminProfileFil
               <button
                 type="button"
                 onClick={closeFilters}
-                className="rounded-full border border-gray-200 p-2 text-gray-500 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500"
+                className="rounded-full border border-gray-200 p-2 text-gray-500 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
                 aria-label="Close filters"
               >
                 <X className="h-5 w-5" />
@@ -453,7 +453,7 @@ export default function AdminProfileFilters({ activeCount = 0 }: AdminProfileFil
               <button
                 type="button"
                 onClick={clearFilters}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 transition-colors hover:border-rose-200 hover:text-rose-600"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-800"
               >
                 <RotateCcw className="h-4 w-4" />
                 Clear Filters
@@ -462,7 +462,7 @@ export default function AdminProfileFilters({ activeCount = 0 }: AdminProfileFil
               <button
                 type="button"
                 onClick={applyFilters}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-gray-800 hover:shadow-md"
               >
                 <SlidersHorizontal className="h-4 w-4" />
                 Apply Filters

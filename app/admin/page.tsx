@@ -19,6 +19,7 @@ import { isDatabaseConnectionError } from "@/lib/utils/errors";
 import AdminDatabaseUnavailableState from "@/components/admin/AdminDatabaseUnavailableState";
 import AdminDashboardRangeSelector from "@/components/admin/AdminDashboardRangeSelector";
 import AdminNotificationBell from "@/components/admin/AdminNotificationBell";
+import AdminSidebar from "@/components/layout/AdminSidebar";
 import {
   getDashboardRangeConfig,
   type DashboardRangeKey,
@@ -800,71 +801,78 @@ export default async function AdminDashboardPage({
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="mt-2 text-sm text-gray-500">
-            Overview of platform activity and metrics
-          </p>
+    <div className="min-h-screen overflow-x-hidden bg-gray-50">
+      <AdminSidebar />
+      <main className="min-h-screen pt-16 lg:ml-56 lg:pt-0">
+        <div className="max-w-none px-3 py-4 sm:px-4 sm:py-5 lg:px-5 lg:py-6">
+          <div className="space-y-8">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <h1 className="text-3xl font-display font-bold text-gray-900">Admin Dashboard</h1>
+                <p className="mt-2 text-sm text-gray-500">
+                  Overview of platform activity and metrics
+                </p>
+              </div>
+
+              <AdminNotificationBell notifications={notificationItems} />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+              {statCards.map((card) => (
+                <MetricCard
+                  key={card.label}
+                  icon={card.icon}
+                  iconClassName={card.iconClassName}
+                  iconBgClassName={card.iconBgClassName}
+                  value={card.value}
+                  label={card.label}
+                  trend={card.trend}
+                />
+              ))}
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-2">
+              <ChartCard
+                title="User Registrations"
+                icon={Users}
+                iconClassName="text-blue-600"
+                iconBgClassName="bg-blue-50"
+                series={registrationsSeries}
+                stroke="#2563EB"
+                fill="#60A5FA"
+                yTickFormatter={(value) => `${Math.round(value)}`}
+                range={selectedRange.key}
+              />
+
+              <ChartCard
+                title="Revenue Overview"
+                icon={TrendingUp}
+                iconClassName="text-emerald-600"
+                iconBgClassName="bg-emerald-50"
+                series={revenueSeries}
+                stroke="#16A34A"
+                fill="#4ADE80"
+                yTickFormatter={(value) => formatCompactRupees(value)}
+                range={selectedRange.key}
+              />
+            </div>
+
+            <div>
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <h2 className="font-display text-xl font-semibold text-gray-900">Quick Actions</h2>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {quickActions.map((action) => (
+                  <QuickActionCard key={action.href} {...action} />
+                ))}
+              </div>
+            </div>
+
+            <RecentActivityTable items={recentActivity} />
+          </div>
         </div>
-
-        <AdminNotificationBell notifications={notificationItems} />
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        {statCards.map((card) => (
-          <MetricCard
-            key={card.label}
-            icon={card.icon}
-            iconClassName={card.iconClassName}
-            iconBgClassName={card.iconBgClassName}
-            value={card.value}
-            label={card.label}
-            trend={card.trend}
-          />
-        ))}
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-2">
-        <ChartCard
-          title="User Registrations"
-          icon={Users}
-          iconClassName="text-blue-600"
-          iconBgClassName="bg-blue-50"
-          series={registrationsSeries}
-          stroke="#2563EB"
-          fill="#60A5FA"
-          yTickFormatter={(value) => `${Math.round(value)}`}
-          range={selectedRange.key}
-        />
-
-        <ChartCard
-          title="Revenue Overview"
-          icon={TrendingUp}
-          iconClassName="text-emerald-600"
-          iconBgClassName="bg-emerald-50"
-          series={revenueSeries}
-          stroke="#16A34A"
-          fill="#4ADE80"
-          yTickFormatter={(value) => formatCompactRupees(value)}
-          range={selectedRange.key}
-        />
-      </div>
-
-      <div>
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <h2 className="font-display text-xl font-semibold text-gray-900">Quick Actions</h2>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {quickActions.map((action) => (
-            <QuickActionCard key={action.href} {...action} />
-          ))}
-        </div>
-      </div>
-
-      <RecentActivityTable items={recentActivity} />
+      </main>
     </div>
   );
 }

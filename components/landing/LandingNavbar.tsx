@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { Heart, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import SiteLogo from "@/components/common/SiteLogo";
+import { resolveAllowedImageSrc } from "@/lib/utils/image";
 import { cn } from "@/lib/utils/helpers";
 
 const navLinks = [
@@ -22,6 +24,8 @@ export default function LandingNavbar() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [logoImageUrl, setLogoImageUrl] = useState<string | null>(null);
+  const brandLogoSrc = logoImageUrl || "/default-logo.svg";
   const dashboardHref = session?.user.role === "ADMIN" ? "/admin" : "/dashboard";
 
   const isActiveLink = (href: string) => {
@@ -47,28 +51,33 @@ export default function LandingNavbar() {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
+  useEffect(() => {
+    setLogoImageUrl(resolveAllowedImageSrc(document.body.dataset.logoImageUrl ?? "", null));
+
+    const handleBrandingUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent<{ logoImageUrl?: string }>;
+      const nextValue = customEvent.detail?.logoImageUrl ?? "";
+      setLogoImageUrl(resolveAllowedImageSrc(nextValue, null));
+    };
+
+    window.addEventListener("branding-logo-updated", handleBrandingUpdate);
+    return () => window.removeEventListener("branding-logo-updated", handleBrandingUpdate);
+  }, []);
+
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 border-b border-rose-100 bg-white transition-all duration-300",
+        "fixed inset-x-0 top-0 z-50 h-[80px] border-b border-rose-100 bg-white transition-all duration-300",
         isScrolled ? "shadow-[0_14px_34px_rgba(15,23,42,0.08)]" : "shadow-[0_8px_24px_rgba(15,23,42,0.04)]"
       )}
     >
-      <nav
-        className={cn(
-          "mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8",
-          isScrolled ? "py-3.5" : "py-4"
-        )}
-      >
-        <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-pink-500 text-white shadow-[0_12px_24px_rgba(244,63,94,0.28)]">
-            <Heart className="h-5 w-5 fill-white" />
-          </div>
-          <div className="leading-none">
-            <div className="font-display text-2xl font-bold text-slate-900">
-              <span className="text-rose-500">Vivah</span> Bandhan
-            </div>
-          </div>
+      <nav className="mx-auto w-[90%] flex h-full w-full items-center justify-between  px-4 sm:px-6 lg:px-10">
+        <Link href="/" className="inline-flex shrink-0 items-center" aria-label="Go to home page">
+          <SiteLogo
+            src={brandLogoSrc}
+            alt="Site logo"
+            className="h-12 max-w-[180px] sm:h-14 sm:max-w-[220px] lg:h-16 lg:max-w-[280px]"
+          />
         </Link>
 
         <div className="hidden items-center gap-7 lg:flex">

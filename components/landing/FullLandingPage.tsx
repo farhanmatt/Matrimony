@@ -28,6 +28,7 @@ import {
   Youtube,
 } from "lucide-react";
 import LandingNavbar from "@/components/landing/LandingNavbar";
+import LandingHeroBanner from "@/components/landing/LandingHeroBanner";
 import { blogCardImageOverrides } from "@/lib/constants/blog-card-image-overrides";
 import { blogPosts } from "@/lib/constants/blog";
 
@@ -254,11 +255,13 @@ function SectionTitle({
 interface FullLandingPageProps {
   featuredProfiles?: LandingFeaturedProfile[];
   featuredProfilesUnavailable?: boolean;
+  heroImageUrl?: string;
 }
 
 export default function FullLandingPage({
   featuredProfiles = [],
   featuredProfilesUnavailable = false,
+  heroImageUrl,
 }: FullLandingPageProps) {
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#fff9fb_0%,#fff4f7_40%,#ffffff_100%)] text-slate-900">
@@ -267,16 +270,7 @@ export default function FullLandingPage({
       <section className="relative overflow-hidden border-b border-rose-100/70 bg-white pt-[76px]">
         <div className="relative w-full pb-24">
           <div className="relative min-h-[28rem] overflow-hidden px-6 py-8 sm:px-8 lg:aspect-[1600/639] lg:min-h-0 lg:px-10 lg:py-8">
-            <div className="absolute inset-0 hidden overflow-hidden lg:block">
-              <Image
-                src="/main.jpeg"
-                alt="Happy couple"
-                fill
-                priority
-                className="object-cover object-center"
-                sizes="(max-width: 1024px) 100vw, 100vw"
-              />
-            </div>
+            <LandingHeroBanner initialHeroImageUrl={heroImageUrl ?? "/main.jpeg"} />
 
             <div className="mx-auto grid h-full max-w-7xl items-center gap-8 px-4 sm:px-6 lg:grid-cols-1 lg:gap-0 lg:px-8">
               <div className="relative z-10 max-w-2xl py-2 lg:max-w-[48%] lg:self-center lg:py-0">
@@ -335,16 +329,6 @@ export default function FullLandingPage({
                 </div>
               </div>
 
-              <div className="relative min-h-[18rem] w-full overflow-hidden rounded-[2rem] border border-white/80 bg-white shadow-[0_20px_45px_rgba(15,23,42,0.08)] sm:min-h-[22rem] lg:hidden">
-                <Image
-                  src="/main.jpeg"
-                  alt="Happy couple"
-                  fill
-                  priority
-                  className="object-cover object-center"
-                  sizes="100vw"
-                />
-              </div>
             </div>
 
             <div className="absolute right-6 top-6 z-10 hidden w-24 rounded-[1.5rem] border border-rose-100 bg-white/95 p-4 text-center shadow-[0_18px_35px_rgba(15,23,42,0.1)] lg:block">

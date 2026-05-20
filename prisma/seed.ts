@@ -19,7 +19,9 @@ async function main() {
       id: "singleton",
       baseAmount: 500,
       profileAmount: 500,
-    },
+      heroImageUrl: "/main.jpeg",
+      logoImageUrl: "",
+    } as any,
   });
   console.log("✅ Admin settings created");
 

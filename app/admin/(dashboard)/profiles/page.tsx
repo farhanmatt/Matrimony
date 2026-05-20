@@ -386,25 +386,25 @@ export default async function AdminProfilesPage({
       render: (profile) => (
         <div className="space-y-0.5 text-[12px] text-gray-600">
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
               <UserRound className="h-3 w-3" />
             </span>
             <span className="break-words">{GENDER_LABELS[profile.gender] ?? profile.gender}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
               <Cake className="h-3 w-3" />
             </span>
             <span className="break-words">{calculateAge(profile.dateOfBirth)} years</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
               <Ruler className="h-3 w-3" />
             </span>
             <span className="break-words">{formatHeight(profile.height)}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
               <Heart className="h-3 w-3" />
             </span>
             <span className="break-words">{profile.maritalStatus}</span>
@@ -418,13 +418,13 @@ export default async function AdminProfilesPage({
       render: (profile) => (
         <div className="space-y-0.5 text-[12px] text-gray-600">
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
               <Home className="h-3 w-3" />
             </span>
             <span className="break-words">{profile.religion ?? "Not added"}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
               <ContactRound className="h-3 w-3" />
             </span>
             <span className="break-words">{profile.caste ?? "Not added"}</span>
@@ -438,7 +438,7 @@ export default async function AdminProfilesPage({
       render: (profile) => (
         <div className="space-y-0.5 text-[12px] text-gray-600">
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
               <MapPin className="h-3 w-3" />
             </span>
             <span className="break-words">{profile.city ?? "Not added"}</span>
@@ -454,21 +454,21 @@ export default async function AdminProfilesPage({
       render: (profile) => (
         <div className="space-y-0.5 text-[12px] text-gray-600">
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
               <BriefcaseBusiness className="h-3 w-3" />
             </span>
-            <span className="break-words font-medium text-[12px] text-gray-700">
+            <span className="break-words font-medium text-[12px] text-gray-900">
               {profile.profession ?? "Not added"}
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
               <GraduationCap className="h-3 w-3" />
             </span>
             <span className="break-words text-xs text-gray-500">{profile.education ?? "Not added"}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
               <BriefcaseBusiness className="h-3 w-3" />
             </span>
             <span className="break-words text-xs text-gray-500">Income: {profile.income ?? "Not added"}</span>
@@ -482,13 +482,13 @@ export default async function AdminProfilesPage({
       render: (profile) => (
         <div className="space-y-0.5 text-[12px] text-gray-600">
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
               <Phone className="h-3 w-3" />
             </span>
             <span className="break-words">{profile.phone ?? "Not added"}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
               <Mail className="h-3 w-3" />
             </span>
             <span className="break-words text-xs text-gray-500">{profile.user.email}</span>
@@ -502,16 +502,16 @@ export default async function AdminProfilesPage({
       render: (profile) => (
         <div className="space-y-1 text-[12px] text-gray-600">
           <div className="flex flex-wrap items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
               <Crown className="h-3 w-3" />
             </span>
             <span className="text-[12px] font-semibold uppercase tracking-wide text-gray-500">Plan Type:</span>
-            <span className="inline-flex w-fit rounded-full bg-emerald-50 px-2 py-0.5 text-[12px] font-semibold text-emerald-700">
+            <span className="inline-flex w-fit rounded-full bg-gray-100 px-2 py-0.5 text-[12px] font-semibold text-gray-700">
               {profile.isPaidProfile ? "Premium" : "Free"}
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
               <CalendarDays className="h-3 w-3" />
             </span>
             <span className="text-[12px] font-semibold uppercase tracking-wide text-gray-500">Expiry Date:</span>
@@ -526,12 +526,12 @@ export default async function AdminProfilesPage({
       render: (profile) => (
         <div className="space-y-1">
           <div className="flex items-center gap-1 whitespace-nowrap">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
               <ShieldCheck className="h-3 w-3" />
             </span>
             <StatusBadge status={profile.status} />
           </div>
-          <span className="inline-flex w-fit whitespace-nowrap rounded-full bg-blue-50 px-2 py-0.5 text-[12px] font-semibold text-blue-700">
+          <span className="inline-flex w-fit whitespace-nowrap rounded-full bg-gray-100 px-2 py-0.5 text-[12px] font-semibold text-gray-700">
             {profile.isPaidProfile ? "Verified" : "Not Verified"}
           </span>
         </div>
@@ -542,7 +542,7 @@ export default async function AdminProfilesPage({
       label: "Joined",
       render: (profile) => (
         <div className="flex items-center gap-1 whitespace-nowrap text-[12px] text-gray-500">
-          <CalendarDays className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+          <CalendarDays className="h-3.5 w-3.5 shrink-0 text-gray-400" />
           <span>{formatDate(profile.createdAt)}</span>
         </div>
       ),
@@ -626,13 +626,13 @@ export default async function AdminProfilesPage({
         {showBackToProfiles ? (
           <Link
             href="/admin/profiles"
-            className="mb-4 inline-flex h-11 items-center gap-2 rounded-full border border-gray-200 bg-white px-5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
+            className="mb-4 inline-flex h-11 items-center gap-2 rounded-full border border-rose-200 bg-white px-5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-rose-300 hover:bg-rose-50"
           >
             <ChevronLeft className="h-4 w-4" />
             Back to Profiles
           </Link>
         ) : null}
-        <h1 className="text-2xl font-display font-bold text-gray-900">{pageTitle}</h1>
+        <h1 className="text-2xl font-display font-bold text-slate-900">{pageTitle}</h1>
         <p className="mt-1 text-sm text-gray-500">{pageDescription}</p>
       </div>
 
@@ -674,17 +674,17 @@ export default async function AdminProfilesPage({
               <AdminPageSizeSelector value={limit} />
 
               <div className="flex items-center gap-2">
-                <a
-                  href={`?page=${Math.max(1, page - 1)}${search ? `&search=${search}` : ""}${status ? `&status=${status}` : ""}${view ? `&view=${view}` : ""}&columns=${selectedColumns.join(",")}&limit=${limit}`}
-                  aria-label="Previous page"
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition-colors ${
-                    page === 1 ? "pointer-events-none opacity-40" : "hover:border-rose-300 hover:text-rose-500"
+                  <a
+                    href={`?page=${Math.max(1, page - 1)}${search ? `&search=${search}` : ""}${status ? `&status=${status}` : ""}${view ? `&view=${view}` : ""}&columns=${selectedColumns.join(",")}&limit=${limit}`}
+                    aria-label="Previous page"
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white text-gray-400 transition-colors ${
+                    page === 1 ? "pointer-events-none opacity-40" : "hover:border-gray-300 hover:text-gray-700"
                   }`}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </a>
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </a>
 
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white text-sm font-medium text-gray-700">
                   {page}
                 </div>
 
@@ -693,8 +693,8 @@ export default async function AdminProfilesPage({
                 <a
                   href={`?page=${Math.min(totalPages || 1, page + 1)}${search ? `&search=${search}` : ""}${status ? `&status=${status}` : ""}${view ? `&view=${view}` : ""}&columns=${selectedColumns.join(",")}&limit=${limit}`}
                   aria-label="Next page"
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition-colors ${
-                    page >= totalPages ? "pointer-events-none opacity-40" : "hover:border-rose-300 hover:text-rose-500"
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white text-gray-400 transition-colors ${
+                    page >= totalPages ? "pointer-events-none opacity-40" : "hover:border-gray-300 hover:text-gray-700"
                   }`}
                 >
                   <ChevronRight className="h-4 w-4" />
@@ -721,7 +721,7 @@ export default async function AdminProfilesPage({
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-display font-bold text-gray-900">Manage Profiles</h1>
+          <h1 className="text-2xl font-display font-bold text-slate-900">Manage Profiles</h1>
           <p className="mt-1 text-sm text-gray-500">Unable to load profiles right now.</p>
         </div>
 
@@ -735,3 +735,4 @@ export default async function AdminProfilesPage({
     );
   }
 }
+

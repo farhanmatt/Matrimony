@@ -150,6 +150,7 @@ const annualIncomeOptions = [
   "20-30 LPA",
   "30+ LPA",
 ];
+const OTHER_ANNUAL_INCOME_OPTION = "__other_annual_income__";
 const timeHourOptions = Array.from({ length: 12 }, (_, index) =>
   String(index + 1).padStart(2, "0")
 );
@@ -340,6 +341,16 @@ function toNullableValue(value: unknown) {
   }
 
   return value === "" ? null : value;
+}
+
+function getAnnualIncomeSelectValue(value: string | null | undefined) {
+  if (!value) {
+    return "";
+  }
+
+  return annualIncomeOptions.includes(value)
+    ? value
+    : OTHER_ANNUAL_INCOME_OPTION;
 }
 
 function formatHeightLabel(value: number) {
@@ -563,6 +574,9 @@ export default function ProfileForm({
   const router = useRouter();
   const { update } = useSession();
   const [currentStep, setCurrentStep] = useState(0);
+  const [incomeSelectValue, setIncomeSelectValue] = useState(() =>
+    getAnnualIncomeSelectValue(defaultValues?.income)
+  );
 
   const {
     register,
@@ -585,6 +599,8 @@ export default function ProfileForm({
   });
 
   useEffect(() => {
+    setIncomeSelectValue(getAnnualIncomeSelectValue(defaultValues?.income));
+
     reset({
       country: "India",
       ...defaultValues,
@@ -602,6 +618,8 @@ export default function ProfileForm({
     if (!savedDraft) {
       return;
     }
+
+    setIncomeSelectValue(getAnnualIncomeSelectValue(savedDraft.values.income));
 
     reset({
       country: "India",
@@ -621,11 +639,13 @@ export default function ProfileForm({
     : "mb-2 block text-[13px] font-medium text-gray-700";
   const errorClass = "mt-1 text-xs text-rose-500";
   const selectedHeight = watch("height");
+  const availableMaritalOptions = isEdit
+    ? maritalOptions
+    : maritalOptions.filter((status) => status !== "SEPARATED");
   const selectedEducation = watch("education");
   const selectedCourse = watch("course");
   const selectedProfession = watch("profession");
   const selectedEmployedIn = watch("employedIn");
-  const selectedIncome = watch("income");
   const selectedNakshatra = watch("star");
   const selectedRasi = watch("rasi");
   const selectedReligion = watch("religion");
@@ -942,7 +962,7 @@ export default function ProfileForm({
             {...register("maritalStatus")}
             className={selectClass}
           >
-            {maritalOptions.map((status) => (
+            {availableMaritalOptions.map((status) => (
               <option key={status} value={status}>
                 {labelMap.marital[status]}
               </option>
@@ -1188,21 +1208,64 @@ export default function ProfileForm({
         <label className={labelClass} htmlFor="pf-income">
           Annual Income
         </label>
-        <select
-          id="pf-income"
-          {...register("income", { setValueAs: toNullableValue })}
-          className={selectClass}
-        >
-          <option value="">Select annual income</option>
-          {selectedIncome && !annualIncomeOptions.includes(selectedIncome) ? (
-            <option value={selectedIncome}>{selectedIncome}</option>
-          ) : null}
-          {annualIncomeOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
+        <Controller
+          name="income"
+          control={control}
+          render={({ field }) => {
+            const hasCustomIncomeValue =
+              typeof field.value === "string" &&
+              field.value.length > 0 &&
+              !annualIncomeOptions.includes(field.value);
+
+            return (
+              <>
+                <select
+                  id="pf-income"
+                  value={incomeSelectValue}
+                  onChange={(event) => {
+                    const nextValue = event.target.value;
+
+                    setIncomeSelectValue(nextValue);
+
+                    if (nextValue === OTHER_ANNUAL_INCOME_OPTION) {
+                      if (!hasCustomIncomeValue) {
+                        field.onChange("");
+                      }
+
+                      return;
+                    }
+
+                    field.onChange(nextValue === "" ? null : nextValue);
+                  }}
+                  onBlur={field.onBlur}
+                  className={selectClass}
+                >
+                  <option value="">Select annual income</option>
+                  {annualIncomeOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                  <option value={OTHER_ANNUAL_INCOME_OPTION}>Other</option>
+                </select>
+
+                {incomeSelectValue === OTHER_ANNUAL_INCOME_OPTION ? (
+                  <input
+                    id="pf-income-other"
+                    type="text"
+                    value={typeof field.value === "string" ? field.value : ""}
+                    onChange={(event) =>
+                      field.onChange(toNullableValue(event.target.value))
+                    }
+                    onBlur={field.onBlur}
+                    className={`${inputClass} mt-3`}
+                    placeholder="Type your salary"
+                  />
+                ) : null}
+              </>
+            );
+          }}
+        />
         {errors.income ? (
           <p className={errorClass}>{errors.income.message}</p>
         ) : null}

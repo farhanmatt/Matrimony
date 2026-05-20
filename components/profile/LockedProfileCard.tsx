@@ -17,6 +17,7 @@ interface LockedProfileCardProps {
   matchId: string;
   baseAmount: number;
   profileAmount: number;
+  perProfileChatAmount: number;
   onUnlock: (matchId: string) => void;
 }
 
@@ -25,11 +26,12 @@ export default function LockedProfileCard({
   matchId,
   baseAmount,
   profileAmount,
+  perProfileChatAmount,
   onUnlock,
 }: LockedProfileCardProps) {
   const primaryPhoto = profile.photos.find((p) => p.isPrimary)?.url ?? profile.photos[0]?.url;
   const age = calculateAge(profile.dateOfBirth);
-  const total = baseAmount + profileAmount;
+  const total = baseAmount + profileAmount + perProfileChatAmount;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-rose-100 overflow-hidden">
@@ -84,6 +86,10 @@ export default function LockedProfileCard({
           <div className="flex justify-between mb-1">
             <span>Profile Amount</span>
             <span>₹{profileAmount}</span>
+          </div>
+          <div className="flex justify-between mb-1">
+            <span>Per Profile Chat Amount</span>
+            <span>₹{perProfileChatAmount}</span>
           </div>
           <div className="flex justify-between font-bold text-rose-600 border-t border-rose-200 pt-1 mt-1">
             <span>Total</span>

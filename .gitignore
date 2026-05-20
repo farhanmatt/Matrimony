@@ -2,6 +2,9 @@
 .next/
 out/
 
+# Uploads (admin branding images)
+public/uploads/
+
 # Node
 node_modules/
 

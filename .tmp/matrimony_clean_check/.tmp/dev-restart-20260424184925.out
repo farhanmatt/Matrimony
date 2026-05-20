@@ -1,0 +1,106 @@
+
+> matrimony-app@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.89.208.96:3000
+- Environments: .env
+✓ Ready in 970ms
+Creating turbopack project { dir: 'D:\\matrimony\\matrimonial_website', testMode: true }
+- Experiments (use with caution):
+  · serverActions
+
+ GET /api/auth/error 302 in 5.1s (next.js: 5.0s, application-code: 99ms)
+ GET /login?error=undefined 200 in 3.4s (next.js: 510ms, proxy.ts: 1242ms, application-code: 1698ms)
+ GET /api/auth/session 200 in 107ms (next.js: 70ms, application-code: 37ms)
+ GET /api/auth/session 200 in 414ms (next.js: 224ms, application-code: 190ms)
+ GET /login 200 in 386ms (next.js: 16ms, proxy.ts: 28ms, application-code: 343ms)
+ GET /api/auth/csrf 200 in 44ms (next.js: 29ms, application-code: 15ms)
+ GET /api/auth/providers 200 in 22ms (next.js: 10ms, application-code: 12ms)
+ GET /api/auth/csrf 200 in 18ms (next.js: 7ms, application-code: 11ms)
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."password", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."email" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."password", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."email" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /api/auth/callback/credentials 302 in 3.6s (next.js: 6ms, application-code: 3.6s)
+ POST /api/auth/callback/credentials? 200 in 3.5s (next.js: 5ms, application-code: 3.5s)
+ GET /api/auth/session 200 in 71ms (next.js: 44ms, application-code: 26ms)
+prisma:query SELECT "public"."Profile"."id", "public"."Profile"."fullName", "public"."Profile"."status"::text, "public"."Profile"."profileImage" FROM "public"."Profile" WHERE ("public"."Profile"."userId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Profile"."id", "public"."Profile"."fullName", "public"."Profile"."status"::text, "public"."Profile"."profileImage" FROM "public"."Profile" WHERE ("public"."Profile"."userId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Like"."id" FROM "public"."Like" WHERE "public"."Like"."fromProfileId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Like"."id" FROM "public"."Like" WHERE "public"."Like"."toProfileId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Like"."id" FROM "public"."Like" WHERE "public"."Like"."toProfileId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Match"."id" FROM "public"."Match" WHERE ("public"."Match"."profileAId" = $1 OR "public"."Match"."profileBId" = $2) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Profile"."id", "public"."Profile"."fullName", "public"."Profile"."status"::text, "public"."Profile"."profileImage" FROM "public"."Profile" WHERE ("public"."Profile"."userId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Unlock"."id" FROM "public"."Unlock" WHERE "public"."Unlock"."userId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Like"."id" FROM "public"."Like" WHERE "public"."Like"."toProfileId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Like"."id" FROM "public"."Like" WHERE "public"."Like"."fromProfileId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Match"."id" FROM "public"."Match" WHERE ("public"."Match"."profileAId" = $1 OR "public"."Match"."profileBId" = $2) OFFSET $3) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Like"."id" FROM "public"."Like" WHERE "public"."Like"."fromProfileId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Unlock"."id" FROM "public"."Unlock" WHERE "public"."Unlock"."userId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Match"."id" FROM "public"."Match" WHERE ("public"."Match"."profileAId" = $1 OR "public"."Match"."profileBId" = $2) OFFSET $3) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Unlock"."id" FROM "public"."Unlock" WHERE "public"."Unlock"."userId" = $1 OFFSET $2) AS "sub"
+ GET /dashboard 200 in 2.7s (next.js: 264ms, proxy.ts: 114ms, application-code: 2.3s)
+ GET /dashboard 200 in 2.5s (next.js: 75ms, proxy.ts: 758ms, application-code: 1690ms)
+ GET /dashboard 200 in 1526ms (next.js: 15ms, proxy.ts: 164ms, application-code: 1347ms)
+ GET /api/auth/session 200 in 54ms (next.js: 27ms, application-code: 27ms)
+ GET /api/auth/csrf 200 in 84ms (next.js: 47ms, application-code: 37ms)
+ POST /api/auth/signout 200 in 43ms (next.js: 15ms, application-code: 28ms)
+ GET / 200 in 1681ms (next.js: 136ms, application-code: 1546ms)
+ GET /api/auth/session 200 in 66ms (next.js: 54ms, application-code: 12ms)
+ GET /api/auth/session 200 in 41ms (next.js: 9ms, application-code: 32ms)
+ GET /admin/login?callbackUrl=/admin 200 in 400ms (next.js: 88ms, proxy.ts: 13ms, application-code: 298ms)
+ GET /api/auth/session 200 in 92ms (next.js: 48ms, application-code: 44ms)
+ GET /api/auth/session 200 in 22ms (next.js: 6ms, application-code: 16ms)
+ GET /api/auth/providers 200 in 39ms (next.js: 28ms, application-code: 12ms)
+ GET /api/auth/csrf 200 in 19ms (next.js: 5ms, application-code: 14ms)
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."User" ("id","name","email","emailVerified","password","role","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,CAST($6::text AS "public"."Role"),$7,$8) ON CONFLICT ("email") DO UPDATE SET "name" = $9, "password" = $10, "role" = CAST($11::text AS "public"."Role"), "emailVerified" = $12, "updatedAt" = $13 WHERE ("public"."User"."email" = $14 AND 1=1) RETURNING "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."password", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt"
+ POST /api/auth/callback/credentials? 200 in 2.1s (next.js: 4ms, application-code: 2.1s)
+ GET /api/auth/session 200 in 53ms (next.js: 34ms, application-code: 19ms)
+prisma:query SELECT 1
+prisma:query SELECT 1
+prisma:query SELECT 1
+prisma:query SELECT 1
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."User"."id" FROM "public"."User" WHERE "public"."User"."role" = CAST($1::text AS "public"."Role") OFFSET $2) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Match"."id" FROM "public"."Match" WHERE 1=1 OFFSET $1) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all", SUM("amount") AS "_sum$amount" FROM (SELECT "public"."Payment"."id", "public"."Payment"."amount" FROM "public"."Payment" WHERE "public"."Payment"."status" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE "public"."Profile"."status" = CAST($1::text AS "public"."ProfileStatus") OFFSET $2) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE 1=1 OFFSET $1) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."User"."id" FROM "public"."User" WHERE "public"."User"."role" = CAST($1::text AS "public"."Role") OFFSET $2) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE 1=1 OFFSET $1) AS "sub"
+ GET /admin 200 in 1066ms (next.js: 215ms, proxy.ts: 57ms, application-code: 794ms)
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE "public"."Profile"."status" = CAST($1::text AS "public"."ProfileStatus") OFFSET $2) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Match"."id" FROM "public"."Match" WHERE 1=1 OFFSET $1) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all", SUM("amount") AS "_sum$amount" FROM (SELECT "public"."Payment"."id", "public"."Payment"."amount" FROM "public"."Payment" WHERE "public"."Payment"."status" = $1 OFFSET $2) AS "sub"
+ GET /admin 200 in 757ms (next.js: 29ms, proxy.ts: 110ms, application-code: 618ms)
+ GET /api/auth/csrf 200 in 57ms (next.js: 33ms, application-code: 23ms)
+ POST /api/auth/signout 200 in 26ms (next.js: 7ms, application-code: 20ms)
+ GET / 200 in 677ms (next.js: 8ms, application-code: 668ms)
+ GET /api/auth/session 200 in 41ms (next.js: 12ms, application-code: 30ms)
+ GET /api/auth/session 200 in 42ms (next.js: 20ms, application-code: 21ms)
+ GET /login 200 in 136ms (next.js: 12ms, proxy.ts: 18ms, application-code: 107ms)
+ GET /api/auth/providers 200 in 36ms (next.js: 26ms, application-code: 10ms)
+ GET /api/auth/csrf 200 in 19ms (next.js: 5ms, application-code: 15ms)
+ POST /api/auth/signin/google? 200 in 368ms (next.js: 3ms, application-code: 365ms)
+prisma:query SELECT 1
+prisma:query SELECT "public"."Account"."id", "public"."Account"."userId", "public"."Account"."type", "public"."Account"."provider", "public"."Account"."providerAccountId", "public"."Account"."refresh_token", "public"."Account"."access_token", "public"."Account"."expires_at", "public"."Account"."token_type", "public"."Account"."scope", "public"."Account"."id_token", "public"."Account"."session_state" FROM "public"."Account" WHERE (("public"."Account"."provider" = $1 AND "public"."Account"."providerAccountId" = $2) AND 1=1) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."password", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Account"."id", "public"."Account"."userId", "public"."Account"."type", "public"."Account"."provider", "public"."Account"."providerAccountId", "public"."Account"."refresh_token", "public"."Account"."access_token", "public"."Account"."expires_at", "public"."Account"."token_type", "public"."Account"."scope", "public"."Account"."id_token", "public"."Account"."session_state" FROM "public"."Account" WHERE (("public"."Account"."provider" = $1 AND "public"."Account"."providerAccountId" = $2) AND 1=1) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."password", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET /api/auth/callback/google?iss=https%3A%2F%2Faccounts.google.com&code=4%2F0Aci98E8dJr9dscIzkpCHJcdTaqTt8YenpAcOLZzjOo4pmzq0b3ruLBsBuRbyOAclOHuqzg&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&authuser=0&prompt=none 302 in 1489ms (next.js: 28ms, application-code: 1461ms)
+prisma:query SELECT "public"."Profile"."id", "public"."Profile"."fullName", "public"."Profile"."status"::text, "public"."Profile"."profileImage" FROM "public"."Profile" WHERE ("public"."Profile"."userId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT 1
+prisma:query SELECT 1
+prisma:query SELECT 1
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Like"."id" FROM "public"."Like" WHERE "public"."Like"."fromProfileId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Match"."id" FROM "public"."Match" WHERE ("public"."Match"."profileAId" = $1 OR "public"."Match"."profileBId" = $2) OFFSET $3) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Unlock"."id" FROM "public"."Unlock" WHERE "public"."Unlock"."userId" = $1 OFFSET $2) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Like"."id" FROM "public"."Like" WHERE "public"."Like"."toProfileId" = $1 OFFSET $2) AS "sub"
+ GET /dashboard 200 in 862ms (next.js: 14ms, proxy.ts: 33ms, application-code: 816ms)
+ GET /api/auth/session 200 in 40ms (next.js: 22ms, application-code: 18ms)
+ GET /api/auth/session 200 in 44ms (next.js: 11ms, application-code: 32ms)
+ GET /api/auth/csrf 200 in 34ms (next.js: 24ms, application-code: 10ms)
+ POST /api/auth/signout 200 in 23ms (next.js: 4ms, application-code: 18ms)
+ GET / 200 in 635ms (next.js: 6ms, application-code: 629ms)
+ GET /api/auth/session 200 in 23ms (next.js: 8ms, application-code: 15ms)
+ GET /api/auth/session 200 in 36ms (next.js: 12ms, application-code: 23ms)

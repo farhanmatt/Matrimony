@@ -3,6 +3,10 @@ import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  getUnlockPricing,
+  isPerProfileChatAmountCompatibilityError,
+} from "@/lib/utils/admin-settings";
 import { hasMutualLike } from "@/lib/utils/matching";
 
 // GET /api/unlock - get all unlocked profiles for current user
@@ -103,27 +107,46 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const settings = await prisma.adminSettings.findUnique({
-      where: { id: "singleton" },
-    });
-    const baseAmount = settings?.baseAmount ?? 500;
-    const profileAmount = settings?.profileAmount ?? 500;
-    const totalAmount = (baseAmount + profileAmount) * 100;
+    const { baseAmount, profileAmount, perProfileChatAmount } =
+      await getUnlockPricing();
+    const totalAmount = (baseAmount + profileAmount + perProfileChatAmount) * 100;
 
     const unlock = await prisma.$transaction(async (tx) => {
       // Keep the existing payment + unlock data model while Razorpay is disabled.
-      const payment = await tx.payment.create({
-        data: {
-          userId: session.user.id,
-          matchId,
-          razorpayOrderId: `manual_unlock_${randomUUID()}`,
-          amount: totalAmount,
-          currency: "INR",
-          status: "PAID",
-          baseAmount,
-          profileAmount,
-        },
-      });
+      const paymentData = {
+        userId: session.user.id,
+        matchId,
+        razorpayOrderId: `manual_unlock_${randomUUID()}`,
+        amount: totalAmount,
+        currency: "INR",
+        status: "PAID",
+        baseAmount,
+        profileAmount,
+        perProfileChatAmount,
+      };
+
+      const payment = await tx.payment
+        .create({
+          data: paymentData,
+          select: {
+            id: true,
+          },
+        })
+        .catch((error) => {
+          if (!isPerProfileChatAmountCompatibilityError(error)) {
+            throw error;
+          }
+
+          const { perProfileChatAmount: _ignored, ...legacyPaymentData } =
+            paymentData;
+
+          return tx.payment.create({
+            data: legacyPaymentData,
+            select: {
+              id: true,
+            },
+          });
+        });
 
       return tx.unlock.create({
         data: {

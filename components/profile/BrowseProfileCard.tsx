@@ -1,9 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import type {
-  MouseEvent as ReactMouseEvent,
-} from "react";
+import type { MouseEvent as ReactMouseEvent } from "react";
 import { useEffect, useState } from "react";
 import {
   BadgeCheck,
@@ -83,7 +81,6 @@ export default function BrowseProfileCard({
     "India";
   const educationLabel =
     profile.course || profile.education || "Education not added";
-
   const confirmLike = async () => {
     if (loading || liked) return;
 
@@ -98,7 +95,7 @@ export default function BrowseProfileCard({
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.error ?? "Failed to like profile");
+        toast.error(data.error ?? "Failed to save interest");
         return;
       }
 
@@ -108,8 +105,8 @@ export default function BrowseProfileCard({
           description: `You and ${profile.fullName} liked each other.`,
         });
       } else {
-        toast.success("Like sent successfully.", {
-          description: `${profile.fullName} has been added to your liked profiles.`,
+        toast.success("Interest sent successfully.", {
+          description: `${profile.fullName} has been added to your interests.`,
         });
       }
       onLike?.(profile.id);
@@ -137,9 +134,9 @@ export default function BrowseProfileCard({
               src={primaryPhoto}
               alt={`${profile.fullName} matrimony profile`}
               fill
-              className="scale-[1.04] object-cover object-center blur-[7px] transition-transform duration-500 group-hover:scale-[1.08]"
+              className="scale-[1.04] object-cover object-center blur-[4px] transition-transform duration-500 group-hover:scale-[1.08]"
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, (max-width: 1536px) 25vw, 20vw"
-              quality={100}
+              quality={75}
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.95)_0%,_rgba(255,239,244,0.9)_52%,_rgba(255,231,238,0.82)_100%)]">
@@ -247,7 +244,7 @@ export default function BrowseProfileCard({
               Like this profile?
             </h3>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Do you want to add {profile.fullName} to your liked profiles?
+              Do you want to add {profile.fullName} to your interests?
             </p>
 
             <div className="mt-5 flex items-center gap-3">
@@ -274,3 +271,4 @@ export default function BrowseProfileCard({
     </>
   );
 }
+

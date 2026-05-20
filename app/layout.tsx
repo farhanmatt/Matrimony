@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "./providers";
+import { prisma } from "@/lib/prisma";
+import { unstable_noStore as noStore } from "next/cache";
+import { resolveAllowedImageSrc } from "@/lib/utils/image";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -57,14 +62,34 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+async function getLogoImageUrl() {
+  noStore();
+
+  try {
+    const settings = await prisma.adminSettings.findUnique({
+      where: { id: "singleton" },
+      select: { logoImageUrl: true },
+    });
+
+    return resolveAllowedImageSrc(settings?.logoImageUrl ?? "", "/default-logo.svg") ?? "/default-logo.svg";
+  } catch {
+    return "/default-logo.svg";
+  }
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const logoImageUrl = await getLogoImageUrl();
+
   return (
     <html lang="en">
-      <body className="font-sans bg-background text-foreground antialiased">
+      <body
+        className="font-sans bg-background text-foreground antialiased"
+        data-logo-image-url={logoImageUrl}
+      >
         <Providers>{children}</Providers>
       </body>
     </html>

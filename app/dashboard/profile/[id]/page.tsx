@@ -52,10 +52,12 @@ type BrowseFilters = {
   search?: string;
   sort?: string;
   religion?: string;
+  caste?: string;
   language?: string;
   maritalStatus?: string;
   location?: string;
   heightMin?: string;
+  heightMax?: string;
   annualIncome?: string;
   education?: string;
   profession?: string;
@@ -76,10 +78,12 @@ function buildBrowseQueryString(page: number, filters: BrowseFilters) {
   if (filters.search) params.set("search", filters.search);
   if (filters.sort) params.set("sort", filters.sort);
   if (filters.religion) params.set("religion", filters.religion);
+  if (filters.caste) params.set("caste", filters.caste);
   if (filters.language) params.set("language", filters.language);
   if (filters.maritalStatus) params.set("maritalStatus", filters.maritalStatus);
   if (filters.location) params.set("location", filters.location);
   if (filters.heightMin) params.set("heightMin", filters.heightMin);
+  if (filters.heightMax) params.set("heightMax", filters.heightMax);
   if (filters.annualIncome) params.set("annualIncome", filters.annualIncome);
   if (filters.education) params.set("education", filters.education);
   if (filters.profession) params.set("profession", filters.profession);
@@ -131,6 +135,15 @@ function buildBrowseWhere(userId: string, filters: BrowseFilters): Prisma.Profil
           },
         }
       : {};
+  const heightFilter =
+    filters.heightMin || filters.heightMax
+      ? {
+          height: {
+            ...(filters.heightMin && { gte: Number(filters.heightMin) }),
+            ...(filters.heightMax && { lte: Number(filters.heightMax) }),
+          },
+        }
+      : {};
 
   return {
     status: "ACTIVE",
@@ -145,6 +158,9 @@ function buildBrowseWhere(userId: string, filters: BrowseFilters): Prisma.Profil
     ...(filters.gender ? { gender: filters.gender as never } : {}),
     ...searchFilter,
     ...(filters.religion ? { religion: filters.religion } : {}),
+    ...(filters.caste
+      ? { caste: { contains: filters.caste, mode: "insensitive" } }
+      : {}),
     ...(filters.language
       ? { language: { contains: filters.language, mode: "insensitive" } }
       : {}),
@@ -158,7 +174,7 @@ function buildBrowseWhere(userId: string, filters: BrowseFilters): Prisma.Profil
           ],
         }
       : {}),
-    ...(filters.heightMin ? { height: { gte: Number(filters.heightMin) } } : {}),
+    ...heightFilter,
     ...(filters.annualIncome
       ? { income: { contains: filters.annualIncome, mode: "insensitive" } }
       : {}),
@@ -431,10 +447,12 @@ export default async function ProfileDetailsPage({
     search: firstValue(resolvedSearchParams.search),
     sort: firstValue(resolvedSearchParams.sort),
     religion: firstValue(resolvedSearchParams.religion),
+    caste: firstValue(resolvedSearchParams.caste),
     language: firstValue(resolvedSearchParams.language),
     maritalStatus: firstValue(resolvedSearchParams.maritalStatus),
     location: firstValue(resolvedSearchParams.location),
     heightMin: firstValue(resolvedSearchParams.heightMin),
+    heightMax: firstValue(resolvedSearchParams.heightMax),
     annualIncome: firstValue(resolvedSearchParams.annualIncome),
     education: firstValue(resolvedSearchParams.education),
     profession: firstValue(resolvedSearchParams.profession),
@@ -492,7 +510,7 @@ export default async function ProfileDetailsPage({
       redirect("/dashboard/profile/create");
     }
 
-    profile = await prisma.profile.findFirst({
+    profile = await prisma.profile.findUnique({
       where: { id },
       include: {
         photos: true,
@@ -985,3 +1003,4 @@ export default async function ProfileDetailsPage({
     </div>
   );
 }
+
