@@ -83,7 +83,7 @@ export default function AdminSelectableProfilesTable({
                 ))}
               </colgroup>
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/90">
+                <tr className="border-b border-rose-100 bg-rose-50/80">
                   {columns.map((column) => (
                     <th
                       key={column.key}
@@ -94,12 +94,12 @@ export default function AdminSelectableProfilesTable({
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-rose-100">
                 {visibleRows.map((row) => {
                   return (
                     <tr
                       key={row.id}
-                      className={cn("cursor-pointer transition-colors hover:bg-slate-50/80")}
+                      className={cn("cursor-pointer transition-colors hover:bg-rose-50/80")}
                       onClick={(event) => handleRowClick(event, row.href)}
                       role="link"
                       tabIndex={0}

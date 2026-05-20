@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useEffectEvent } from "react";
+import { useEffect, useRef } from "react";
 
 type UseAutoRefreshOptions = {
   enabled?: boolean;
-  intervalMs?: number;
+  intervalMs?: number | null;
   refreshOnFocus?: boolean;
   refreshOnReconnect?: boolean;
 };
 
 const DEFAULT_REFRESH_INTERVAL_MS = 15000;
+const BURST_REFRESH_GUARD_MS = 1000;
 
 export function useAutoRefresh(
   onRefresh: () => void | Promise<void>,
@@ -20,9 +21,12 @@ export function useAutoRefresh(
     refreshOnReconnect = true,
   }: UseAutoRefreshOptions = {}
 ) {
-  const runRefresh = useEffectEvent(async () => {
-    await onRefresh();
-  });
+  const onRefreshRef = useRef(onRefresh);
+  const lastRefreshAtRef = useRef(0);
+
+  useEffect(() => {
+    onRefreshRef.current = onRefresh;
+  }, [onRefresh]);
 
   useEffect(() => {
     if (!enabled) {
@@ -32,8 +36,11 @@ export function useAutoRefresh(
     let refreshInFlight = false;
 
     const refreshIfVisible = () => {
+      const now = Date.now();
+
       if (
         refreshInFlight ||
+        now - lastRefreshAtRef.current < BURST_REFRESH_GUARD_MS ||
         document.visibilityState !== "visible" ||
         !window.navigator.onLine
       ) {
@@ -41,7 +48,9 @@ export function useAutoRefresh(
       }
 
       refreshInFlight = true;
-      void runRefresh()
+      lastRefreshAtRef.current = now;
+
+      void Promise.resolve(onRefreshRef.current())
         .catch((error) => {
           console.error("Auto refresh failed:", error);
         })
@@ -50,7 +59,10 @@ export function useAutoRefresh(
         });
     };
 
-    const intervalId = window.setInterval(refreshIfVisible, intervalMs);
+    const intervalId =
+      typeof intervalMs === "number" && intervalMs > 0
+        ? window.setInterval(refreshIfVisible, intervalMs)
+        : null;
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
@@ -77,7 +89,9 @@ export function useAutoRefresh(
     }
 
     return () => {
-      window.clearInterval(intervalId);
+      if (intervalId !== null) {
+        window.clearInterval(intervalId);
+      }
       document.removeEventListener("visibilitychange", handleVisibilityChange);
 
       if (refreshOnFocus) {

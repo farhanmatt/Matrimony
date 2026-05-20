@@ -4,6 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import NotificationBell from "@/components/dashboard/NotificationBell";
+import type { DashboardNotificationItem } from "@/lib/utils/notifications";
+import SiteLogo from "@/components/common/SiteLogo";
+import { resolveAllowedImageSrc } from "@/lib/utils/image";
 import {
   ChevronDown,
   Edit3,
@@ -26,13 +29,15 @@ import { useEffect, useRef, useState } from "react";
 const baseNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Home" },
   { href: "/dashboard/browse", icon: Search, label: "Find Match" },
-  { href: "/dashboard/liked", icon: Heart, label: "Liked Profiles" },
+  { href: "/dashboard/liked", icon: Heart, label: "Interest" },
   { href: "/dashboard/received-likes", icon: Inbox, label: "Received Likes" },
-  { href: "/dashboard/matches", icon: HeartHandshake, label: "My Matches" },
+  { href: "/dashboard/matches", icon: HeartHandshake, label: "Mutual Interest" },
   { href: "/dashboard/unlocked", icon: Unlock, label: "Unlocked Profiles" },
   { href: "/dashboard/preferences", icon: Star, label: "Preferences" },
   { href: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];
+
+const DASHBOARD_MOBILE_NAV_OPEN_KEY = "vivah-bandhan-dashboard-mobile-nav-open";
 
 function isActivePath(pathname: string, href: string) {
   return href === "/dashboard"
@@ -40,27 +45,22 @@ function isActivePath(pathname: string, href: string) {
     : pathname.startsWith(href);
 }
 
-type DashboardLike = {
-  id: string;
-  createdAt: string;
-  fromProfile: {
-    id: string;
-    fullName: string;
-    city: string | null;
-    state: string | null;
-    location: string | null;
-    profession: string | null;
-    profileImage: string | null;
-    photos: { url: string; isPrimary: boolean }[];
-  };
-};
-
 export default function DashboardSidebar({
+  initialUser,
   initialHasProfile = false,
-  initialLikes = [],
+  initialAccountImage = null,
+  initialNotificationProfileId = null,
+  initialNotifications = [],
 }: {
+  initialUser: {
+    name: string | null;
+    email: string | null;
+    image: string | null;
+  };
   initialHasProfile?: boolean;
-  initialLikes?: DashboardLike[];
+  initialAccountImage?: string | null;
+  initialNotificationProfileId?: string | null;
+  initialNotifications?: DashboardNotificationItem[];
 }) {
   const { data: session } = useSession();
   const pathname = usePathname();
@@ -68,9 +68,32 @@ export default function DashboardSidebar({
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [hasProfile, setHasProfile] = useState(initialHasProfile);
-  const [accountImage, setAccountImage] = useState<string | null>(null);
+  const [accountImage, setAccountImage] = useState<string | null>(initialAccountImage);
+  const [logoImageUrl, setLogoImageUrl] = useState<string | null>(null);
   const [desktopAccountOpen, setDesktopAccountOpen] = useState(false);
   const desktopAccountRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    try {
+      const storedValue = window.localStorage.getItem(DASHBOARD_MOBILE_NAV_OPEN_KEY);
+      if (storedValue === "true") {
+        setMobileOpen(true);
+      }
+    } catch {
+      // Ignore storage access failures and keep the default closed state.
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        DASHBOARD_MOBILE_NAV_OPEN_KEY,
+        mobileOpen ? "true" : "false"
+      );
+    } catch {
+      // Ignore storage access failures and keep the UI working.
+    }
+  }, [mobileOpen]);
 
   useEffect(() => {
     if (initialHasProfile) {
@@ -90,39 +113,16 @@ export default function DashboardSidebar({
   }, [session?.user?.image]);
 
   useEffect(() => {
-    let cancelled = false;
+    setLogoImageUrl(resolveAllowedImageSrc(document.body.dataset.logoImageUrl ?? "", null));
 
-    const loadProfileState = async () => {
-      try {
-        const res = await fetch("/api/profile", { cache: "no-store" });
-        if (!res.ok) return;
-
-        const data = await res.json();
-        if (!cancelled) {
-          setHasProfile(Boolean(data.profile?.id));
-
-          const nextAccountImage =
-            data.profile?.profileImage ??
-            data.profile?.photos?.find(
-              (photo: { url: string; isPrimary: boolean }) => photo.isPrimary
-            )?.url ??
-            data.profile?.photos?.[0]?.url ??
-            null;
-
-          if (nextAccountImage) {
-            setAccountImage(nextAccountImage);
-          }
-        }
-      } catch {
-        // Keep the safe default when the database is unavailable.
-      }
+    const handleBrandingUpdate = (event: Event) => {
+      const brandingEvent = event as CustomEvent<{ logoImageUrl?: string }>;
+      const nextValue = brandingEvent.detail?.logoImageUrl?.trim() ?? "";
+      setLogoImageUrl(resolveAllowedImageSrc(nextValue, null));
     };
 
-    void loadProfileState();
-
-    return () => {
-      cancelled = true;
-    };
+    window.addEventListener("branding-logo-updated", handleBrandingUpdate);
+    return () => window.removeEventListener("branding-logo-updated", handleBrandingUpdate);
   }, []);
 
   useEffect(() => {
@@ -140,7 +140,6 @@ export default function DashboardSidebar({
   }, []);
 
   useEffect(() => {
-    setMobileOpen(false);
     setDesktopAccountOpen(false);
   }, [pathname]);
 
@@ -171,9 +170,9 @@ export default function DashboardSidebar({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [logoutConfirmOpen, isSigningOut]);
 
-  if (!session?.user) return null;
-
-  const visibleAccountImage = accountImage ?? session.user.image ?? null;
+  const currentUser = session?.user ?? initialUser;
+  const visibleAccountImage = accountImage ?? currentUser.image ?? null;
+  const brandLogoSrc = logoImageUrl || "/default-logo.svg";
 
   const profileNavItem = hasProfile
     ? { href: "/dashboard/profile/edit", icon: Edit3, label: "Edit Profile" }
@@ -231,11 +230,15 @@ export default function DashboardSidebar({
     }
   };
 
+  const handleAccountImageError = () => {
+    setAccountImage(null);
+  };
+
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-40 border-b border-rose-100/80 bg-white/95 backdrop-blur-md shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
         <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between gap-4">
+          <div className="relative flex h-16 items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -246,24 +249,18 @@ export default function DashboardSidebar({
                 {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
 
-              <Link href="/" className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-md shadow-rose-200">
-                  <Heart className="h-4.5 w-4.5 fill-white" />
-                </div>
-                <div>
-                  <p className="font-display text-lg font-bold text-gray-900">
-                    Vivah Bandhan
-                  </p>
-                  <p className="hidden text-[11px] uppercase tracking-[0.2em] text-rose-500 sm:block">
-                    User Dashboard
-                  </p>
-                </div>
+              <Link href="/" className="inline-flex items-center gap-3" aria-label="Go to home page">
+                <SiteLogo
+                  src={brandLogoSrc}
+                  alt="Site logo"
+                  className="h-11 max-w-[176px] sm:h-12 sm:max-w-[210px] lg:max-w-[240px]"
+                />
               </Link>
             </div>
 
-            <div className="hidden min-w-0 flex-1 px-6 lg:flex">
-              <nav className="flex min-w-0 flex-1 items-center">
-                <div className="dashboard-nav-scroll flex min-w-0 flex-1 items-center gap-2 overflow-x-auto py-2">
+            <div className="hidden lg:absolute lg:left-1/2 lg:top-1/2 lg:flex lg:w-max lg:-translate-x-1/2 lg:-translate-y-1/2">
+              <nav className="flex items-center justify-center">
+                <div className="dashboard-nav-scroll flex w-max items-center justify-center gap-2 py-2">
                   {desktopNavItems.map((item) => {
                     const isActive = isActivePath(pathname, item.href);
 
@@ -295,7 +292,11 @@ export default function DashboardSidebar({
 
             <div className="flex items-center gap-3">
               <div className="hidden lg:block">
-                <NotificationBell likes={initialLikes} compact />
+                <NotificationBell
+                  initialNotifications={initialNotifications}
+                  initialProfileId={initialNotificationProfileId}
+                  compact
+                />
               </div>
 
               <div
@@ -314,15 +315,17 @@ export default function DashboardSidebar({
                 >
                   {visibleAccountImage ? (
                     <div className="h-9 w-9 overflow-hidden rounded-full border border-white shadow-sm">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={visibleAccountImage}
-                        alt={session.user.name ?? "User"}
+                        alt={currentUser.name ?? "User"}
                         className="h-full w-full object-cover"
+                        onError={handleAccountImageError}
                       />
                     </div>
                   ) : (
                     <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-rose-400 to-pink-500 text-sm font-bold text-white">
-                      {session.user.name ? getInitials(session.user.name) : "U"}
+                      {currentUser.name ? getInitials(currentUser.name) : "U"}
                     </div>
                   )}
                   <div className="max-w-[180px] text-left">
@@ -331,8 +334,8 @@ export default function DashboardSidebar({
                         "truncate text-sm font-semibold",
                         desktopAccountActive ? "text-rose-600" : "text-gray-900"
                       )}
-                    >
-                      {session.user.name ?? "User"}
+                      >
+                      {currentUser.name ?? "User"}
                     </p>
                     <p className="truncate text-xs text-gray-500">
                       {hasProfile ? "Profile ready" : "Profile setup pending"}
@@ -389,29 +392,34 @@ export default function DashboardSidebar({
           {mobileOpen ? (
             <div className="border-t border-rose-100 py-4 lg:hidden">
               <div className="mb-4">
-                <NotificationBell likes={initialLikes} />
+                <NotificationBell
+                  initialNotifications={initialNotifications}
+                  initialProfileId={initialNotificationProfileId}
+                />
               </div>
 
               <div className="mb-4 flex items-center gap-3 rounded-3xl border border-rose-100 bg-white p-4 shadow-sm">
                 {visibleAccountImage ? (
                   <div className="h-12 w-12 overflow-hidden rounded-full border border-gray-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={visibleAccountImage}
-                      alt={session.user.name ?? "User"}
+                      alt={currentUser.name ?? "User"}
                       className="h-full w-full object-cover"
+                      onError={handleAccountImageError}
                     />
                   </div>
                 ) : (
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-rose-400 to-pink-500 text-sm font-bold text-white">
-                    {session.user.name ? getInitials(session.user.name) : "U"}
+                    {currentUser.name ? getInitials(currentUser.name) : "U"}
                   </div>
                 )}
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-gray-900">
-                    {session.user.name ?? "User"}
+                    {currentUser.name ?? "User"}
                   </p>
                   <p className="truncate text-xs text-gray-500">
-                    {session.user.email}
+                    {currentUser.email}
                   </p>
                 </div>
               </div>
@@ -503,3 +511,4 @@ export default function DashboardSidebar({
     </>
   );
 }
+

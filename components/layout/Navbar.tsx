@@ -3,18 +3,35 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
-import { Heart, Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
+import SiteLogo from "@/components/common/SiteLogo";
+import { resolveAllowedImageSrc } from "@/lib/utils/image";
 import { cn } from "@/lib/utils/helpers";
 
 export default function Navbar() {
   const { data: session } = useSession();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [logoImageUrl, setLogoImageUrl] = useState<string | null>(null);
+  const brandLogoSrc = logoImageUrl || "/default-logo.svg";
 
   useEffect(() => {
     const handler = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handler, { passive: true });
     return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  useEffect(() => {
+    setLogoImageUrl(resolveAllowedImageSrc(document.body.dataset.logoImageUrl ?? "", null));
+
+    const handleBrandingUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent<{ logoImageUrl?: string }>;
+      const nextValue = customEvent.detail?.logoImageUrl ?? "";
+      setLogoImageUrl(resolveAllowedImageSrc(nextValue, null));
+    };
+
+    window.addEventListener("branding-logo-updated", handleBrandingUpdate);
+    return () => window.removeEventListener("branding-logo-updated", handleBrandingUpdate);
   }, []);
 
   const navLinks = [
@@ -23,26 +40,23 @@ export default function Navbar() {
     { href: "/faq", label: "FAQ" },
     { href: "/contact", label: "Contact" },
   ];
-
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        "fixed top-0 left-0 right-0 z-50 h-[80px] transition-all duration-300",
         isScrolled
-          ? "bg-white/95 backdrop-blur-md shadow-md py-3"
-          : "bg-transparent py-5"
+          ? "bg-white/95 backdrop-blur-md shadow-md"
+          : "bg-transparent"
       )}
     >
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <nav className="mx-auto flex h-full max-w-10xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-9 h-9 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg group-hover:shadow-rose-300 transition-all">
-            <Heart className="w-5 h-5 text-white fill-white" />
-          </div>
-          <span className="font-display text-xl font-bold">
-            <span className="text-rose-600">Vivah</span>
-            <span className="text-gray-800"> Bandhan</span>
-          </span>
+        <Link href="/" className="inline-flex shrink-0 items-center" aria-label="Go to home page">
+          <SiteLogo
+            src={brandLogoSrc}
+            alt="Site logo"
+            className="h-12 max-w-[180px] sm:h-14 sm:max-w-[224px] lg:max-w-[260px]"
+          />
         </Link>
 
         {/* Desktop Nav */}

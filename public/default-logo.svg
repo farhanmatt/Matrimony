@@ -1,0 +1,21 @@
+<svg width="320" height="120" viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Vivah Bandhan logo">
+  <rect width="320" height="120" rx="24" fill="white"/>
+  <rect x="16" y="16" width="288" height="88" rx="20" fill="#FFF7F8" stroke="#FBC8D4"/>
+  <g transform="translate(32 28)">
+    <circle cx="26" cy="26" r="26" fill="url(#paint0_linear_3001_2)"/>
+    <path d="M17 26.5C17 21.2533 21.2533 17 26.5 17C31.7467 17 36 21.2533 36 26.5C36 31.7467 31.7467 36 26.5 36C21.2533 36 17 31.7467 17 26.5Z" stroke="white" stroke-width="2.5"/>
+    <path d="M26.5 21.5V31.5M21.5 26.5H31.5" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="26.5" cy="26.5" r="7" fill="white" fill-opacity="0.15"/>
+  </g>
+  <g transform="translate(88 34)" fill="#1F2937">
+    <text x="0" y="20" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="700" letter-spacing="1.2">VIVAH</text>
+    <text x="0" y="44" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" letter-spacing="2.8" fill="#F43F5E">BANDHAN</text>
+    <text x="0" y="64" font-family="Arial, sans-serif" font-size="10" font-weight="600" letter-spacing="3.4" fill="#6B7280">MATRIMONIAL SERVICES</text>
+  </g>
+  <defs>
+    <linearGradient id="paint0_linear_3001_2" x1="0" y1="0" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F43F5E"/>
+      <stop offset="1" stop-color="#EC4899"/>
+    </linearGradient>
+  </defs>
+</svg>

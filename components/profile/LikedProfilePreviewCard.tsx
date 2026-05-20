@@ -1,21 +1,32 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import type { MouseEvent as ReactMouseEvent } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  Bookmark,
+  Check,
   CheckCircle2,
+  EllipsisVertical,
   GraduationCap,
-  Heart,
   MapPin,
+  MessageCircle,
   UserCircle2,
+  X,
 } from "lucide-react";
 import { formatDistanceToNowStrict } from "date-fns";
 import { toast } from "sonner";
 import { calculateAge } from "@/lib/utils/helpers";
+import {
+  readShortlistedProfileIds,
+  setShortlistedProfileId,
+} from "@/lib/utils/shortlist";
 
 interface LikedProfilePreviewCardProps {
   likedAt: string;
+  shortlistUserId?: string | null;
+  showChatAction?: boolean;
   profile: {
     id: string;
     fullName: string;
@@ -38,24 +49,48 @@ interface LikedProfilePreviewCardProps {
 
 export default function LikedProfilePreviewCard({
   likedAt,
+  shortlistUserId,
+  showChatAction = false,
   profile,
   onUnlike,
 }: LikedProfilePreviewCardProps) {
+  const router = useRouter();
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const [removing, setRemoving] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [shortlisted, setShortlisted] = useState(false);
 
   useEffect(() => {
-    if (!confirmOpen) return;
+    setShortlisted(readShortlistedProfileIds(shortlistUserId).includes(profile.id));
+  }, [profile.id, shortlistUserId]);
+
+  useEffect(() => {
+    if (!menuOpen && !confirmOpen) return;
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        setMenuOpen(false);
         setConfirmOpen(false);
       }
     };
 
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [confirmOpen]);
+  }, [confirmOpen, menuOpen]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [menuOpen]);
 
   const primaryPhoto =
     profile.profileImage ??
@@ -76,6 +111,7 @@ export default function LikedProfilePreviewCard({
   const handleUnlike = async () => {
     if (removing) return;
 
+    setMenuOpen(false);
     setConfirmOpen(false);
     setRemoving(true);
     try {
@@ -87,11 +123,16 @@ export default function LikedProfilePreviewCard({
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.error ?? "Failed to remove liked profile");
+        toast.error(data.error ?? "Failed to remove interest");
         return;
       }
 
-      toast.success("Profile removed from liked profiles.");
+      if (shortlisted) {
+        setShortlistedProfileId(profile.id, false, shortlistUserId);
+        setShortlisted(false);
+      }
+
+      toast.success("Profile removed from your interests.");
       onUnlike?.(profile.id);
     } catch {
       toast.error("Something went wrong");
@@ -103,7 +144,37 @@ export default function LikedProfilePreviewCard({
   const handleUnlikeClick = (event: ReactMouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     if (removing) return;
+    setMenuOpen(false);
     setConfirmOpen(true);
+  };
+
+  const handleMenuToggle = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    if (removing) return;
+    setMenuOpen((current) => !current);
+  };
+
+  const handleShortlistToggle = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+
+    try {
+      const nextShortlisted = !shortlisted;
+      setShortlistedProfileId(profile.id, nextShortlisted, shortlistUserId);
+      setShortlisted(nextShortlisted);
+      setMenuOpen(false);
+      toast.success(
+        nextShortlisted
+          ? "Profile added to shortlist."
+          : "Profile removed from shortlist."
+      );
+    } catch {
+      toast.error("Unable to update shortlist.");
+    }
+  };
+
+  const handleChatClick = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    router.push(`/dashboard/chat/${profile.id}`);
   };
 
   return (
@@ -115,10 +186,9 @@ export default function LikedProfilePreviewCard({
               src={primaryPhoto}
               alt={`${profile.fullName} liked profile`}
               fill
-              className="object-cover object-center blur-[7px]"
+              className="object-cover object-center blur-[4px]"
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
-              quality={100}
-              unoptimized
+              quality={75}
             />
           ) : (
             <div className="flex h-full items-center justify-center">
@@ -132,15 +202,46 @@ export default function LikedProfilePreviewCard({
             {likedLabel}
           </div>
 
-          <button
-            type="button"
-            onClick={handleUnlikeClick}
-            disabled={removing}
-            className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-rose-500 shadow-md transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-70"
-            aria-label="Remove liked profile"
-          >
-            <Heart className="h-4.5 w-4.5" />
-          </button>
+          <div ref={menuRef} className="absolute right-3 top-3 z-20">
+            <button
+              type="button"
+              onClick={handleMenuToggle}
+              disabled={removing}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-600 shadow-md transition-transform hover:scale-105 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-70"
+              aria-label="Open interest actions"
+            >
+              <EllipsisVertical className="h-4.5 w-4.5" />
+            </button>
+
+            {menuOpen ? (
+              <div className="absolute right-0 top-11 w-48 overflow-hidden rounded-[18px] border border-rose-100 bg-white py-2 shadow-[0_20px_44px_rgba(15,23,42,0.16)]">
+                <button
+                  type="button"
+                  onClick={handleShortlistToggle}
+                  className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                >
+                  <Bookmark
+                    className={`h-4 w-4 ${
+                      shortlisted ? "fill-current text-rose-500" : "text-slate-500"
+                    }`}
+                  />
+                  <span className="flex-1">
+                    {shortlisted ? "Shortlisted" : "Shortlist"}
+                  </span>
+                  {shortlisted ? <Check className="h-4 w-4 text-emerald-500" /> : null}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleUnlikeClick}
+                  disabled={removing}
+                  className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <X className="h-4 w-4 text-slate-500" />
+                  <span className="flex-1">Remove interest</span>
+                </button>
+              </div>
+            ) : null}
+          </div>
         </div>
 
         <div className="p-3.5">
@@ -168,6 +269,19 @@ export default function LikedProfilePreviewCard({
               <span className="truncate">{educationLabel}</span>
             </div>
           </div>
+
+          {showChatAction ? (
+            <div className="mt-4 flex justify-end">
+              <button
+                type="button"
+                onClick={handleChatClick}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-rose-200 bg-rose-50 text-rose-500 transition-colors hover:border-rose-300 hover:bg-rose-100"
+                aria-label={`Chat with ${profile.fullName}`}
+              >
+                <MessageCircle className="h-4.5 w-4.5" />
+              </button>
+            </div>
+          ) : null}
         </div>
       </article>
 
@@ -187,10 +301,10 @@ export default function LikedProfilePreviewCard({
               id={`unlike-confirm-title-${profile.id}`}
               className="font-display text-xl font-bold text-slate-900"
             >
-              Remove liked profile?
+              Remove interest?
             </h3>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Do you want to remove {profile.fullName} from your liked profiles?
+              Do you want to remove {profile.fullName} from your interests?
             </p>
 
             <div className="mt-5 flex items-center gap-3">
@@ -217,3 +331,4 @@ export default function LikedProfilePreviewCard({
     </>
   );
 }
+

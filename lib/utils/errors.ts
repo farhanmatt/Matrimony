@@ -17,8 +17,20 @@ export function isDatabaseConnectionError(error: unknown): boolean {
 
   return (
     code === "P1001" ||
+    code === "P2021" ||
     message.includes("P1001") ||
     message.includes("Can't reach database server") ||
-    message.includes("PrismaClientInitializationError")
+    message.includes("PrismaClientInitializationError") ||
+    message.includes("does not exist in the current database")
   );
+}
+
+export function isPrismaMissingTableError(error: unknown): boolean {
+  const message = getErrorMessage(error);
+  const code =
+    error && typeof error === "object" && "code" in error
+      ? (error as { code?: unknown }).code
+      : undefined;
+
+  return code === "P2021" || message.includes("does not exist in the current database");
 }

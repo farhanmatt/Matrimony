@@ -7,13 +7,17 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Heart, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import {
   getAuthPageErrorMessage,
   getCredentialsErrorMessage,
 } from "@/lib/auth-error-messages";
+import SiteLogo from "@/components/common/SiteLogo";
+import { resolveAllowedImageSrc } from "@/lib/utils/image";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { PageLoader } from "@/components/common/LoadingSpinner";
+
+const DEFAULT_LOGO_IMAGE = "/default-logo.svg";
 
 function LoginForm() {
   const router = useRouter();
@@ -21,8 +25,10 @@ function LoginForm() {
   const { status } = useSession();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
   const authErrorMessage = getAuthPageErrorMessage(searchParams.get("error"));
+  const passwordResetSucceeded = searchParams.get("passwordReset") === "success";
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [logoImageUrl, setLogoImageUrl] = useState(DEFAULT_LOGO_IMAGE);
 
   useEffect(() => {
     if (status !== "authenticated") {
@@ -32,6 +38,24 @@ function LoginForm() {
     router.replace(callbackUrl);
     router.refresh();
   }, [callbackUrl, router, status]);
+
+  useEffect(() => {
+    setLogoImageUrl(
+      resolveAllowedImageSrc(document.body.dataset.logoImageUrl ?? "", DEFAULT_LOGO_IMAGE) ??
+        DEFAULT_LOGO_IMAGE,
+    );
+
+    const handleBrandingUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent<{ logoImageUrl?: string }>;
+      const nextValue = customEvent.detail?.logoImageUrl ?? "";
+      setLogoImageUrl(
+        resolveAllowedImageSrc(nextValue, DEFAULT_LOGO_IMAGE) ?? DEFAULT_LOGO_IMAGE,
+      );
+    };
+
+    window.addEventListener("branding-logo-updated", handleBrandingUpdate);
+    return () => window.removeEventListener("branding-logo-updated", handleBrandingUpdate);
+  }, []);
 
   const {
     register,
@@ -82,14 +106,12 @@ function LoginForm() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="w-11 h-11 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
-              <Heart className="w-6 h-6 text-white fill-white" />
-            </div>
-            <span className="font-display text-2xl font-bold">
-              <span className="text-rose-600">Vivah</span>
-              <span className="text-gray-800"> Bandhan</span>
-            </span>
+          <Link href="/" className="inline-flex items-center justify-center">
+            <SiteLogo
+              src={logoImageUrl}
+              alt="Vivah Bandhan logo"
+              className="h-14 max-w-[260px] sm:h-16 sm:max-w-[320px]"
+            />
           </Link>
           <h1 className="text-2xl font-display font-bold text-gray-900 mt-5 mb-1">
             Welcome back
@@ -100,6 +122,12 @@ function LoginForm() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8">
+          {passwordResetSucceeded ? (
+            <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              Your password has been reset successfully. Please sign in with your new password.
+            </div>
+          ) : null}
+
           {authErrorMessage ? (
             <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
               {authErrorMessage}

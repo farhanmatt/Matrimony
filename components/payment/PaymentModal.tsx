@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { X, Lock, CreditCard, CheckCircle, Loader2, AlertCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/helpers";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ interface PaymentModalProps {
   profileName?: string;
   baseAmount: number;
   profileAmount: number;
+  perProfileChatAmount: number;
   onClose: () => void;
   onSuccess: (
     matchId: string,
@@ -24,21 +25,25 @@ export default function PaymentModal({
   profileName,
   baseAmount,
   profileAmount,
+  perProfileChatAmount,
   onClose,
   onSuccess,
 }: PaymentModalProps) {
   const [status, setStatus] = useState<UnlockStatus>("idle");
-  const total = baseAmount + profileAmount;
+  const total = baseAmount + profileAmount + perProfileChatAmount;
   const hasFinishedSuccessRef = useRef(false);
 
-  const finishSuccess = (options?: { redirectToUnlocked?: boolean }) => {
-    if (hasFinishedSuccessRef.current) {
-      return;
-    }
+  const finishSuccess = useCallback(
+    (options?: { redirectToUnlocked?: boolean }) => {
+      if (hasFinishedSuccessRef.current) {
+        return;
+      }
 
-    hasFinishedSuccessRef.current = true;
-    onSuccess(matchId, options);
-  };
+      hasFinishedSuccessRef.current = true;
+      onSuccess(matchId, options);
+    },
+    [matchId, onSuccess]
+  );
 
   useEffect(() => {
     if (status !== "success") {
@@ -51,7 +56,7 @@ export default function PaymentModal({
     }, 1500);
 
     return () => window.clearTimeout(timeout);
-  }, [status]);
+  }, [finishSuccess, status]);
 
   const handlePay = async () => {
     if (status === "processing") {
@@ -180,6 +185,10 @@ export default function PaymentModal({
                 <div className="flex justify-between text-sm text-gray-600">
                   <span>Profile Unlock Amount</span>
                   <span>{formatCurrency(profileAmount)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Per Profile Chat Amount</span>
+                  <span>{formatCurrency(perProfileChatAmount)}</span>
                 </div>
                 <div className="mt-2 flex justify-between border-t border-gray-200 pt-2 text-base font-bold text-gray-900">
                   <span>Total Amount</span>

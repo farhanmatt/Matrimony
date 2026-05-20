@@ -16,7 +16,6 @@ import {
   PlusCircle,
   RotateCcw,
   Search,
-  ShieldCheck,
   SlidersHorizontal,
   X,
 } from "lucide-react";
@@ -54,8 +53,6 @@ const maritalStatusOptions = [
   { value: "AWAITING_DIVORCE", label: "Awaiting Divorce" },
 ];
 
-const ageOptions = Array.from({ length: 33 }, (_, index) => String(index + 18));
-const heightOptions = Array.from({ length: 13 }, (_, index) => String(145 + index * 5));
 const sortOptions = [
   { value: "newest", label: "Newest First" },
   { value: "youngest", label: "Youngest First" },
@@ -80,6 +77,78 @@ interface Profile {
   language?: string | null;
   profileImage?: string | null;
   photos: { url: string; isPrimary: boolean }[];
+}
+
+interface SavedPreference {
+  ageMin: number | null;
+  ageMax: number | null;
+  heightMin: number | null;
+  heightMax: number | null;
+  religion: string | null;
+  caste: string | null;
+  education: string | null;
+  profession: string | null;
+  location: string | null;
+  maritalStatus: string | null;
+  language: string | null;
+}
+
+type BrowseFilterValues = {
+  ageMin: string;
+  ageMax: string;
+  religion: string;
+  caste: string;
+  language: string;
+  education: string;
+  profession: string;
+  location: string;
+  heightMin: string;
+  heightMax: string;
+  maritalStatus: string;
+};
+
+const EMPTY_FILTERS: BrowseFilterValues = {
+  ageMin: "",
+  ageMax: "",
+  religion: "",
+  caste: "",
+  language: "",
+  education: "",
+  profession: "",
+  location: "",
+  heightMin: "",
+  heightMax: "",
+  maritalStatus: "",
+};
+
+function toFilterValue(value: string | number | null | undefined) {
+  if (value === null || typeof value === "undefined") {
+    return "";
+  }
+
+  return String(value);
+}
+
+function mapPreferenceToFilters(
+  preference?: SavedPreference | null
+): BrowseFilterValues {
+  if (!preference) {
+    return { ...EMPTY_FILTERS };
+  }
+
+  return {
+    ageMin: toFilterValue(preference.ageMin),
+    ageMax: toFilterValue(preference.ageMax),
+    religion: toFilterValue(preference.religion),
+    caste: toFilterValue(preference.caste),
+    language: toFilterValue(preference.language),
+    education: toFilterValue(preference.education),
+    profession: toFilterValue(preference.profession),
+    location: toFilterValue(preference.location),
+    heightMin: toFilterValue(preference.heightMin),
+    heightMax: toFilterValue(preference.heightMax),
+    maritalStatus: toFilterValue(preference.maritalStatus),
+  };
 }
 
 function getPaginationItems(currentPage: number, pageCount: number) {
@@ -116,32 +185,65 @@ export default function BrowsePage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [profileRequired, setProfileRequired] = useState(false);
   const [hiddenProfileIds, setHiddenProfileIds] = useState<string[]>([]);
-  const [oppositeGender, setOppositeGender] = useState("");
-  const [genderResolved, setGenderResolved] = useState(false);
+  const [savedPreferenceFilters, setSavedPreferenceFilters] =
+    useState<BrowseFilterValues>(EMPTY_FILTERS);
+  const [preferenceFiltersReady, setPreferenceFiltersReady] = useState(false);
 
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("newest");
 
   const [religion, setReligion] = useState("");
+  const [caste, setCaste] = useState("");
   const [language, setLanguage] = useState("");
   const [maritalStatus, setMaritalStatus] = useState("");
   const [location, setLocation] = useState("");
   const [heightMin, setHeightMin] = useState("");
+  const [heightMax, setHeightMax] = useState("");
   const [education, setEducation] = useState("");
   const [profession, setProfession] = useState("");
   const [ageMin, setAgeMin] = useState("");
   const [ageMax, setAgeMax] = useState("");
 
   const [draftReligion, setDraftReligion] = useState("");
+  const [draftCaste, setDraftCaste] = useState("");
   const [draftLanguage, setDraftLanguage] = useState("");
   const [draftMaritalStatus, setDraftMaritalStatus] = useState("");
   const [draftLocation, setDraftLocation] = useState("");
   const [draftHeightMin, setDraftHeightMin] = useState("");
+  const [draftHeightMax, setDraftHeightMax] = useState("");
   const [draftEducation, setDraftEducation] = useState("");
   const [draftProfession, setDraftProfession] = useState("");
   const [draftAgeMin, setDraftAgeMin] = useState("");
   const [draftAgeMax, setDraftAgeMax] = useState("");
+
+  const applyFiltersToState = useCallback((filters: BrowseFilterValues) => {
+    setReligion(filters.religion);
+    setCaste(filters.caste);
+    setLanguage(filters.language);
+    setMaritalStatus(filters.maritalStatus);
+    setLocation(filters.location);
+    setHeightMin(filters.heightMin);
+    setHeightMax(filters.heightMax);
+    setEducation(filters.education);
+    setProfession(filters.profession);
+    setAgeMin(filters.ageMin);
+    setAgeMax(filters.ageMax);
+  }, []);
+
+  const applyFiltersToDraftState = useCallback((filters: BrowseFilterValues) => {
+    setDraftReligion(filters.religion);
+    setDraftCaste(filters.caste);
+    setDraftLanguage(filters.language);
+    setDraftMaritalStatus(filters.maritalStatus);
+    setDraftLocation(filters.location);
+    setDraftHeightMin(filters.heightMin);
+    setDraftHeightMax(filters.heightMax);
+    setDraftEducation(filters.education);
+    setDraftProfession(filters.profession);
+    setDraftAgeMin(filters.ageMin);
+    setDraftAgeMax(filters.ageMax);
+  }, []);
 
   const fetchProfiles = useCallback(
     async ({
@@ -151,8 +253,6 @@ export default function BrowsePage() {
       showError?: boolean;
       showLoading?: boolean;
     } = {}) => {
-      if (!genderResolved) return;
-
       if (showLoading) {
         setLoading(true);
       }
@@ -162,13 +262,14 @@ export default function BrowsePage() {
           page: String(page),
           limit: "12",
           sort: sortOrder,
-          ...(oppositeGender && { gender: oppositeGender }),
           ...(searchQuery && { search: searchQuery }),
           ...(religion && { religion }),
+          ...(caste && { caste }),
           ...(language && { language }),
           ...(maritalStatus && { maritalStatus }),
           ...(location && { location }),
           ...(heightMin && { heightMin }),
+          ...(heightMax && { heightMax }),
           ...(education && { education }),
           ...(profession && { profession }),
           ...(ageMin && { ageMin }),
@@ -214,14 +315,14 @@ export default function BrowsePage() {
     [
       ageMax,
       ageMin,
+      caste,
       education,
-      genderResolved,
       hiddenProfileIds,
+      heightMax,
       heightMin,
       language,
       location,
       maritalStatus,
-      oppositeGender,
       page,
       profession,
       religion,
@@ -231,28 +332,49 @@ export default function BrowsePage() {
   );
 
   useEffect(() => {
-    const loadCurrentProfile = async () => {
-      try {
-        const res = await fetch("/api/profile", { cache: "no-store" });
-        const data = await res.json();
-        const currentGender = data.profile?.gender;
+    let isMounted = true;
 
-        if (currentGender === "MALE") {
-          setOppositeGender("FEMALE");
-        } else if (currentGender === "FEMALE") {
-          setOppositeGender("MALE");
-        } else {
-          setOppositeGender("");
+    const loadSavedPreferences = async () => {
+      try {
+        const res = await fetch("/api/preferences", { cache: "no-store" });
+
+        if (!res.ok) {
+          if (res.status !== 404 && res.status !== 401) {
+            throw new Error("Failed to load saved preferences");
+          }
+
+          return;
         }
-      } catch {
-        setOppositeGender("");
+
+        const json = (await res.json()) as { preference?: SavedPreference | null };
+        if (!isMounted) {
+          return;
+        }
+
+        const nextFilters = mapPreferenceToFilters(json.preference);
+        setSavedPreferenceFilters(nextFilters);
+        applyFiltersToState(nextFilters);
+      } catch (error) {
+        if (isMounted) {
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : "Failed to load saved preferences"
+          );
+        }
       } finally {
-        setGenderResolved(true);
+        if (isMounted) {
+          setPreferenceFiltersReady(true);
+        }
       }
     };
 
-    void loadCurrentProfile();
-  }, []);
+    void loadSavedPreferences();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [applyFiltersToState]);
 
   useEffect(() => {
     const syncHiddenProfiles = () => {
@@ -277,12 +399,25 @@ export default function BrowsePage() {
   }, []);
 
   useEffect(() => {
-    void fetchProfiles();
-  }, [fetchProfiles]);
+    if (!preferenceFiltersReady) {
+      return;
+    }
 
-  useAutoRefresh(() => fetchProfiles({ showError: false, showLoading: false }), {
-    enabled: genderResolved,
-  });
+    void fetchProfiles();
+  }, [fetchProfiles, preferenceFiltersReady]);
+
+  useAutoRefresh(
+    () => {
+      if (!preferenceFiltersReady) {
+        return;
+      }
+
+      void fetchProfiles({ showError: false, showLoading: false });
+    },
+    {
+      intervalMs: null,
+    }
+  );
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -324,25 +459,30 @@ export default function BrowsePage() {
 
   const activeFilterCount = [
     religion,
+    caste,
     language,
     maritalStatus,
     location,
-    heightMin,
+    heightMin || heightMax,
     education,
     profession,
     ageMin || ageMax,
   ].filter(Boolean).length;
 
   const syncDraftFilters = () => {
-    setDraftReligion(religion);
-    setDraftLanguage(language);
-    setDraftMaritalStatus(maritalStatus);
-    setDraftLocation(location);
-    setDraftHeightMin(heightMin);
-    setDraftEducation(education);
-    setDraftProfession(profession);
-    setDraftAgeMin(ageMin);
-    setDraftAgeMax(ageMax);
+    applyFiltersToDraftState({
+      religion,
+      caste,
+      language,
+      maritalStatus,
+      location,
+      heightMin,
+      heightMax,
+      education,
+      profession,
+      ageMin,
+      ageMax,
+    });
   };
 
   const openFilterModal = () => {
@@ -362,38 +502,35 @@ export default function BrowsePage() {
       return;
     }
 
-    setReligion(draftReligion);
-    setLanguage(draftLanguage);
-    setMaritalStatus(draftMaritalStatus);
-    setLocation(draftLocation);
-    setHeightMin(draftHeightMin);
-    setEducation(draftEducation);
-    setProfession(draftProfession);
-    setAgeMin(draftAgeMin);
-    setAgeMax(draftAgeMax);
+    if (
+      draftHeightMin &&
+      draftHeightMax &&
+      Number(draftHeightMin) > Number(draftHeightMax)
+    ) {
+      toast.error("Minimum height cannot be greater than maximum height.");
+      return;
+    }
+
+    applyFiltersToState({
+      religion: draftReligion,
+      caste: draftCaste,
+      language: draftLanguage,
+      maritalStatus: draftMaritalStatus,
+      location: draftLocation,
+      heightMin: draftHeightMin,
+      heightMax: draftHeightMax,
+      education: draftEducation,
+      profession: draftProfession,
+      ageMin: draftAgeMin,
+      ageMax: draftAgeMax,
+    });
     setPage(1);
     setIsFilterOpen(false);
   };
 
   const clearFilters = () => {
-    setDraftReligion("");
-    setDraftLanguage("");
-    setDraftMaritalStatus("");
-    setDraftLocation("");
-    setDraftHeightMin("");
-    setDraftEducation("");
-    setDraftProfession("");
-    setDraftAgeMin("");
-    setDraftAgeMax("");
-    setReligion("");
-    setLanguage("");
-    setMaritalStatus("");
-    setLocation("");
-    setHeightMin("");
-    setEducation("");
-    setProfession("");
-    setAgeMin("");
-    setAgeMax("");
+    applyFiltersToDraftState(savedPreferenceFilters);
+    applyFiltersToState(savedPreferenceFilters);
     setPage(1);
     setIsFilterOpen(false);
   };
@@ -409,31 +546,20 @@ export default function BrowsePage() {
     const params = new URLSearchParams();
     params.set("source", "browse");
     params.set("page", String(page));
-    if (oppositeGender) params.set("gender", oppositeGender);
     if (searchQuery) params.set("search", searchQuery);
     if (sortOrder) params.set("sort", sortOrder);
     if (religion) params.set("religion", religion);
+    if (caste) params.set("caste", caste);
     if (language) params.set("language", language);
     if (maritalStatus) params.set("maritalStatus", maritalStatus);
     if (location) params.set("location", location);
     if (heightMin) params.set("heightMin", heightMin);
+    if (heightMax) params.set("heightMax", heightMax);
     if (education) params.set("education", education);
     if (profession) params.set("profession", profession);
     if (ageMin) params.set("ageMin", ageMin);
     if (ageMax) params.set("ageMax", ageMax);
     return `/dashboard/profile/${profileId}?${params.toString()}`;
-  };
-
-  const showAllHiddenProfiles = () => {
-    try {
-      localStorage.removeItem("hidden_browse_profiles");
-      window.dispatchEvent(new Event("hidden-browse-profiles-changed"));
-      setHiddenProfileIds([]);
-      setPage(1);
-      toast.success("Hidden profiles restored.");
-    } catch {
-      toast.error("Unable to restore hidden profiles.");
-    }
   };
 
   const filterLabelClass =
@@ -446,34 +572,56 @@ export default function BrowsePage() {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className={filterLabelClass}>Age Min</label>
-          <select
+          <input
+            type="number"
+            min={18}
+            max={100}
             value={draftAgeMin}
             onChange={(event) => setDraftAgeMin(event.target.value)}
+            placeholder="24"
             className={filterControlClass}
-          >
-            <option value="">Min</option>
-            {ageOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
         <div>
           <label className={filterLabelClass}>Age Max</label>
-          <select
+          <input
+            type="number"
+            min={18}
+            max={100}
             value={draftAgeMax}
             onChange={(event) => setDraftAgeMax(event.target.value)}
+            placeholder="32"
             className={filterControlClass}
-          >
-            <option value="">Max</option>
-            {ageOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={filterLabelClass}>Minimum Height</label>
+          <input
+            type="number"
+            min={100}
+            max={250}
+            value={draftHeightMin}
+            onChange={(event) => setDraftHeightMin(event.target.value)}
+            placeholder="155"
+            className={filterControlClass}
+          />
+        </div>
+
+        <div>
+          <label className={filterLabelClass}>Maximum Height</label>
+          <input
+            type="number"
+            min={100}
+            max={250}
+            value={draftHeightMax}
+            onChange={(event) => setDraftHeightMax(event.target.value)}
+            placeholder="185"
+            className={filterControlClass}
+          />
         </div>
       </div>
 
@@ -491,6 +639,16 @@ export default function BrowsePage() {
             </option>
           ))}
         </select>
+      </div>
+
+      <div>
+        <label className={filterLabelClass}>Caste</label>
+        <input
+          value={draftCaste}
+          onChange={(event) => setDraftCaste(event.target.value)}
+          placeholder="Optional"
+          className={filterControlClass}
+        />
       </div>
 
       <div>
@@ -537,22 +695,6 @@ export default function BrowsePage() {
           placeholder="City or state"
           className={filterControlClass}
         />
-      </div>
-
-      <div>
-        <label className={filterLabelClass}>Minimum Height</label>
-        <select
-          value={draftHeightMin}
-          onChange={(event) => setDraftHeightMin(event.target.value)}
-          className={filterControlClass}
-        >
-          <option value="">Any Height</option>
-          {heightOptions.map((option) => (
-            <option key={option} value={option}>
-              {option} cm
-            </option>
-          ))}
-        </select>
       </div>
 
       <div>
@@ -639,7 +781,7 @@ export default function BrowsePage() {
           fill
           className="object-cover object-center"
           sizes="350px"
-          quality={100}
+          quality={85}
         />
         <div className="relative z-10 p-6">
           <h2 className="max-w-[15rem] font-display text-[1.75rem] font-bold leading-[1.08] text-slate-900">
@@ -916,3 +1058,4 @@ export default function BrowsePage() {
     </div>
   );
 }
+

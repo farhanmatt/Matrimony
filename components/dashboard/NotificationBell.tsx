@@ -1,26 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Bell, Heart, MapPin } from "lucide-react";
+import Link from "next/link";
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Bell, Heart, MapPin, MessageCircle } from "lucide-react";
 import { getInitials } from "@/lib/utils/helpers";
+import type { DashboardNotificationItem } from "@/lib/utils/notifications";
 
-type ReceivedLike = {
-  id: string;
-  createdAt: string;
-  fromProfile: {
-    id: string;
-    fullName: string;
-    city: string | null;
-    state: string | null;
-    location: string | null;
-    profession: string | null;
-    profileImage: string | null;
-    photos: { url: string; isPrimary: boolean }[];
-  };
-};
+const NOTIFICATIONS_SEEN_STORAGE_KEY = "vivah-dashboard-notifications-seen-at";
+const NOTIFICATIONS_SEEN_EVENT = "vivah-dashboard-notifications-seen-updated";
 
-function formatLikeDate(value: string) {
+function formatNotificationDate(value: string) {
   return new Intl.DateTimeFormat("en-IN", {
     day: "numeric",
     month: "short",
@@ -29,19 +19,200 @@ function formatLikeDate(value: string) {
   }).format(new Date(value));
 }
 
+function getNotificationAccent(kind: DashboardNotificationItem["kind"]) {
+  return kind === "message"
+    ? {
+        badgeClass: "bg-sky-50 text-sky-600",
+        icon: MessageCircle,
+        label: "Message",
+      }
+    : {
+        badgeClass: "bg-rose-50 text-rose-600",
+        icon: Heart,
+        label: "Interest",
+      };
+}
+
+function getNotificationsSeenStorageKey(profileId?: string | null) {
+  const normalizedProfileId = profileId?.trim();
+  return normalizedProfileId
+    ? `${NOTIFICATIONS_SEEN_STORAGE_KEY}:${normalizedProfileId}`
+    : NOTIFICATIONS_SEEN_STORAGE_KEY;
+}
+
+function readNotificationsSeenAt(profileId?: string | null) {
+  if (typeof window === "undefined") {
+    return null as string | null;
+  }
+
+  try {
+    return (
+      window.localStorage.getItem(getNotificationsSeenStorageKey(profileId)) ?? null
+    );
+  } catch {
+    return null;
+  }
+}
+
+function writeNotificationsSeenAt(value: string, profileId?: string | null) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(getNotificationsSeenStorageKey(profileId), value);
+    window.dispatchEvent(
+      new CustomEvent(NOTIFICATIONS_SEEN_EVENT, {
+        detail: { profileId: profileId?.trim() ?? null, seenAt: value },
+      })
+    );
+  } catch {
+    // Ignore storage failures and keep the bell usable.
+  }
+}
+
+function getLatestNotificationCreatedAt(
+  notifications: DashboardNotificationItem[]
+) {
+  return notifications.reduce<string | null>((latestValue, item) => {
+    if (!latestValue) {
+      return item.createdAt;
+    }
+
+    return new Date(item.createdAt).getTime() > new Date(latestValue).getTime()
+      ? item.createdAt
+      : latestValue;
+  }, null);
+}
+
 export default function NotificationBell({
-  likes,
+  initialNotifications = [],
+  initialProfileId = null,
   compact = false,
 }: {
-  likes: ReceivedLike[];
+  initialNotifications?: DashboardNotificationItem[];
+  initialProfileId?: string | null;
   compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [notifications, setNotifications] = useState(initialNotifications);
+  const [profileId, setProfileId] = useState<string | null>(initialProfileId);
+  const [seenAt, setSeenAt] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const notificationCount = likes.length;
+
+  useEffect(() => {
+    setNotifications(initialNotifications);
+  }, [initialNotifications]);
+
+  useEffect(() => {
+    setProfileId(initialProfileId);
+  }, [initialProfileId]);
+
+  useEffect(() => {
+    setSeenAt(readNotificationsSeenAt(profileId));
+  }, [profileId]);
+
+  useEffect(() => {
+    const handleSeenUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        profileId?: string | null;
+        seenAt?: string | null;
+      }>;
+      const nextProfileId = customEvent.detail?.profileId ?? null;
+
+      if ((profileId ?? null) !== nextProfileId) {
+        return;
+      }
+
+      setSeenAt(customEvent.detail?.seenAt ?? null);
+    };
+
+    window.addEventListener(
+      NOTIFICATIONS_SEEN_EVENT,
+      handleSeenUpdated as EventListener
+    );
+
+    return () =>
+      window.removeEventListener(
+        NOTIFICATIONS_SEEN_EVENT,
+        handleSeenUpdated as EventListener
+      );
+  }, [profileId]);
+
+  const markNotificationsSeen = useCallback(
+    (items: DashboardNotificationItem[]) => {
+      const latestCreatedAt = getLatestNotificationCreatedAt(items);
+      if (!latestCreatedAt) {
+        return;
+      }
+
+      setSeenAt((currentSeenAt) => {
+        if (
+          currentSeenAt &&
+          new Date(currentSeenAt).getTime() >= new Date(latestCreatedAt).getTime()
+        ) {
+          return currentSeenAt;
+        }
+
+        writeNotificationsSeenAt(latestCreatedAt, profileId);
+        return latestCreatedAt;
+      });
+    },
+    [profileId]
+  );
+
+  const refreshNotifications = useCallback(async () => {
+    try {
+      const response = await fetch("/api/notifications", {
+        cache: "no-store",
+        headers: {
+          "x-skip-loading": "1",
+        },
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const result = await response.json();
+      const nextItems = Array.isArray(result.data?.items) ? result.data.items : [];
+      const nextProfileId =
+        typeof result.data?.profileId === "string" ? result.data.profileId : null;
+
+      startTransition(() => {
+        setProfileId(nextProfileId);
+        setNotifications(nextItems);
+      });
+    } catch {
+      // Keep the latest known state when notification refresh fails.
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshNotifications();
+  }, [refreshNotifications]);
+
+  useEffect(() => {
+    const eventSource = new EventSource("/api/notifications/stream");
+
+    const handleNotification = () => {
+      void refreshNotifications();
+    };
+
+    eventSource.addEventListener("notification", handleNotification);
+    eventSource.addEventListener("ready", handleNotification);
+
+    return () => {
+      eventSource.removeEventListener("notification", handleNotification);
+      eventSource.removeEventListener("ready", handleNotification);
+      eventSource.close();
+    };
+  }, [refreshNotifications]);
 
   useEffect(() => {
     if (!open) return;
+
+    void refreshNotifications();
 
     function handlePointerDown(event: MouseEvent) {
       if (!containerRef.current?.contains(event.target as Node)) {
@@ -62,26 +233,34 @@ export default function NotificationBell({
       document.removeEventListener("mousedown", handlePointerDown);
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [open]);
+  }, [open, refreshNotifications]);
 
-  const likeItems = useMemo(
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    markNotificationsSeen(notifications);
+  }, [markNotificationsSeen, notifications, open]);
+
+  const notificationCount = useMemo(() => {
+    if (!seenAt) {
+      return notifications.length;
+    }
+
+    const seenTimestamp = new Date(seenAt).getTime();
+    return notifications.filter(
+      (item) => new Date(item.createdAt).getTime() > seenTimestamp
+    ).length;
+  }, [notifications, seenAt]);
+
+  const visibleNotifications = useMemo(
     () =>
-      likes.map((like) => {
-        const location =
-          [like.fromProfile.city, like.fromProfile.state].filter(Boolean).join(", ") ||
-          like.fromProfile.location ||
-          "India";
-        const imageUrl =
-          like.fromProfile.profileImage ?? like.fromProfile.photos[0]?.url ?? null;
-
-        return {
-          ...like,
-          imageUrl,
-          location,
-          createdLabel: formatLikeDate(like.createdAt),
-        };
-      }),
-    [likes]
+      notifications.map((item) => ({
+        ...item,
+        createdLabel: formatNotificationDate(item.createdAt),
+      })),
+    [notifications]
   );
 
   return (
@@ -122,9 +301,7 @@ export default function NotificationBell({
           <div className="text-left">
             <div>Notifications</div>
             <div className="text-xs font-medium text-gray-400 group-hover:text-rose-400">
-              {notificationCount > 0
-                ? `${notificationCount} people liked you`
-                : "No new alerts"}
+              {notificationCount > 0 ? `${notificationCount} new alerts` : "No new alerts"}
             </div>
           </div>
         ) : null}
@@ -133,87 +310,100 @@ export default function NotificationBell({
       {open ? (
         <div
           role="dialog"
-          aria-label="Profile likes notifications"
-          className="absolute right-0 top-[calc(100%+12px)] z-30 w-[min(92vw,380px)] overflow-hidden rounded-[28px] border border-rose-100 bg-white shadow-2xl shadow-rose-100/60"
+          aria-label="Your notifications"
+          className="absolute right-0 top-[calc(100%+12px)] z-30 w-[min(92vw,400px)] overflow-hidden rounded-[28px] border border-rose-100 bg-white shadow-2xl shadow-rose-100/60"
         >
           <div className="border-b border-rose-100 bg-gradient-to-r from-rose-50 to-pink-50 px-5 py-4">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-rose-500 shadow-sm">
-                <Heart className="h-4.5 w-4.5" />
+                <Bell className="h-4.5 w-4.5" />
               </div>
               <div>
                 <h3 className="font-display text-base font-bold text-gray-900">
-                  Likes on your profile
+                  Notifications
                 </h3>
                 <p className="text-xs text-gray-500">
-                  See who has shown interest in you recently.
+                  Unread chat messages and profile activity for your account.
                 </p>
               </div>
             </div>
           </div>
 
-          {likeItems.length === 0 ? (
+          {visibleNotifications.length === 0 ? (
             <div className="px-6 py-10 text-center">
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-300">
-                <Heart className="h-7 w-7" />
+                <Bell className="h-7 w-7" />
               </div>
-              <p className="font-semibold text-gray-900">No profile likes yet</p>
+              <p className="font-semibold text-gray-900">No new notifications</p>
               <p className="mt-1 text-sm leading-6 text-gray-500">
-                When someone likes your profile, their details will show here.
+                When someone likes your profile or sends you a message, it will show here.
               </p>
             </div>
           ) : (
-            <div className="max-h-[26rem] overflow-y-auto p-2 custom-scrollbar">
-              {likeItems.map((like) => (
-                <div
-                  key={like.id}
-                  className="flex items-start gap-3 rounded-2xl px-3 py-3 transition-colors hover:bg-rose-50/70"
-                >
-                  {like.imageUrl ? (
-                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-rose-100">
-                      <Image
-                        src={like.imageUrl}
-                        alt={like.fromProfile.fullName}
-                        fill
-                        className="object-cover"
-                        sizes="48px"
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-400 to-pink-500 text-sm font-bold text-white">
-                      {getInitials(like.fromProfile.fullName)}
-                    </div>
-                  )}
+            <div className="max-h-[28rem] overflow-y-auto p-2 custom-scrollbar">
+              {visibleNotifications.map((item) => {
+                const accent = getNotificationAccent(item.kind);
+                const AccentIcon = accent.icon;
 
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="truncate text-sm font-semibold text-gray-900">
-                          {like.fromProfile.fullName}
-                        </p>
-                        <p className="mt-0.5 text-xs text-rose-500">
-                          liked your profile
-                        </p>
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className="flex items-start gap-3 rounded-2xl px-3 py-3 transition-colors hover:bg-rose-50/70"
+                  >
+                    {item.actorImageUrl ? (
+                      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-rose-100">
+                        <Image
+                          src={item.actorImageUrl}
+                          alt={item.actorName}
+                          fill
+                          className="object-cover"
+                          sizes="48px"
+                        />
                       </div>
-                      <span className="shrink-0 text-[11px] text-gray-400">
-                        {like.createdLabel}
-                      </span>
-                    </div>
+                    ) : (
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-400 to-pink-500 text-sm font-bold text-white">
+                        {getInitials(item.actorName)}
+                      </div>
+                    )}
 
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {like.fromProfile.profession ? (
-                        <span className="rounded-full bg-gray-50 px-2.5 py-1 text-[11px] text-gray-600">
-                          {like.fromProfile.profession}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-gray-900">
+                            {item.title}
+                          </p>
+                          <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-gray-500">
+                            {item.subtitle}
+                          </p>
+                        </div>
+                        <span className="shrink-0 text-[11px] text-gray-400">
+                          {item.createdLabel}
                         </span>
-                      ) : null}
-                      <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-[11px] text-rose-600">
-                        <MapPin className="h-3 w-3" />
-                        {like.location}
-                      </span>
+                      </div>
+
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium ${accent.badgeClass}`}
+                        >
+                          <AccentIcon className="h-3 w-3" />
+                          {accent.label}
+                        </span>
+                        {item.actorProfession ? (
+                          <span className="rounded-full bg-gray-50 px-2.5 py-1 text-[11px] text-gray-600">
+                            {item.actorProfession}
+                          </span>
+                        ) : null}
+                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2.5 py-1 text-[11px] text-slate-600">
+                          <MapPin className="h-3 w-3" />
+                          {item.actorLocation}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>

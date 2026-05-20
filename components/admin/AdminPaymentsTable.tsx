@@ -11,9 +11,11 @@ import { formatCurrency, formatDate } from "@/lib/utils/helpers";
 
 type PaymentTableRow = {
   id: string;
+  href: string;
   amount: number;
   baseAmount: number;
   profileAmount: number;
+  perProfileChatAmount: number;
   status: string;
   razorpayOrderId: string;
   createdAt: Date;
@@ -40,7 +42,7 @@ function SelectableCheckbox({
         event.stopPropagation();
         onChange();
       }}
-      className="inline-flex h-5 w-5 items-center justify-center rounded-sm border border-slate-400 bg-white text-slate-700 transition-colors hover:border-slate-600"
+      className="inline-flex h-5 w-5 items-center justify-center rounded-sm border border-rose-300 bg-white text-rose-700 transition-colors hover:border-rose-500"
       aria-label={ariaLabel}
     >
       {checked ? <Check className="h-3.5 w-3.5" /> : null}
@@ -180,7 +182,7 @@ export default function AdminPaymentsTable({ payments }: AdminPaymentsTableProps
               <col style={{ width: "10%" }} />
             </colgroup>
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/90">
+              <tr className="border-b border-rose-100 bg-rose-50/80">
                 <th className="w-10 px-4 py-3.5 text-left">
                   <SelectableCheckbox checked={allSelected} onChange={toggleAll} ariaLabel="Select all payments" />
                 </th>
@@ -204,12 +206,33 @@ export default function AdminPaymentsTable({ payments }: AdminPaymentsTableProps
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-rose-100">
               {visiblePayments.map((payment) => {
                 const checked = selectedSet.has(payment.id);
+                const detailHref = payment.href;
 
                 return (
-                  <tr key={payment.id} className={cn("transition-colors hover:bg-slate-50/80", checked && "bg-rose-50/50")}>
+                  <tr
+                    key={payment.id}
+                    className={cn(
+                      "transition-colors",
+                      detailHref ? "cursor-pointer hover:bg-rose-50/80" : "",
+                      checked && "bg-rose-50/50",
+                    )}
+                    onClick={detailHref ? () => router.push(detailHref) : undefined}
+                    role={detailHref ? "link" : undefined}
+                    tabIndex={detailHref ? 0 : undefined}
+                    onKeyDown={
+                      detailHref
+                        ? (event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              router.push(detailHref);
+                            }
+                          }
+                        : undefined
+                    }
+                  >
                     <td className="px-4 py-4 align-middle">
                       <SelectableCheckbox
                         checked={checked}
@@ -230,6 +253,7 @@ export default function AdminPaymentsTable({ payments }: AdminPaymentsTableProps
                       <div className="text-sm text-slate-600">
                         <div>Base: {formatCurrency(payment.baseAmount)}</div>
                         <div>Profile: {formatCurrency(payment.profileAmount)}</div>
+                        <div>Chat: {formatCurrency(payment.perProfileChatAmount)}</div>
                       </div>
                     </td>
                     <td className="px-4 py-4 align-middle">
@@ -249,9 +273,9 @@ export default function AdminPaymentsTable({ payments }: AdminPaymentsTableProps
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+      <div className="flex flex-col gap-3 border-t border-rose-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-4">
         <div className="flex items-center gap-3 text-sm text-slate-600">
-          <span className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+          <span className="inline-flex items-center gap-2 rounded-xl border border-rose-100 bg-white px-3 py-2 shadow-sm">
             <span className="font-semibold text-slate-900">{selectedCount}</span> Selected
           </span>
           {selectedCount > 0 ? (
@@ -270,7 +294,7 @@ export default function AdminPaymentsTable({ payments }: AdminPaymentsTableProps
             ref={bulkTriggerRef}
             type="button"
             onClick={() => setBulkOpen((value) => !value)}
-            className="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-11 items-center gap-2 rounded-xl border border-rose-100 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-rose-200 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={selectedCount === 0 || bulkLoading}
           >
             Bulk Actions
@@ -280,7 +304,7 @@ export default function AdminPaymentsTable({ payments }: AdminPaymentsTableProps
             ? createPortal(
                 <div
                   ref={bulkPanelRef}
-                  className="fixed z-[9999] w-56 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl"
+                  className="fixed z-[9999] w-56 overflow-hidden rounded-2xl border border-rose-100 bg-white shadow-xl"
                   style={{
                     top: `${bulkMenuPosition.top}px`,
                     left: `${bulkMenuPosition.left}px`,
@@ -289,7 +313,7 @@ export default function AdminPaymentsTable({ payments }: AdminPaymentsTableProps
                   <button
                     type="button"
                     onClick={() => runBulkStatusUpdate("PAID")}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-rose-50"
                   >
                     <CheckSquare className="h-4 w-4 text-emerald-500" />
                     Mark as paid
@@ -297,7 +321,7 @@ export default function AdminPaymentsTable({ payments }: AdminPaymentsTableProps
                   <button
                     type="button"
                     onClick={() => runBulkStatusUpdate("FAILED")}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-rose-50"
                   >
                     <Square className="h-4 w-4 text-amber-500" />
                     Mark as failed
@@ -305,7 +329,7 @@ export default function AdminPaymentsTable({ payments }: AdminPaymentsTableProps
                   <button
                     type="button"
                     onClick={() => runBulkStatusUpdate("CREATED")}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-rose-50"
                   >
                     <Square className="h-4 w-4 text-slate-400" />
                     Reset to created

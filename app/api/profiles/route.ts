@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { subYears } from "date-fns";
-import { Prisma } from "@prisma/client";
+import { Gender, Prisma } from "@prisma/client";
+
+function getDefaultBrowseGender(gender: Gender | null | undefined) {
+  if (gender === "MALE") return "FEMALE";
+  if (gender === "FEMALE") return "MALE";
+  return undefined;
+}
 
 // GET /api/profiles — paginated, filtered profile browse
 export async function GET(req: NextRequest) {
@@ -13,7 +19,7 @@ export async function GET(req: NextRequest) {
 
   const currentUserProfile = await prisma.profile.findUnique({
     where: { userId: session.user.id },
-    select: { id: true },
+    select: { id: true, gender: true },
   });
 
   if (!currentUserProfile) {
@@ -29,15 +35,20 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get("page") ?? "1");
   const limit = parseInt(searchParams.get("limit") ?? "12");
-  const gender = searchParams.get("gender") ?? undefined;
+  const requestedGender = searchParams.get("gender") ?? undefined;
+  const gender = requestedGender ?? getDefaultBrowseGender(currentUserProfile.gender);
   const search = searchParams.get("search") ?? undefined;
   const religion = searchParams.get("religion") ?? undefined;
+  const caste = searchParams.get("caste") ?? undefined;
   const language = searchParams.get("language") ?? undefined;
   const location = searchParams.get("location") ?? undefined;
   const profession = searchParams.get("profession") ?? undefined;
   const maritalStatus = searchParams.get("maritalStatus") ?? undefined;
   const heightMin = searchParams.get("heightMin")
-    ? parseInt(searchParams.get("heightMin")!)
+    ? Number(searchParams.get("heightMin"))
+    : undefined;
+  const heightMax = searchParams.get("heightMax")
+    ? Number(searchParams.get("heightMax"))
     : undefined;
   const annualIncome = searchParams.get("annualIncome") ?? undefined;
   const education = searchParams.get("education") ?? undefined;
@@ -78,6 +89,16 @@ export async function GET(req: NextRequest) {
         }
       : {};
 
+  const heightFilter =
+    heightMin || heightMax
+      ? {
+          height: {
+            ...(heightMin && { gte: heightMin }),
+            ...(heightMax && { lte: heightMax }),
+          },
+        }
+      : {};
+
   const where: Prisma.ProfileWhereInput = {
     status: "ACTIVE" as const,
     userId: { not: session.user.id },
@@ -91,6 +112,7 @@ export async function GET(req: NextRequest) {
     ...(gender && { gender: gender as "MALE" | "FEMALE" | "OTHER" }),
     ...searchFilter,
     ...(religion && { religion }),
+    ...(caste && { caste: { contains: caste, mode: "insensitive" as const } }),
     ...(language && {
       language: { contains: language, mode: "insensitive" as const },
     }),
@@ -99,7 +121,7 @@ export async function GET(req: NextRequest) {
       profession: { contains: profession, mode: "insensitive" as const },
     }),
     ...(maritalStatus && { maritalStatus: maritalStatus as never }),
-    ...(heightMin && { height: { gte: heightMin } }),
+    ...heightFilter,
     ...(annualIncome && {
       income: { contains: annualIncome, mode: "insensitive" as const },
     }),
