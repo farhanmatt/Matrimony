@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Heart, Mail, Phone, MapPin, Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+import BrandLogo from "@/components/common/BrandLogo";
 
 export default function Footer() {
   return (
@@ -8,14 +9,10 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center">
-                <Heart className="w-5 h-5 text-white fill-white" />
-              </div>
-              <span className="font-display text-xl font-bold text-white">
-                Vivah Bandhan
-              </span>
-            </Link>
+            <BrandLogo
+              wrapperClassName="mb-4 inline-flex rounded-2xl bg-white/95 px-4 py-3 shadow-sm"
+              className="h-10 max-w-[180px]"
+            />
             <p className="text-sm text-gray-400 leading-relaxed mb-5">
               India&apos;s most trusted matrimony platform, connecting hearts and
               building families since 2015. Over 10 lakh happy couples.

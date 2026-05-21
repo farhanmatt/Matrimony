@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import BrandLogo from "@/components/common/BrandLogo";
 import {
   ArrowRight,
   BookOpen,
@@ -738,12 +739,10 @@ export default function FullLandingPage({
 
           <div className="grid gap-10 py-10 lg:grid-cols-[1.1fr_0.7fr_0.7fr_1fr_0.9fr]">
             <div>
-              <Link href="/" className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15">
-                  <Heart className="h-5 w-5 fill-white" />
-                </div>
-                <div className="font-display text-2xl font-bold">Vivah Bandhan</div>
-              </Link>
+              <BrandLogo
+                wrapperClassName="inline-flex rounded-[1.4rem] bg-white/95 px-4 py-3 shadow-sm"
+                className="h-10 max-w-[190px]"
+              />
               <p className="mt-4 max-w-xs text-sm leading-7 text-rose-100/85">
                 Helping you find your perfect life partner with trusted and
                 verified profiles across India.

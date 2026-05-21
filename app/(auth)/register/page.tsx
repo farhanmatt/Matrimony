@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Heart, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import BrandLogo from "@/components/common/BrandLogo";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
 
 export default function RegisterPage() {
@@ -58,15 +59,10 @@ export default function RegisterPage() {
     <div className="min-h-screen hero-gradient flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="w-11 h-11 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
-              <Heart className="w-6 h-6 text-white fill-white" />
-            </div>
-            <span className="font-display text-2xl font-bold">
-              <span className="text-rose-600">Vivah</span>
-              <span className="text-gray-800"> Bandhan</span>
-            </span>
-          </Link>
+          <BrandLogo
+            wrapperClassName="inline-flex items-center justify-center"
+            className="h-14 max-w-[260px] sm:h-16 sm:max-w-[320px]"
+          />
           <h1 className="text-2xl font-display font-bold text-gray-900 mt-5 mb-1">
             Create your account
           </h1>
