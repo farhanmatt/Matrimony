@@ -1,15 +1,14 @@
-import { getToken } from "next-auth/jwt";
-import type { NextRequest } from "next/server";
+import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
-export async function proxy(req: NextRequest) {
+function getCallbackPath(url: URL) {
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
+export default auth((req) => {
   const { nextUrl } = req;
-  const token = await getToken({
-    req,
-    secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
-  });
-  const isLoggedIn = Boolean(token);
-  const isAdmin = token?.role === "ADMIN";
+  const isLoggedIn = Boolean(req.auth);
+  const isAdmin = req.auth?.user?.role === "ADMIN";
   const path = nextUrl.pathname;
 
   if (path.startsWith("/admin")) {
@@ -23,7 +22,10 @@ export async function proxy(req: NextRequest) {
 
     if (!isLoggedIn) {
       return NextResponse.redirect(
-        new URL(`/admin/login?callbackUrl=${path}`, nextUrl)
+        new URL(
+          `/admin/login?callbackUrl=${encodeURIComponent(getCallbackPath(nextUrl))}`,
+          nextUrl,
+        )
       );
     }
 
@@ -36,7 +38,12 @@ export async function proxy(req: NextRequest) {
 
   if (path.startsWith("/dashboard")) {
     if (!isLoggedIn) {
-      return NextResponse.redirect(new URL(`/login?callbackUrl=${path}`, nextUrl));
+      return NextResponse.redirect(
+        new URL(
+          `/login?callbackUrl=${encodeURIComponent(getCallbackPath(nextUrl))}`,
+          nextUrl,
+        )
+      );
     }
 
     return NextResponse.next();
@@ -51,7 +58,7 @@ export async function proxy(req: NextRequest) {
   }
 
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: ["/dashboard/:path*", "/admin/:path*", "/login", "/register"],
