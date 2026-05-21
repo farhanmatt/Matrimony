@@ -51,7 +51,7 @@ export default function RegisterPage() {
 
   const handleGoogle = async () => {
     setIsGoogleLoading(true);
-    await signIn("google", { callbackUrl: "/dashboard" });
+    await signIn("google", { redirectTo: "/dashboard" });
   };
 
   return (

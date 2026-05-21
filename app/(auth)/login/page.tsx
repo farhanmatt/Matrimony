@@ -13,6 +13,7 @@ import {
   getCredentialsErrorMessage,
 } from "@/lib/auth-error-messages";
 import SiteLogo from "@/components/common/SiteLogo";
+import { normalizeAuthRedirectTarget } from "@/lib/utils/auth-redirect";
 import { resolveAllowedImageSrc } from "@/lib/utils/image";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { PageLoader } from "@/components/common/LoadingSpinner";
@@ -23,7 +24,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { status } = useSession();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
+  const callbackUrl = normalizeAuthRedirectTarget(searchParams.get("callbackUrl"));
   const authErrorMessage = getAuthPageErrorMessage(searchParams.get("error"));
   const passwordResetSucceeded = searchParams.get("passwordReset") === "success";
   const [showPassword, setShowPassword] = useState(false);
@@ -72,7 +73,7 @@ function LoginForm() {
         email: data.identifier,
         password: data.password,
         redirect: false,
-        callbackUrl,
+        redirectTo: callbackUrl,
       });
 
       if (result?.error) {
@@ -85,7 +86,7 @@ function LoginForm() {
       }
 
       toast.success("Welcome back!");
-      router.push(callbackUrl);
+      router.replace(result?.url ?? callbackUrl);
       router.refresh();
     } catch (error) {
       toast.error("Authentication failed. Please try again.");
@@ -94,7 +95,7 @@ function LoginForm() {
 
   const handleGoogle = async () => {
     setIsGoogleLoading(true);
-    await signIn("google", { callbackUrl });
+    await signIn("google", { redirectTo: callbackUrl });
   };
 
   if (status === "authenticated") {
