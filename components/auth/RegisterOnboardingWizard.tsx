@@ -228,7 +228,7 @@ export default function RegisterOnboardingWizard() {
 
   const handleGoogle = async () => {
     setIsGoogleLoading(true);
-    await signIn("google", { callbackUrl: "/dashboard" });
+    await signIn("google", { redirectTo: "/dashboard" });
   };
 
   const handleAccountNext = async () => {

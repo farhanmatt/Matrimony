@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Shield, Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
 import { getCredentialsErrorMessage } from "@/lib/auth-error-messages";
+import { normalizeAuthRedirectTarget } from "@/lib/utils/auth-redirect";
 import {
   adminLoginSchema,
   type AdminLoginInput,
@@ -18,7 +19,10 @@ import { PageLoader } from "@/components/common/LoadingSpinner";
 function AdminLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/admin";
+  const callbackUrl = normalizeAuthRedirectTarget(
+    searchParams.get("callbackUrl"),
+    "/admin",
+  );
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -37,7 +41,7 @@ function AdminLoginForm() {
         password: data.password,
         portal: "admin",
         redirect: false,
-        callbackUrl,
+        redirectTo: callbackUrl,
       });
 
       if (result?.error) {
