@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
-import { randomUUID } from "crypto";
+import { uploadImageBufferToCloudinary } from "@/lib/server/cloudinary";
 import type { Session } from "next-auth";
 
 export const runtime = "nodejs";
-
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "branding");
 
 const ALLOWED_MIME_TYPES = new Set([
   "image/jpeg",
@@ -17,15 +13,20 @@ const ALLOWED_MIME_TYPES = new Set([
   "image/svg+xml",
 ]);
 
-const MIME_TO_EXT: Record<string, string> = {
-  "image/jpeg": ".jpg",
-  "image/png": ".png",
-  "image/webp": ".webp",
-  "image/gif": ".gif",
-  "image/svg+xml": ".svg",
-};
+const BRANDING_PUBLIC_IDS = {
+  hero: "branding/landing-hero",
+  logo: "branding/site-logo",
+} as const;
+
+type BrandingAssetType = keyof typeof BRANDING_PUBLIC_IDS;
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
+function getBrandingAssetType(
+  value: FormDataEntryValue | null,
+): BrandingAssetType {
+  return value === "logo" || value === "hero" ? value : "hero";
+}
 
 function adminGuard(session: Session | null) {
   if (!session?.user?.id || session.user.role !== "ADMIN") {
@@ -42,6 +43,7 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file");
+    const assetType = getBrandingAssetType(formData.get("assetType"));
 
     if (!(file instanceof File)) {
       return NextResponse.json({ error: "file is required" }, { status: 400 });
@@ -62,17 +64,10 @@ export async function POST(req: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const ext = MIME_TO_EXT[file.type] ?? ".png";
-    const filename = `${randomUUID()}${ext}`;
-
-    // Ensure upload directory exists
-    await mkdir(UPLOAD_DIR, { recursive: true });
-
-    const filePath = path.join(UPLOAD_DIR, filename);
-    await writeFile(filePath, buffer);
-
-    // Return the public URL path
-    const secureUrl = `/uploads/branding/${filename}`;
+    const secureUrl = await uploadImageBufferToCloudinary(
+      buffer,
+      BRANDING_PUBLIC_IDS[assetType],
+    );
 
     return NextResponse.json({ secureUrl });
   } catch (error) {

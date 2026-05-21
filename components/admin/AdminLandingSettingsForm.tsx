@@ -79,9 +79,10 @@ async function readJson<T>(response: Response) {
   }
 }
 
-async function uploadLandingImage(file: File) {
+async function uploadLandingImage(file: File, assetType: "hero" | "logo") {
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("assetType", assetType);
 
   const response = await fetch("/api/admin/upload-image", {
     method: "POST",
@@ -257,7 +258,7 @@ export default function AdminLandingSettingsForm({
 
     try {
       const nextHeroImageUrl = heroPendingFile
-        ? await uploadLandingImage(heroPendingFile)
+        ? await uploadLandingImage(heroPendingFile, "hero")
         : heroSavedValue;
 
       await saveLandingSetting("heroImageUrl", nextHeroImageUrl);
@@ -285,7 +286,7 @@ export default function AdminLandingSettingsForm({
 
     try {
       const nextLogoImageUrl = logoPendingFile
-        ? await uploadLandingImage(logoPendingFile)
+        ? await uploadLandingImage(logoPendingFile, "logo")
         : logoSavedValue;
 
       await saveLandingSetting("logoImageUrl", nextLogoImageUrl);
