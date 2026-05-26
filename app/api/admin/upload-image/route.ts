@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { v2 as cloudinary } from "cloudinary";
 import { randomUUID } from "crypto";
 import type { Session } from "next-auth";
 
 export const runtime = "nodejs";
-
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "branding");
 
 const ALLOWED_MIME_TYPES = new Set([
   "image/jpeg",
@@ -32,6 +29,57 @@ function adminGuard(session: Session | null) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   return null;
+}
+
+function ensureCloudinaryConfigured() {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new Error("Cloudinary is not configured for branding uploads");
+  }
+
+  cloudinary.config({
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret,
+    secure: true,
+  });
+}
+
+async function uploadBrandingImage(buffer: Buffer, mimeType: string) {
+  ensureCloudinaryConfigured();
+
+  const publicId = randomUUID();
+  const format = MIME_TO_EXT[mimeType]?.replace(".", "") || undefined;
+
+  return new Promise<string>((resolve, reject) => {
+    const upload = cloudinary.uploader.upload_stream(
+      {
+        public_id: publicId,
+        folder: "branding",
+        overwrite: false,
+        resource_type: "image",
+        format,
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        if (!result?.secure_url) {
+          reject(new Error("Cloudinary upload completed without a secure URL"));
+          return;
+        }
+
+        resolve(result.secure_url);
+      }
+    );
+
+    upload.end(buffer);
+  });
 }
 
 export async function POST(req: NextRequest) {
@@ -62,17 +110,7 @@ export async function POST(req: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const ext = MIME_TO_EXT[file.type] ?? ".png";
-    const filename = `${randomUUID()}${ext}`;
-
-    // Ensure upload directory exists
-    await mkdir(UPLOAD_DIR, { recursive: true });
-
-    const filePath = path.join(UPLOAD_DIR, filename);
-    await writeFile(filePath, buffer);
-
-    // Return the public URL path
-    const secureUrl = `/uploads/branding/${filename}`;
+    const secureUrl = await uploadBrandingImage(buffer, file.type);
 
     return NextResponse.json({ secureUrl });
   } catch (error) {
