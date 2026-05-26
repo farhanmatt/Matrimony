@@ -19,6 +19,13 @@ type UploadImageResponse = {
   error?: string;
 };
 
+type CloudinaryUploadResponse = {
+  secure_url?: string;
+  error?: {
+    message?: string;
+  };
+};
+
 const DEFAULT_HERO_IMAGE = "/main.jpeg";
 const DEFAULT_LOGO_IMAGE = "/default-logo.svg";
 const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
@@ -74,7 +81,7 @@ async function readJson<T>(response: Response) {
   }
 }
 
-async function uploadLandingImage(file: File) {
+async function uploadLandingImageViaAdminApi(file: File) {
   const formData = new FormData();
   formData.append("file", file);
 
@@ -94,6 +101,70 @@ async function uploadLandingImage(file: File) {
   }
 
   return data.secureUrl;
+}
+
+async function uploadLandingImageDirect(file: File) {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+  if (!cloudName || !uploadPreset) {
+    throw new Error("Cloudinary upload is not configured");
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", uploadPreset);
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+    {
+      method: "POST",
+      body: formData,
+    },
+  );
+
+  const data = (await readJson<CloudinaryUploadResponse>(response)) ?? null;
+
+  if (!response.ok) {
+    throw new Error(data?.error?.message ?? "Failed to upload image");
+  }
+
+  if (!data?.secure_url) {
+    throw new Error("Upload completed without an image URL");
+  }
+
+  return data.secure_url;
+}
+
+async function uploadLandingImage(file: File) {
+  try {
+    return await uploadLandingImageDirect(file);
+  } catch (directUploadError) {
+    try {
+      return await uploadLandingImageViaAdminApi(file);
+    } catch (apiUploadError) {
+      const directMessage =
+        directUploadError instanceof Error ? directUploadError.message : null;
+      const apiMessage =
+        apiUploadError instanceof Error ? apiUploadError.message : null;
+
+      if (directMessage && apiMessage && directMessage !== apiMessage) {
+        throw new Error(
+          `${directMessage}. Fallback upload also failed: ${apiMessage}`,
+        );
+      }
+
+      if (apiMessage) {
+        throw new Error(apiMessage);
+      }
+
+      if (directMessage) {
+        throw new Error(directMessage);
+      }
+
+      throw new Error("Failed to upload image");
+    }
+  }
 }
 
 async function saveLandingSetting(
