@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
+import { CldUploadWidget } from "next-cloudinary";
+import { useCallback, useEffect, useState } from "react";
 import { ImagePlus, Loader2, Save, Upload } from "lucide-react";
 import { toast } from "sonner";
-import { isAllowedImageFile, resolveAllowedImageSrc } from "@/lib/utils/image";
+import { resolveAllowedImageSrc } from "@/lib/utils/image";
 
 type AdminLandingSettingsFormProps = {
   initialHeroImageUrl: string;
@@ -14,25 +15,16 @@ type AdminSettingsResponse = {
   error?: string;
 };
 
-type UploadImageResponse = {
-  secureUrl?: string;
-  error?: string;
-};
-
-type CloudinaryUploadResponse = {
-  secure_url?: string;
-  error?: {
-    message?: string;
-  };
+type UploadedAsset = {
+  fileName: string | null;
+  secureUrl: string;
 };
 
 const DEFAULT_HERO_IMAGE = "/main.jpeg";
 const DEFAULT_LOGO_IMAGE = "/default-logo.svg";
 const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
-
-function isBrandingImageFile(file: File) {
-  return isAllowedImageFile(file) || file.type === "image/svg+xml";
-}
+const CLOUDINARY_UPLOAD_PRESET =
+  process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default";
 
 function resolvePreviewImageSrc(value: string, fallback: string) {
   const trimmed = value.trim();
@@ -81,90 +73,42 @@ async function readJson<T>(response: Response) {
   }
 }
 
-async function uploadLandingImageViaAdminApi(file: File) {
-  const formData = new FormData();
-  formData.append("file", file);
+function getUploadedFileName(info: Record<string, unknown>) {
+  const originalFileName =
+    typeof info.original_filename === "string" ? info.original_filename : null;
+  const format = typeof info.format === "string" ? info.format : null;
 
-  const response = await fetch("/api/admin/upload-image", {
-    method: "POST",
-    body: formData,
-  });
-
-  const data = await readJson<UploadImageResponse>(response);
-
-  if (!response.ok) {
-    throw new Error(data?.error ?? "Failed to upload image");
+  if (!originalFileName) {
+    return null;
   }
 
-  if (!data?.secureUrl) {
-    throw new Error("Upload completed without an image URL");
+  if (originalFileName.includes(".") || !format) {
+    return originalFileName;
   }
 
-  return data.secureUrl;
+  return `${originalFileName}.${format}`;
 }
 
-async function uploadLandingImageDirect(file: File) {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+function getUploadedAsset(result: unknown): UploadedAsset | null {
+  const info =
+    typeof result === "object" &&
+    result &&
+    "info" in result &&
+    typeof result.info === "object" &&
+    result.info
+      ? (result.info as Record<string, unknown>)
+      : null;
 
-  if (!cloudName || !uploadPreset) {
-    throw new Error("Cloudinary upload is not configured");
+  const secureUrl = typeof info?.secure_url === "string" ? info.secure_url : null;
+
+  if (!info || !secureUrl) {
+    return null;
   }
 
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", uploadPreset);
-
-  const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-    {
-      method: "POST",
-      body: formData,
-    },
-  );
-
-  const data = (await readJson<CloudinaryUploadResponse>(response)) ?? null;
-
-  if (!response.ok) {
-    throw new Error(data?.error?.message ?? "Failed to upload image");
-  }
-
-  if (!data?.secure_url) {
-    throw new Error("Upload completed without an image URL");
-  }
-
-  return data.secure_url;
-}
-
-async function uploadLandingImage(file: File) {
-  try {
-    return await uploadLandingImageDirect(file);
-  } catch (directUploadError) {
-    try {
-      return await uploadLandingImageViaAdminApi(file);
-    } catch (apiUploadError) {
-      const directMessage =
-        directUploadError instanceof Error ? directUploadError.message : null;
-      const apiMessage =
-        apiUploadError instanceof Error ? apiUploadError.message : null;
-
-      if (directMessage && apiMessage && directMessage !== apiMessage) {
-        throw new Error(
-          `${directMessage}. Fallback upload also failed: ${apiMessage}`,
-        );
-      }
-
-      if (apiMessage) {
-        throw new Error(apiMessage);
-      }
-
-      if (directMessage) {
-        throw new Error(directMessage);
-      }
-
-      throw new Error("Failed to upload image");
-    }
-  }
+  return {
+    secureUrl,
+    fileName: getUploadedFileName(info),
+  };
 }
 
 async function saveLandingSetting(
@@ -192,19 +136,11 @@ function useDraftImage(initialValue: string, fallbackValue: string) {
   const [savedValue, setSavedValue] = useState(normalizedInitialValue);
   const [previewUrl, setPreviewUrl] = useState(normalizedInitialValue);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [dragActive, setDragActive] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const objectUrlRef = useRef<string | null>(null);
+  const [pendingUploadUrl, setPendingUploadUrl] = useState<string | null>(null);
 
   const clearDraftFile = useCallback(() => {
-    setPendingFile(null);
     setSelectedFileName(null);
-
-    if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current);
-      objectUrlRef.current = null;
-    }
+    setPendingUploadUrl(null);
   }, []);
 
   const applySavedValue = useCallback(
@@ -212,7 +148,6 @@ function useDraftImage(initialValue: string, fallbackValue: string) {
       const resolved = resolveAllowedImageSrc(value, fallbackValue) ?? fallbackValue;
       setSavedValue(resolved);
       setPreviewUrl(resolved);
-      setDragActive(false);
       clearDraftFile();
     },
     [clearDraftFile, fallbackValue],
@@ -222,65 +157,23 @@ function useDraftImage(initialValue: string, fallbackValue: string) {
     applySavedValue(initialValue);
   }, [applySavedValue, initialValue]);
 
-  useEffect(() => {
-    return () => {
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-        objectUrlRef.current = null;
-      }
-    };
-  }, []);
-
-  const setFilePreview = useCallback(
-    (file: File) => {
-      if (!isBrandingImageFile(file)) {
-        toast.error("Please choose a JPG, PNG, WEBP, GIF, or SVG image");
-        return;
-      }
-
-      if (file.size > MAX_IMAGE_SIZE_BYTES) {
-        toast.error("Please choose an image smaller than 10 MB");
-        return;
-      }
-
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-      }
-
-      const objectUrl = URL.createObjectURL(file);
-      objectUrlRef.current = objectUrl;
-      setPendingFile(file);
-      setSelectedFileName(file.name);
-      setPreviewUrl(objectUrl);
-      setDragActive(false);
+  const applyUploadedAsset = useCallback(
+    (asset: UploadedAsset) => {
+      const resolved = resolveAllowedImageSrc(asset.secureUrl, fallbackValue) ?? asset.secureUrl;
+      setPendingUploadUrl(asset.secureUrl);
+      setSelectedFileName(asset.fileName);
+      setPreviewUrl(resolved);
     },
-    [],
+    [fallbackValue],
   );
-
-  const handleFiles = useCallback(
-    (files: FileList | File[] | null | undefined) => {
-      const file = files?.[0];
-      if (!file) return;
-      setFilePreview(file);
-    },
-    [setFilePreview],
-  );
-
-  const openFilePicker = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
 
   return {
     savedValue,
     previewUrl,
     selectedFileName,
-    pendingFile,
-    dragActive,
-    setDragActive,
-    fileInputRef,
-    openFilePicker,
-    handleFiles,
+    pendingUploadUrl,
     applySavedValue,
+    applyUploadedAsset,
   };
 }
 
@@ -296,37 +189,80 @@ export default function AdminLandingSettingsForm({
     savedValue: heroSavedValue,
     previewUrl: heroPreviewUrl,
     selectedFileName: heroSelectedFileName,
-    pendingFile: heroPendingFile,
-    dragActive: heroDragActive,
-    setDragActive: setHeroDragActive,
-    fileInputRef: heroFileInputRef,
-    openFilePicker: openHeroFilePicker,
-    handleFiles: handleHeroFiles,
+    pendingUploadUrl: heroPendingUploadUrl,
     applySavedValue: applyHeroSavedValue,
+    applyUploadedAsset: applyHeroUploadedAsset,
   } = hero;
   const {
     savedValue: logoSavedValue,
     previewUrl: logoPreviewUrl,
     selectedFileName: logoSelectedFileName,
-    pendingFile: logoPendingFile,
-    dragActive: logoDragActive,
-    setDragActive: setLogoDragActive,
-    fileInputRef: logoFileInputRef,
-    openFilePicker: openLogoFilePicker,
-    handleFiles: handleLogoFiles,
+    pendingUploadUrl: logoPendingUploadUrl,
     applySavedValue: applyLogoSavedValue,
+    applyUploadedAsset: applyLogoUploadedAsset,
   } = logo;
-  const heroHasDraft = Boolean(heroPendingFile);
-  const logoHasDraft = Boolean(logoPendingFile);
+  const heroHasDraft = Boolean(heroPendingUploadUrl);
+  const logoHasDraft = Boolean(logoPendingUploadUrl);
+
+  const restorePageScroll = useCallback(() => {
+    document.body.style.overflow = "auto";
+    document.documentElement.style.overflow = "auto";
+  }, []);
+
+  const handleUploadError = useCallback(
+    (kind: "banner" | "logo", error: unknown) => {
+      console.error(`${kind} upload error:`, error);
+      restorePageScroll();
+
+      const message =
+        typeof error === "object" &&
+        error &&
+        "statusText" in error &&
+        typeof error.statusText === "string"
+          ? error.statusText
+          : "Failed to upload image";
+
+      toast.error(`Error: ${message}`);
+    },
+    [restorePageScroll],
+  );
+
+  const handleHeroUpload = useCallback(
+    (result: unknown) => {
+      const asset = getUploadedAsset(result);
+
+      if (!asset) {
+        toast.error("Error: Upload completed without an image URL");
+        return;
+      }
+
+      applyHeroUploadedAsset(asset);
+      toast.success("Banner uploaded. Save to publish.");
+    },
+    [applyHeroUploadedAsset],
+  );
+
+  const handleLogoUpload = useCallback(
+    (result: unknown) => {
+      const asset = getUploadedAsset(result);
+
+      if (!asset) {
+        toast.error("Error: Upload completed without an image URL");
+        return;
+      }
+
+      applyLogoUploadedAsset(asset);
+      toast.success("Logo uploaded. Save to publish.");
+    },
+    [applyLogoUploadedAsset],
+  );
 
   const saveHeroImage = useCallback(async () => {
     setSavingHero(true);
     const toastId = toast.loading("Uploading and saving hero banner...");
 
     try {
-      const nextHeroImageUrl = heroPendingFile
-        ? await uploadLandingImage(heroPendingFile)
-        : heroSavedValue;
+      const nextHeroImageUrl = heroPendingUploadUrl ?? heroSavedValue;
 
       await saveLandingSetting("heroImageUrl", nextHeroImageUrl);
       applyHeroSavedValue(nextHeroImageUrl);
@@ -345,16 +281,14 @@ export default function AdminLandingSettingsForm({
     } finally {
       setSavingHero(false);
     }
-  }, [applyHeroSavedValue, heroPendingFile, heroSavedValue]);
+  }, [applyHeroSavedValue, heroPendingUploadUrl, heroSavedValue]);
 
   const saveLogoImage = useCallback(async () => {
     setSavingLogo(true);
     const toastId = toast.loading("Uploading and saving site logo...");
 
     try {
-      const nextLogoImageUrl = logoPendingFile
-        ? await uploadLandingImage(logoPendingFile)
-        : logoSavedValue;
+      const nextLogoImageUrl = logoPendingUploadUrl ?? logoSavedValue;
 
       await saveLandingSetting("logoImageUrl", nextLogoImageUrl);
       applyLogoSavedValue(nextLogoImageUrl);
@@ -377,27 +311,7 @@ export default function AdminLandingSettingsForm({
     } finally {
       setSavingLogo(false);
     }
-  }, [applyLogoSavedValue, logoPendingFile, logoSavedValue]);
-
-  const onDropHero = useCallback(
-    (event: DragEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-      setHeroDragActive(false);
-      handleHeroFiles(event.dataTransfer.files);
-    },
-    [handleHeroFiles, setHeroDragActive],
-  );
-
-  const onDropLogo = useCallback(
-    (event: DragEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-      setLogoDragActive(false);
-      handleLogoFiles(event.dataTransfer.files);
-    },
-    [handleLogoFiles, setLogoDragActive],
-  );
+  }, [applyLogoSavedValue, logoPendingUploadUrl, logoSavedValue]);
 
   return (
     <div className="relative">
@@ -443,73 +357,65 @@ export default function AdminLandingSettingsForm({
             </div>
 
             <div className="p-[1.125rem] sm:p-5">
-              <input
-                ref={heroFileInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/svg+xml"
-                className="hidden"
-                onChange={(event) => handleHeroFiles(event.target.files)}
-              />
-
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={openHeroFilePicker}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    openHeroFilePicker();
-                  }
+              <CldUploadWidget
+                onSuccess={handleHeroUpload}
+                onClose={restorePageScroll}
+                onAbort={restorePageScroll}
+                onBatchCancelled={restorePageScroll}
+                onError={(error) => handleUploadError("banner", error)}
+                uploadPreset={CLOUDINARY_UPLOAD_PRESET}
+                options={{
+                  maxFiles: 1,
+                  maxFileSize: MAX_IMAGE_SIZE_BYTES,
+                  multiple: false,
+                  resourceType: "image",
+                  clientAllowedFormats: ["jpg", "jpeg", "png", "webp", "gif", "svg"],
+                  showCompletedButton: true,
+                  singleUploadAutoClose: true,
+                  sources: ["local"],
                 }}
-                onDragEnter={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  setHeroDragActive(true);
-                }}
-                onDragOver={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  setHeroDragActive(true);
-                }}
-                onDragLeave={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  setHeroDragActive(false);
-                }}
-                onDrop={onDropHero}
-                className={[
-                  "group relative isolate flex min-h-[9.5rem] flex-col items-center justify-center overflow-hidden rounded-[1.75rem] border px-6 py-4 text-center transition-all duration-300 sm:px-8",
-                  heroDragActive
-                    ? "border-rose-400 bg-rose-50 shadow-[0_18px_45px_rgba(244,63,94,0.12)]"
-                    : "border-rose-200/90 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.98),rgba(255,241,242,0.92)_42%,rgba(253,242,248,0.76)_100%)] hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-[0_18px_45px_rgba(244,63,94,0.08)]",
-                ].join(" ")}
               >
-                <div className="pointer-events-none absolute inset-x-10 top-0 h-24 rounded-full bg-white/70 blur-3xl" />
-                <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/80 bg-white/90 text-rose-500 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
-                  <Upload className="h-7 w-7" />
-                </div>
-                <div className="relative mt-2.5 max-w-lg">
-                  <h3 className="text-2xl font-bold tracking-tight text-slate-900">
-                    {heroDragActive ? "Drop the banner image here" : "Drag and drop a banner image"}
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-500">
-                    JPG, PNG, WEBP, GIF, or SVG up to 10 MB. Click anywhere in this box to browse files.
-                  </p>
-                </div>
+                {({ open }) => (
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => open()}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        open();
+                      }
+                    }}
+                    className="group relative isolate flex min-h-[9.5rem] flex-col items-center justify-center overflow-hidden rounded-[1.75rem] border border-rose-200/90 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.98),rgba(255,241,242,0.92)_42%,rgba(253,242,248,0.76)_100%)] px-6 py-4 text-center transition-all duration-300 hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-[0_18px_45px_rgba(244,63,94,0.08)] sm:px-8"
+                  >
+                    <div className="pointer-events-none absolute inset-x-10 top-0 h-24 rounded-full bg-white/70 blur-3xl" />
+                    <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/80 bg-white/90 text-rose-500 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+                      <Upload className="h-7 w-7" />
+                    </div>
+                    <div className="relative mt-2.5 max-w-lg">
+                      <h3 className="text-2xl font-bold tracking-tight text-slate-900">
+                        Click to upload a banner image
+                      </h3>
+                      <p className="mt-2 text-sm leading-6 text-slate-500">
+                        JPG, PNG, WEBP, GIF, or SVG up to 10 MB. Choose a file from your laptop,
+                        then save to publish it on the homepage.
+                      </p>
+                    </div>
 
-                {heroSelectedFileName ? (
-                  <div className="relative mt-3 inline-flex max-w-full items-center gap-2 rounded-full border border-rose-200 bg-white/95 px-4 py-2 text-xs font-semibold text-rose-700 shadow-sm">
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-rose-500" />
-                    <span className="truncate">Pending file: {heroSelectedFileName}</span>
-                  </div>
-                ) : (
-                  <div className="relative mt-3 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-xs font-medium text-slate-500 shadow-sm">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                    Current banner is kept until you save a new image.
+                    {heroSelectedFileName ? (
+                      <div className="relative mt-3 inline-flex max-w-full items-center gap-2 rounded-full border border-rose-200 bg-white/95 px-4 py-2 text-xs font-semibold text-rose-700 shadow-sm">
+                        <span className="h-2 w-2 shrink-0 rounded-full bg-rose-500" />
+                        <span className="truncate">Pending file: {heroSelectedFileName}</span>
+                      </div>
+                    ) : (
+                      <div className="relative mt-3 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-xs font-medium text-slate-500 shadow-sm">
+                        <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                        Current banner is kept until you upload and save a new image.
+                      </div>
+                    )}
                   </div>
                 )}
-
-              </div>
+              </CldUploadWidget>
 
               <div className="mt-4 flex flex-col gap-3 rounded-[1.5rem] border border-rose-100 bg-gradient-to-r from-white to-rose-50/70 p-3.5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -574,73 +480,65 @@ export default function AdminLandingSettingsForm({
             </div>
 
             <div className="p-5 sm:p-6">
-              <input
-                ref={logoFileInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/svg+xml"
-                className="hidden"
-                onChange={(event) => handleLogoFiles(event.target.files)}
-              />
-
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={openLogoFilePicker}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    openLogoFilePicker();
-                  }
+              <CldUploadWidget
+                onSuccess={handleLogoUpload}
+                onClose={restorePageScroll}
+                onAbort={restorePageScroll}
+                onBatchCancelled={restorePageScroll}
+                onError={(error) => handleUploadError("logo", error)}
+                uploadPreset={CLOUDINARY_UPLOAD_PRESET}
+                options={{
+                  maxFiles: 1,
+                  maxFileSize: MAX_IMAGE_SIZE_BYTES,
+                  multiple: false,
+                  resourceType: "image",
+                  clientAllowedFormats: ["jpg", "jpeg", "png", "webp", "gif", "svg"],
+                  showCompletedButton: true,
+                  singleUploadAutoClose: true,
+                  sources: ["local"],
                 }}
-                onDragEnter={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  setLogoDragActive(true);
-                }}
-                onDragOver={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  setLogoDragActive(true);
-                }}
-                onDragLeave={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  setLogoDragActive(false);
-                }}
-                onDrop={onDropLogo}
-                className={[
-                  "group relative isolate flex min-h-[9.25rem] flex-col items-center justify-center overflow-hidden rounded-[1.75rem] border px-6 py-3.5 text-center transition-all duration-300 sm:px-8",
-                  logoDragActive
-                    ? "border-rose-400 bg-rose-50 shadow-[0_18px_45px_rgba(244,63,94,0.12)]"
-                    : "border-rose-200/90 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.98),rgba(255,241,242,0.92)_42%,rgba(253,242,248,0.76)_100%)] hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-[0_18px_45px_rgba(244,63,94,0.08)]",
-                ].join(" ")}
               >
-                <div className="pointer-events-none absolute inset-x-10 top-0 h-24 rounded-full bg-white/70 blur-3xl" />
-                <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/80 bg-white/90 text-rose-500 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
-                  <Upload className="h-7 w-7" />
-                </div>
-                <div className="relative mt-2.5 max-w-lg">
-                  <h3 className="text-2xl font-bold tracking-tight text-slate-900">
-                    {logoDragActive ? "Drop the logo image here" : "Drag and drop a logo image"}
-                  </h3>
-                  <p className="mt-2 text-sm leading-5 text-slate-500">
-                    JPG, PNG, WEBP, GIF, or SVG up to 10 MB. Click anywhere in this box to browse files.
-                  </p>
-                </div>
+                {({ open }) => (
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => open()}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        open();
+                      }
+                    }}
+                    className="group relative isolate flex min-h-[9.25rem] flex-col items-center justify-center overflow-hidden rounded-[1.75rem] border border-rose-200/90 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.98),rgba(255,241,242,0.92)_42%,rgba(253,242,248,0.76)_100%)] px-6 py-3.5 text-center transition-all duration-300 hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-[0_18px_45px_rgba(244,63,94,0.08)] sm:px-8"
+                  >
+                    <div className="pointer-events-none absolute inset-x-10 top-0 h-24 rounded-full bg-white/70 blur-3xl" />
+                    <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/80 bg-white/90 text-rose-500 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+                      <Upload className="h-7 w-7" />
+                    </div>
+                    <div className="relative mt-2.5 max-w-lg">
+                      <h3 className="text-2xl font-bold tracking-tight text-slate-900">
+                        Click to upload a logo image
+                      </h3>
+                      <p className="mt-2 text-sm leading-5 text-slate-500">
+                        JPG, PNG, WEBP, GIF, or SVG up to 10 MB. Choose a file from your laptop,
+                        then save to update the live site logo.
+                      </p>
+                    </div>
 
-                {logoSelectedFileName ? (
-                  <div className="relative mt-2.5 inline-flex max-w-full items-center gap-2 rounded-full border border-rose-200 bg-white/95 px-4 py-2 text-xs font-semibold text-rose-700 shadow-sm">
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-rose-500" />
-                    <span className="truncate">Pending file: {logoSelectedFileName}</span>
-                  </div>
-                ) : (
-                  <div className="relative mt-2.5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-xs font-medium text-slate-500 shadow-sm">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                    The current logo stays live until you save a new image.
+                    {logoSelectedFileName ? (
+                      <div className="relative mt-2.5 inline-flex max-w-full items-center gap-2 rounded-full border border-rose-200 bg-white/95 px-4 py-2 text-xs font-semibold text-rose-700 shadow-sm">
+                        <span className="h-2 w-2 shrink-0 rounded-full bg-rose-500" />
+                        <span className="truncate">Pending file: {logoSelectedFileName}</span>
+                      </div>
+                    ) : (
+                      <div className="relative mt-2.5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-xs font-medium text-slate-500 shadow-sm">
+                        <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                        The current logo stays live until you upload and save a new image.
+                      </div>
+                    )}
                   </div>
                 )}
-
-              </div>
+              </CldUploadWidget>
 
               <div className="mt-3.5 flex flex-col gap-3 rounded-[1.5rem] border border-rose-100 bg-gradient-to-r from-white to-rose-50/70 p-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
