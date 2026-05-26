@@ -238,6 +238,34 @@ export default async function AdminProfilesPage({
 
     return `/admin/profiles?${params.toString()}`;
   };
+  const buildPageHref = (nextPage: number) => {
+    const params = new URLSearchParams();
+    const filterParams: Array<[string, string | undefined]> = [
+      ["search", sp.search],
+      ["gender", sp.gender],
+      ["status", sp.status],
+      ["religion", sp.religion],
+      ["maritalStatus", sp.maritalStatus],
+      ["location", sp.location],
+      ["ageMin", sp.ageMin],
+      ["ageMax", sp.ageMax],
+      ["heightMin", sp.heightMin],
+      ["heightMax", sp.heightMax],
+      ["education", sp.education],
+      ["profession", sp.profession],
+      ["income", sp.income],
+      ["view", sp.view],
+      ["limit", sp.limit ?? String(limit)],
+      ["columns", selectedColumns.join(",")],
+      ["page", String(nextPage)],
+    ];
+
+    filterParams.forEach(([key, value]) => {
+      if (value) params.set(key, value);
+    });
+
+    return `?${params.toString()}`;
+  };
   const where: Prisma.ProfileWhereInput = {};
   const andConditions: Prisma.ProfileWhereInput[] = [];
 
@@ -342,6 +370,64 @@ export default async function AdminProfilesPage({
     ]);
 
     const totalPages = Math.ceil(total / limit);
+
+  const paginationFooter =
+    totalPages > 0 ? (
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <span className="font-medium text-slate-700">{total} total profiles</span>
+
+        <div className="flex flex-wrap items-center justify-end gap-2.5">
+          <AdminProfileStatusQuickLinks
+            items={[
+              {
+                label: "Blocked Profiles",
+                href: buildViewHref("blocked"),
+                active: isBlockedView,
+                icon: "blocked",
+              },
+              {
+                label: "Deleted Profiles",
+                href: buildViewHref("deleted"),
+                active: isDeletedView,
+                icon: "deleted",
+              },
+            ]}
+          />
+
+          <AdminPageSizeSelector value={limit} />
+
+          <div className="flex items-center gap-2">
+            <a
+              href={buildPageHref(Math.max(1, page - 1))}
+              aria-label="Previous page"
+              className={`flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white text-gray-400 transition-colors ${
+                page === 1 ? "pointer-events-none opacity-40" : "hover:border-gray-300 hover:text-gray-700"
+              }`}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </a>
+
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white text-sm font-medium text-gray-700">
+              {page}
+            </div>
+
+            <span className="text-sm text-gray-500">of {totalPages || 1}</span>
+
+            <a
+              href={buildPageHref(Math.min(totalPages || 1, page + 1))}
+              aria-label="Next page"
+              className={`flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white text-gray-400 transition-colors ${
+                page >= totalPages
+                  ? "pointer-events-none opacity-40"
+                  : "hover:border-gray-300 hover:text-gray-700"
+              }`}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+      </div>
+    ) : null;
 
   const profileColumns: Array<{
     key: Exclude<AdminProfileColumnKey, "all">;
@@ -621,8 +707,8 @@ export default async function AdminProfilesPage({
   });
 
     return (
-    <div className="flex min-h-[calc(100vh-8rem)] flex-col space-y-6">
-      <div>
+    <div className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col gap-6 overflow-hidden sm:h-[calc(100dvh-6.5rem)] lg:h-[calc(100dvh-3rem)]">
+      <div className="shrink-0">
         {showBackToProfiles ? (
           <Link
             href="/admin/profiles"
@@ -636,10 +722,11 @@ export default async function AdminProfilesPage({
         <p className="mt-1 text-sm text-gray-500">{pageDescription}</p>
       </div>
 
-      <div className="border-t border-gray-200" />
+      <div className="shrink-0 border-t border-gray-200" />
 
       <AdminListCard
-        className="min-h-0"
+        className="flex-1 min-h-0"
+        bodyClassName="flex min-h-0 flex-col overflow-hidden"
         toolbar={
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
             <AdminSearchInput placeholder="Search by name or location..." />
@@ -650,70 +737,16 @@ export default async function AdminProfilesPage({
             </div>
           </div>
         }
-        summaryLeft={<span className="font-medium text-gray-700">{total} total profiles</span>}
-        summaryRight={
-          totalPages > 0 ? (
-            <div className="flex flex-wrap items-center justify-end gap-2.5">
-              <AdminProfileStatusQuickLinks
-                items={[
-                  {
-                    label: "Blocked Profiles",
-                    href: buildViewHref("blocked"),
-                    active: isBlockedView,
-                    icon: "blocked",
-                  },
-                  {
-                    label: "Deleted Profiles",
-                    href: buildViewHref("deleted"),
-                    active: isDeletedView,
-                    icon: "deleted",
-                  },
-                ]}
-              />
-
-              <AdminPageSizeSelector value={limit} />
-
-              <div className="flex items-center gap-2">
-                  <a
-                    href={`?page=${Math.max(1, page - 1)}${search ? `&search=${search}` : ""}${status ? `&status=${status}` : ""}${view ? `&view=${view}` : ""}&columns=${selectedColumns.join(",")}&limit=${limit}`}
-                    aria-label="Previous page"
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white text-gray-400 transition-colors ${
-                    page === 1 ? "pointer-events-none opacity-40" : "hover:border-gray-300 hover:text-gray-700"
-                  }`}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </a>
-
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white text-sm font-medium text-gray-700">
-                  {page}
-                </div>
-
-                <span className="text-sm text-gray-500">of {totalPages || 1}</span>
-
-                <a
-                  href={`?page=${Math.min(totalPages || 1, page + 1)}${search ? `&search=${search}` : ""}${status ? `&status=${status}` : ""}${view ? `&view=${view}` : ""}&columns=${selectedColumns.join(",")}&limit=${limit}`}
-                  aria-label="Next page"
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white text-gray-400 transition-colors ${
-                    page >= totalPages ? "pointer-events-none opacity-40" : "hover:border-gray-300 hover:text-gray-700"
-                  }`}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </a>
-              </div>
-            </div>
-          ) : null
-        }
       >
-        <>
-          <AdminSelectableProfilesTable
-            columns={visibleColumns.map((column) => ({
-              key: column.key,
-              label: column.label,
-              width: getColumnWidth(column.key),
-            }))}
-            rows={profileTableRows}
-          />
-        </>
+        <AdminSelectableProfilesTable
+          columns={visibleColumns.map((column) => ({
+            key: column.key,
+            label: column.label,
+            width: getColumnWidth(column.key),
+          }))}
+          rows={profileTableRows}
+          listFooter={paginationFooter}
+        />
       </AdminListCard>
     </div>
     );

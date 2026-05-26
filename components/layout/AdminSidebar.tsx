@@ -18,7 +18,7 @@ import {
   HeartHandshake,
 } from "lucide-react";
 import { cn } from "@/lib/utils/helpers";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AdminTopNotifications from "@/components/admin/AdminTopNotifications";
 
 const adminNav = [
@@ -40,69 +40,155 @@ function AdminSidebarContent({
   pathname: string;
   onClose?: () => void;
 }) {
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  useEffect(() => {
+    if (!logoutConfirmOpen || isSigningOut) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setLogoutConfirmOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isSigningOut, logoutConfirmOpen]);
+
+  const closeLogoutConfirm = () => {
+    if (isSigningOut) return;
+    setLogoutConfirmOpen(false);
+  };
+
+  const handleLogout = async () => {
+    if (isSigningOut) return;
+
+    setIsSigningOut(true);
+
+    try {
+      await signOut({ callbackUrl: "/" });
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
+
   return (
-    <div className="flex h-full flex-col overflow-y-auto bg-gradient-to-b from-rose-50 via-white to-rose-50">
-      <div className="relative border-b border-rose-100 px-4 py-5">
-        <Link href="/admin" className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-pink-500 shadow-sm">
-            <Shield className="h-4.5 w-4.5 text-white" />
-          </div>
-          <span className="font-display text-lg font-bold text-gray-900">Admin Panel</span>
-        </Link>
-        {onClose && (
-          <button onClick={onClose} className="absolute right-4 top-4 text-gray-400 transition-colors hover:text-rose-600 lg:hidden">
-            <X className="h-5 w-5" />
+    <>
+      <div className="flex h-full flex-col overflow-y-auto bg-gradient-to-b from-rose-50 via-white to-rose-50">
+        <div className="relative border-b border-rose-100 px-4 py-5">
+          <Link href="/admin" className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-pink-500 shadow-sm">
+              <Shield className="h-4.5 w-4.5 text-white" />
+            </div>
+            <span className="font-display text-lg font-bold text-gray-900">Admin Panel</span>
+          </Link>
+          {onClose && (
+            <button onClick={onClose} className="absolute right-4 top-4 text-gray-400 transition-colors hover:text-rose-600 lg:hidden">
+              <X className="h-5 w-5" />
+            </button>
+          )}
+        </div>
+
+        <div className="border-b border-rose-100 px-4 py-4">
+          <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+          <p className="mt-1 text-xs text-gray-500">{user.email}</p>
+        </div>
+
+        <nav className="flex-1 px-3 py-4">
+          {adminNav.map((item) => {
+            const isActive =
+              item.href === "/admin"
+                ? pathname === "/admin"
+                : pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onClose}
+                className={cn(
+                  "mb-2 flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-medium transition-all last:mb-0",
+                  isActive
+                    ? "bg-gradient-to-r from-rose-600 to-pink-500 text-white shadow-[0_12px_24px_rgba(244,63,94,0.18)]"
+                    : "text-gray-600 hover:bg-rose-50 hover:text-rose-600"
+                )}
+              >
+                <item.icon className="h-4.5 w-4.5 shrink-0" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="space-y-2 border-t border-rose-100 px-3 py-4">
+          <Link
+            href="/"
+            className="flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm text-gray-600 transition-all hover:bg-rose-50 hover:text-rose-600"
+          >
+            <Heart className="h-4 w-4 shrink-0" />
+            Back to Site
+          </Link>
+          <button
+            type="button"
+            onClick={() => setLogoutConfirmOpen(true)}
+            className="flex w-full items-center gap-3 rounded-2xl px-3.5 py-3 text-sm text-gray-600 transition-all hover:bg-rose-50 hover:text-rose-600"
+          >
+            <LogOut className="h-4 w-4 shrink-0" />
+            Logout
           </button>
-        )}
+        </div>
       </div>
 
-      <div className="border-b border-rose-100 px-4 py-4">
-        <p className="text-sm font-semibold text-gray-900">{user.name}</p>
-        <p className="mt-1 text-xs text-gray-500">{user.email}</p>
-      </div>
-
-      <nav className="flex-1 px-3 py-4">
-        {adminNav.map((item) => {
-          const isActive =
-            item.href === "/admin"
-              ? pathname === "/admin"
-              : pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onClose}
-              className={cn(
-                "mb-2 flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-medium transition-all last:mb-0",
-                isActive
-                  ? "bg-gradient-to-r from-rose-600 to-pink-500 text-white shadow-[0_12px_24px_rgba(244,63,94,0.18)]"
-                  : "text-gray-600 hover:bg-rose-50 hover:text-rose-600"
-              )}
+      {logoutConfirmOpen ? (
+        <div
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/40 px-4 py-6 backdrop-blur-sm"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              closeLogoutConfirm();
+            }
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-logout-confirm-title"
+            className="w-full max-w-sm rounded-[24px] border border-rose-100 bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.14)]"
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+              <LogOut className="h-5 w-5" />
+            </div>
+            <h3
+              id="admin-logout-confirm-title"
+              className="mt-4 font-display text-xl font-bold text-slate-900"
             >
-              <item.icon className="h-4.5 w-4.5 shrink-0" />
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
+              Logout from admin panel?
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Are you sure you want to logout? You can sign in again anytime.
+            </p>
 
-      <div className="space-y-2 border-t border-rose-100 px-3 py-4">
-        <Link
-          href="/"
-          className="flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm text-gray-600 transition-all hover:bg-rose-50 hover:text-rose-600"
-        >
-          <Heart className="h-4 w-4 shrink-0" />
-          Back to Site
-        </Link>
-        <button
-          onClick={() => signOut({ callbackUrl: "/" })}
-          className="flex w-full items-center gap-3 rounded-2xl px-3.5 py-3 text-sm text-gray-600 transition-all hover:bg-rose-50 hover:text-rose-600"
-        >
-          <LogOut className="h-4 w-4 shrink-0" />
-          Logout
-        </button>
-      </div>
-    </div>
+            <div className="mt-6 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={closeLogoutConfirm}
+                disabled={isSigningOut}
+                className="inline-flex flex-1 items-center justify-center rounded-[16px] border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-rose-200 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleLogout()}
+                disabled={isSigningOut}
+                className="inline-flex flex-1 items-center justify-center rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(244,63,94,0.2)] transition-all hover:shadow-[0_18px_36px_rgba(244,63,94,0.24)] disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isSigningOut ? "Logging out..." : "Yes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
 

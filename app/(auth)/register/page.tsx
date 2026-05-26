@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -8,13 +8,40 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import BrandLogo from "@/components/common/BrandLogo";
+import SiteLogo from "@/components/common/SiteLogo";
+import { resolveAllowedImageSrc } from "@/lib/utils/image";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
+
+const DEFAULT_LOGO_IMAGE = "/default-logo.svg";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [logoImageUrl, setLogoImageUrl] = useState(DEFAULT_LOGO_IMAGE);
+
+  useEffect(() => {
+    setLogoImageUrl(
+      resolveAllowedImageSrc(
+        document.body.dataset.logoImageUrl ?? "",
+        DEFAULT_LOGO_IMAGE
+      ) ?? DEFAULT_LOGO_IMAGE
+    );
+
+    const handleBrandingUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent<{ logoImageUrl?: string }>;
+      const nextValue = customEvent.detail?.logoImageUrl ?? "";
+
+      setLogoImageUrl(
+        resolveAllowedImageSrc(nextValue, DEFAULT_LOGO_IMAGE) ??
+          DEFAULT_LOGO_IMAGE
+      );
+    };
+
+    window.addEventListener("branding-logo-updated", handleBrandingUpdate);
+    return () =>
+      window.removeEventListener("branding-logo-updated", handleBrandingUpdate);
+  }, []);
 
   const {
     register,
@@ -52,17 +79,20 @@ export default function RegisterPage() {
 
   const handleGoogle = async () => {
     setIsGoogleLoading(true);
-    await signIn("google", { redirectTo: "/dashboard" });
+    await signIn("google", { callbackUrl: "/dashboard" });
   };
 
   return (
     <div className="min-h-screen hero-gradient flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <BrandLogo
-            wrapperClassName="inline-flex items-center justify-center"
-            className="h-14 max-w-[260px] sm:h-16 sm:max-w-[320px]"
-          />
+          <Link href="/" className="inline-flex items-center justify-center">
+            <SiteLogo
+              src={logoImageUrl}
+              alt="Vivah Bandhan logo"
+              className="h-14 max-w-[260px] sm:h-16 sm:max-w-[320px]"
+            />
+          </Link>
           <h1 className="text-2xl font-display font-bold text-gray-900 mt-5 mb-1">
             Create your account
           </h1>

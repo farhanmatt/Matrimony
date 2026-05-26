@@ -727,6 +727,7 @@ export default async function AdminDashboardPage({
     kind: item.kind,
     title: item.title,
     detail: item.detail,
+    createdAt: item.createdAt.toISOString(),
     createdAtLabel: format(item.createdAt, "dd MMM yyyy, hh:mm a"),
   }));
 

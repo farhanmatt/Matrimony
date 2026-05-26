@@ -4,6 +4,7 @@ import { createRequire } from "module";
 import type { PrismaClient as PrismaClientInstance } from "@prisma/client";
 
 const require = createRequire(import.meta.url);
+type PrismaClientModule = typeof import("@prisma/client");
 
 function clearPrismaModuleCache() {
   if (process.env.NODE_ENV === "production") {
@@ -24,15 +25,33 @@ function clearPrismaModuleCache() {
   }
 }
 
-clearPrismaModuleCache();
+function loadPrismaClientModule(): PrismaClientModule {
+  clearPrismaModuleCache();
+  return require("@prisma/client") as PrismaClientModule;
+}
 
-const prismaClientModule = require("@prisma/client") as typeof import("@prisma/client");
-const { Prisma, PrismaClient } = prismaClientModule;
+function getCurrentSchemaSignature(Prisma: PrismaClientModule["Prisma"]) {
+  const scalarFieldEnums = Object.entries(Prisma)
+    .filter(([key, value]) => {
+      return (
+        key.endsWith("ScalarFieldEnum") &&
+        typeof value === "object" &&
+        value !== null
+      );
+    })
+    .sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey))
+    .map(([key, value]) => {
+      return [
+        key,
+        Object.values(value as Record<string, string>).sort(),
+      ] as const;
+    });
 
-const currentSchemaSignature = JSON.stringify({
-  paymentFields: Object.values(Prisma.PaymentScalarFieldEnum).sort(),
-  adminSettingsFields: Object.values(Prisma.AdminSettingsScalarFieldEnum).sort(),
-});
+  return JSON.stringify({
+    modelNames: Object.values(Prisma.ModelName).sort(),
+    scalarFieldEnums,
+  });
+}
 
 if (!process.env.DATABASE_URL && process.env.DATABASE_URL_UNPOOLED) {
   // Keep application traffic on DATABASE_URL when it's configured.
@@ -45,7 +64,9 @@ const globalForPrisma = globalThis as unknown as {
   prismaSchemaSignature: string | undefined;
 };
 
-function createPrismaClient(): PrismaClientInstance {
+function createPrismaClient(
+  PrismaClient: PrismaClientModule["PrismaClient"]
+): PrismaClientInstance {
   const developmentLogLevels: Array<"query" | "error" | "warn"> =
     process.env.PRISMA_QUERY_LOGS === "true"
       ? ["query", "error", "warn"]
@@ -60,7 +81,10 @@ function toDelegateKey(modelName: string) {
   return `${modelName[0].toLowerCase()}${modelName.slice(1)}`;
 }
 
-function matchesGeneratedSchema(client: PrismaClientInstance | undefined) {
+function matchesGeneratedSchema(
+  client: PrismaClientInstance | undefined,
+  Prisma: PrismaClientModule["Prisma"]
+) {
   if (!client) {
     return false;
   }
@@ -76,11 +100,14 @@ function matchesGeneratedSchema(client: PrismaClientInstance | undefined) {
 
 export function getPrismaClient(): PrismaClientInstance {
   const cachedClient = globalForPrisma.prisma;
+  const prismaClientModule = loadPrismaClientModule();
+  const { Prisma, PrismaClient } = prismaClientModule;
+  const currentSchemaSignature = getCurrentSchemaSignature(Prisma);
 
   if (
     cachedClient &&
     globalForPrisma.prismaSchemaSignature === currentSchemaSignature &&
-    matchesGeneratedSchema(cachedClient)
+    matchesGeneratedSchema(cachedClient, Prisma)
   ) {
     return cachedClient;
   }
@@ -89,7 +116,7 @@ export function getPrismaClient(): PrismaClientInstance {
     void cachedClient.$disconnect().catch(() => {});
   }
 
-  const nextClient = createPrismaClient();
+  const nextClient = createPrismaClient(PrismaClient);
 
   if (process.env.NODE_ENV !== "production") {
     globalForPrisma.prisma = nextClient;

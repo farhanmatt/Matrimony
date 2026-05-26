@@ -20,11 +20,13 @@ type TableRow = {
 interface AdminSelectableProfilesTableProps {
   columns: TableColumn[];
   rows: TableRow[];
+  listFooter?: ReactNode;
 }
 
 export default function AdminSelectableProfilesTable({
   columns,
   rows,
+  listFooter,
 }: AdminSelectableProfilesTableProps) {
   const router = useRouter();
   const [viewportWidth, setViewportWidth] = useState(0);
@@ -65,8 +67,8 @@ export default function AdminSelectableProfilesTable({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="relative px-4 pt-4 sm:px-4">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="min-h-0 flex-1 overflow-auto px-4 pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <div
           ref={scrollRef}
           className={
@@ -82,19 +84,19 @@ export default function AdminSelectableProfilesTable({
                   <col key={column.key} style={{ width: column.width }} />
                 ))}
               </colgroup>
-              <thead>
-                <tr className="border-b border-rose-100 bg-rose-50/80">
+              <thead className="sticky top-0 z-10">
+                <tr className="border-b border-rose-100 bg-rose-50/95 backdrop-blur">
                   {columns.map((column) => (
                     <th
                       key={column.key}
-                      className="px-4 py-4 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700"
+                      className="bg-rose-50/95 px-4 py-4 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700"
                     >
                       {column.label}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-rose-100">
+              <tbody className="divide-y divide-rose-100 bg-white">
                 {visibleRows.map((row) => {
                   return (
                     <tr
@@ -125,6 +127,12 @@ export default function AdminSelectableProfilesTable({
             </table>
           </div>
         </div>
+
+        {listFooter ? (
+          <div className="mt-4 border-t border-rose-100 bg-rose-50/30 px-4 py-3">
+            {listFooter}
+          </div>
+        ) : null}
       </div>
     </div>
   );

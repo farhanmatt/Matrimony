@@ -1,9 +1,16 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
 import SiteLogo from "@/components/common/SiteLogo";
 import { resolveAllowedImageSrc } from "@/lib/utils/image";
+
+type AuthPageShellProps = {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+};
 
 const DEFAULT_LOGO_IMAGE = "/default-logo.svg";
 
@@ -12,25 +19,19 @@ export default function AuthPageShell({
   description,
   children,
   footer,
-}: {
-  title: string;
-  description: string;
-  children: ReactNode;
-  footer?: ReactNode;
-}) {
+}: AuthPageShellProps) {
   const [logoImageUrl, setLogoImageUrl] = useState(DEFAULT_LOGO_IMAGE);
 
   useEffect(() => {
     setLogoImageUrl(
-      resolveAllowedImageSrc(
-        document.body.dataset.logoImageUrl ?? "",
+      resolveAllowedImageSrc(document.body.dataset.logoImageUrl ?? "", DEFAULT_LOGO_IMAGE) ??
         DEFAULT_LOGO_IMAGE
-      ) ?? DEFAULT_LOGO_IMAGE
     );
 
     const handleBrandingUpdate = (event: Event) => {
       const customEvent = event as CustomEvent<{ logoImageUrl?: string }>;
       const nextValue = customEvent.detail?.logoImageUrl ?? "";
+
       setLogoImageUrl(
         resolveAllowedImageSrc(nextValue, DEFAULT_LOGO_IMAGE) ??
           DEFAULT_LOGO_IMAGE
@@ -53,15 +54,14 @@ export default function AuthPageShell({
               className="h-14 max-w-[260px] sm:h-16 sm:max-w-[320px]"
             />
           </Link>
-          <h1 className="text-2xl font-display font-bold text-gray-900 mt-5 mb-1">
+          <h1 className="mt-5 mb-1 text-2xl font-display font-bold text-gray-900">
             {title}
           </h1>
-          <p className="text-gray-500 text-sm">{description}</p>
+          <p className="text-sm text-gray-500">{description}</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="rounded-2xl bg-white p-8 shadow-xl">
           {children}
-
           {footer ? <div className="mt-6">{footer}</div> : null}
         </div>
       </div>

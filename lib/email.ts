@@ -19,6 +19,11 @@ type PasswordResetCodeEmailParams = {
   expiresInMinutes: number;
 };
 
+type PasswordChangedEmailParams = {
+  to: string;
+  recipientName?: string | null;
+};
+
 type SendEmailResult =
   | { ok: true; status: "sent" }
   | { ok: false; status: "skipped" | "failed"; reason: string };
@@ -306,18 +311,18 @@ function buildPasswordResetCodeEmailHtml({
           </div>
           <h1 style="margin:18px 0 8px;font-size:32px;line-height:1.15;color:#0f172a;">Your verification code</h1>
           <p style="margin:0;font-size:16px;line-height:1.7;color:#475569;">
-            Hi ${firstName}, use the verification code below to reset your Vivah Bandhan password.
+            Hi ${firstName}, use the code below to finish resetting your Vivah Bandhan password.
           </p>
         </div>
 
         <div style="padding:32px;">
-          <div style="margin:0 0 24px;padding:20px;border-radius:20px;background:#fff7fa;border:1px solid #ffe1ea;text-align:center;">
-            <p style="margin:0 0 10px;font-size:14px;font-weight:700;letter-spacing:0.12em;color:#e11d48;">VERIFICATION CODE</p>
-            <div style="font-size:34px;letter-spacing:0.35em;font-weight:700;color:#0f172a;">${verificationCode}</div>
+          <div style="margin:0 0 24px;padding:22px;border-radius:20px;background:#fff7fa;border:1px solid #ffe1ea;text-align:center;">
+            <p style="margin:0 0 10px;font-size:14px;font-weight:700;letter-spacing:0.08em;color:#e11d48;">VERIFICATION CODE</p>
+            <p style="margin:0;font-size:36px;font-weight:800;letter-spacing:0.3em;color:#0f172a;">${verificationCode}</p>
           </div>
 
           <p style="margin:0;font-size:15px;line-height:1.8;color:#475569;">
-            This code will expire in ${expiresInMinutes} minutes. If you did not request a password reset, you can safely ignore this email.
+            This code expires in ${expiresInMinutes} minutes. If you did not request a password reset, you can safely ignore this email.
           </p>
         </div>
       </div>
@@ -335,13 +340,74 @@ function buildPasswordResetCodeEmailText({
   return [
     `Hi ${firstName},`,
     "",
-    "Use the verification code below to reset your Vivah Bandhan password:",
+    "Use this verification code to finish resetting your Vivah Bandhan password:",
     "",
     verificationCode,
     "",
-    `This code will expire in ${expiresInMinutes} minutes.`,
+    `This code expires in ${expiresInMinutes} minutes.`,
     "",
     "If you did not request a password reset, you can safely ignore this email.",
+  ].join("\n");
+}
+
+function buildPasswordChangedEmailHtml({
+  recipientName,
+}: Omit<PasswordChangedEmailParams, "to">) {
+  const appUrl = getAppUrl();
+  const firstName = recipientName?.trim() || "there";
+
+  return `
+    <div style="margin:0;padding:32px 16px;background:#fff8fb;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
+      <div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #ffe4ea;border-radius:24px;overflow:hidden;box-shadow:0 20px 48px rgba(15,23,42,0.08);">
+        <div style="padding:28px 32px;background:linear-gradient(135deg,#fffafc 0%,#fff1f6 100%);border-bottom:1px solid #ffe4ea;">
+          <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:#ecfdf3;color:#047857;font-size:12px;font-weight:700;letter-spacing:0.04em;">
+            PASSWORD UPDATED
+          </div>
+          <h1 style="margin:18px 0 8px;font-size:32px;line-height:1.15;color:#0f172a;">Your password was changed</h1>
+          <p style="margin:0;font-size:16px;line-height:1.7;color:#475569;">
+            Hi ${firstName}, your Vivah Bandhan password has been updated successfully.
+          </p>
+        </div>
+
+        <div style="padding:32px;">
+          <p style="margin:0 0 18px;font-size:16px;line-height:1.8;color:#475569;">
+            This is a confirmation that your account password was changed. If this was you, no further action is needed.
+          </p>
+
+          <div style="margin:24px 0;padding:18px 20px;border-radius:18px;background:#fff7fa;border:1px solid #ffe1ea;">
+            <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#e11d48;">Didn't make this change?</p>
+            <p style="margin:0;font-size:15px;line-height:1.8;color:#475569;">
+              Reset your password again right away and contact support if you believe someone accessed your account without permission.
+            </p>
+          </div>
+
+          <div style="margin-top:30px;">
+            <a href="${appUrl}/login" style="display:inline-block;padding:14px 24px;border-radius:14px;background:linear-gradient(135deg,#e11d48 0%,#ec4899 100%);color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;">
+              Sign In
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function buildPasswordChangedEmailText({
+  recipientName,
+}: Omit<PasswordChangedEmailParams, "to">) {
+  const appUrl = getAppUrl();
+  const firstName = recipientName?.trim() || "there";
+
+  return [
+    `Hi ${firstName},`,
+    "",
+    "Your Vivah Bandhan password has been updated successfully.",
+    "",
+    "If this was you, no further action is needed.",
+    "",
+    "If you did not make this change, reset your password again immediately and contact support.",
+    "",
+    `Sign in: ${appUrl}/login`,
   ].join("\n");
 }
 
@@ -399,6 +465,21 @@ export async function sendPasswordResetCodeEmail({
     skippedReason:
       "SMTP_USER / SMTP_PASS are not configured. Password reset email was skipped.",
     errorContext: "Password reset email error",
+  });
+}
+
+export async function sendPasswordChangedEmail({
+  to,
+  recipientName,
+}: PasswordChangedEmailParams): Promise<SendEmailResult> {
+  return sendTransactionalEmail({
+    to,
+    subject: "Your Vivah Bandhan password was changed",
+    html: buildPasswordChangedEmailHtml({ recipientName }),
+    text: buildPasswordChangedEmailText({ recipientName }),
+    skippedReason:
+      "SMTP_USER / SMTP_PASS are not configured. Password changed email was skipped.",
+    errorContext: "Password changed email error",
   });
 }
 

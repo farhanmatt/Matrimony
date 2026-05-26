@@ -13,7 +13,6 @@ import {
   getCredentialsErrorMessage,
 } from "@/lib/auth-error-messages";
 import SiteLogo from "@/components/common/SiteLogo";
-import { normalizeAuthRedirectTarget } from "@/lib/utils/auth-redirect";
 import { resolveAllowedImageSrc } from "@/lib/utils/image";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { PageLoader } from "@/components/common/LoadingSpinner";
@@ -24,9 +23,8 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { status } = useSession();
-  const callbackUrl = normalizeAuthRedirectTarget(searchParams.get("callbackUrl"));
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
   const authErrorMessage = getAuthPageErrorMessage(searchParams.get("error"));
-  const passwordResetSucceeded = searchParams.get("passwordReset") === "success";
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [logoImageUrl, setLogoImageUrl] = useState(DEFAULT_LOGO_IMAGE);
@@ -73,7 +71,7 @@ function LoginForm() {
         email: data.identifier,
         password: data.password,
         redirect: false,
-        redirectTo: callbackUrl,
+        callbackUrl,
       });
 
       if (result?.error) {
@@ -86,7 +84,7 @@ function LoginForm() {
       }
 
       toast.success("Welcome back!");
-      router.replace(result?.url ?? callbackUrl);
+      router.push(callbackUrl);
       router.refresh();
     } catch (error) {
       toast.error("Authentication failed. Please try again.");
@@ -95,7 +93,7 @@ function LoginForm() {
 
   const handleGoogle = async () => {
     setIsGoogleLoading(true);
-    await signIn("google", { redirectTo: callbackUrl });
+    await signIn("google", { callbackUrl });
   };
 
   if (status === "authenticated") {
@@ -123,12 +121,6 @@ function LoginForm() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          {passwordResetSucceeded ? (
-            <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-              Your password has been reset successfully. Please sign in with your new password.
-            </div>
-          ) : null}
-
           {authErrorMessage ? (
             <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
               {authErrorMessage}

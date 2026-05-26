@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bell, CreditCard, HeartHandshake, UserCheck, Users } from "lucide-react";
 
+const ADMIN_NOTIFICATIONS_SEEN_STORAGE_KEY = "vivah-admin-notifications-seen-at";
+const ADMIN_NOTIFICATIONS_SEEN_EVENT = "vivah-admin-notifications-seen-updated";
+
 export type AdminNotificationKind = "user" | "profile" | "match" | "payment";
 
 export interface AdminNotificationItem {
@@ -10,6 +13,7 @@ export interface AdminNotificationItem {
   kind: AdminNotificationKind;
   title: string;
   detail: string;
+  createdAt: string;
   createdAtLabel: string;
 }
 
@@ -47,11 +51,74 @@ function getNotificationStyle(kind: AdminNotificationKind) {
   }
 }
 
+function readAdminNotificationsSeenAt() {
+  if (typeof window === "undefined") {
+    return null as string | null;
+  }
+
+  try {
+    return window.localStorage.getItem(ADMIN_NOTIFICATIONS_SEEN_STORAGE_KEY) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function writeAdminNotificationsSeenAt(value: string) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(ADMIN_NOTIFICATIONS_SEEN_STORAGE_KEY, value);
+    window.dispatchEvent(
+      new CustomEvent(ADMIN_NOTIFICATIONS_SEEN_EVENT, {
+        detail: { seenAt: value },
+      })
+    );
+  } catch {
+    // Ignore storage failures and keep the bell usable.
+  }
+}
+
+function getLatestNotificationCreatedAt(notifications: AdminNotificationItem[]) {
+  return notifications.reduce<string | null>((latestValue, item) => {
+    if (!latestValue) {
+      return item.createdAt;
+    }
+
+    return new Date(item.createdAt).getTime() > new Date(latestValue).getTime()
+      ? item.createdAt
+      : latestValue;
+  }, null);
+}
+
 export default function AdminNotificationBell({ notifications }: AdminNotificationBellProps) {
   const [open, setOpen] = useState(false);
+  const [seenAt, setSeenAt] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const notificationCount = notifications.length;
   const visibleItems = useMemo(() => notifications.slice(0, 6), [notifications]);
+
+  useEffect(() => {
+    setSeenAt(readAdminNotificationsSeenAt());
+  }, []);
+
+  useEffect(() => {
+    const handleSeenUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<{ seenAt?: string | null }>;
+      setSeenAt(customEvent.detail?.seenAt ?? null);
+    };
+
+    window.addEventListener(
+      ADMIN_NOTIFICATIONS_SEEN_EVENT,
+      handleSeenUpdated as EventListener
+    );
+
+    return () =>
+      window.removeEventListener(
+        ADMIN_NOTIFICATIONS_SEEN_EVENT,
+        handleSeenUpdated as EventListener
+      );
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -76,6 +143,40 @@ export default function AdminNotificationBell({ notifications }: AdminNotificati
       document.removeEventListener("keydown", handleEscape);
     };
   }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const latestCreatedAt = getLatestNotificationCreatedAt(notifications);
+    if (!latestCreatedAt) {
+      return;
+    }
+
+    setSeenAt((currentSeenAt) => {
+      if (
+        currentSeenAt &&
+        new Date(currentSeenAt).getTime() >= new Date(latestCreatedAt).getTime()
+      ) {
+        return currentSeenAt;
+      }
+
+      writeAdminNotificationsSeenAt(latestCreatedAt);
+      return latestCreatedAt;
+    });
+  }, [notifications, open]);
+
+  const notificationCount = useMemo(() => {
+    if (!seenAt) {
+      return notifications.length;
+    }
+
+    const seenTimestamp = new Date(seenAt).getTime();
+    return notifications.filter(
+      (item) => new Date(item.createdAt).getTime() > seenTimestamp
+    ).length;
+  }, [notifications, seenAt]);
 
   return (
     <div ref={containerRef} className="relative self-start sm:self-auto">

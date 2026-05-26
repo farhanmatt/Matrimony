@@ -743,7 +743,7 @@ export default function BrowsePage() {
               setSortOrder(event.target.value);
               setPage(1);
             }}
-            className="h-14 min-w-[210px] appearance-none rounded-[18px] border border-slate-200/80 bg-white px-5 pr-12 text-[15px] font-medium text-slate-700 outline-none input-focus"
+            className="h-[48px] min-w-[210px] appearance-none rounded-[10px] border border-slate-200/80 bg-white px-5 pr-12 text-[15px] font-medium text-slate-700 outline-none input-focus"
           >
             {sortOptions.map((option) => (
               <option key={option.value} value={option.value}>

@@ -1,5 +1,6 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -18,13 +19,25 @@ export default function AdminProfileStatusQuickLinks({
   items,
 }: AdminProfileStatusQuickLinksProps) {
   const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!open) return;
 
     const handlePointerDown = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(target) &&
+        panelRef.current &&
+        !panelRef.current.contains(target)
+      ) {
         setOpen(false);
       }
     };
@@ -33,9 +46,45 @@ export default function AdminProfileStatusQuickLinks({
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, [open]);
 
+  useEffect(() => {
+    if (!open) {
+      setMenuPosition(null);
+      return;
+    }
+
+    const updatePosition = () => {
+      const trigger = triggerRef.current;
+      if (!trigger) return;
+
+      const rect = trigger.getBoundingClientRect();
+      const menuHeight = items.length * 52;
+      const menuWidth = 224;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      const openUpward = spaceBelow < menuHeight + 16 && spaceAbove > menuHeight;
+      const top = openUpward ? rect.top - menuHeight - 8 : rect.bottom + 8;
+      const left = Math.min(Math.max(12, rect.right - menuWidth), window.innerWidth - menuWidth - 12);
+
+      setMenuPosition({
+        top: Math.max(12, top),
+        left,
+      });
+    };
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [items.length, open]);
+
   return (
-    <div ref={menuRef} className="relative shrink-0 whitespace-nowrap">
+    <div ref={containerRef} className="relative shrink-0 whitespace-nowrap">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((value) => !value)}
         className="inline-flex h-10 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
@@ -46,8 +95,16 @@ export default function AdminProfileStatusQuickLinks({
         <Settings className="h-4 w-4 shrink-0" />
       </button>
 
-      {open ? (
-        <div className="absolute right-0 top-12 z-40 w-56 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
+      {open && menuPosition && typeof document !== "undefined"
+        ? createPortal(
+        <div
+          ref={panelRef}
+          className="fixed z-[9999] w-56 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl"
+          style={{
+            top: `${menuPosition.top}px`,
+            left: `${menuPosition.left}px`,
+          }}
+        >
           {items.map((option) => {
             const Icon: ReactNode =
               option.icon === "blocked" ? (
@@ -73,8 +130,10 @@ export default function AdminProfileStatusQuickLinks({
               </Link>
             );
           })}
-        </div>
-      ) : null}
+        </div>,
+        document.body,
+      )
+        : null}
     </div>
   );
 }

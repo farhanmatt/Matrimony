@@ -5,7 +5,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { resolveAuthRedirectUrl } from "@/lib/utils/auth-redirect";
 import {
   isDefaultAdminIdentifier,
   upsertAdminUser,
@@ -48,8 +47,13 @@ async function getCredentialUsers(identifier: string) {
   const normalizedIdentifier = identifier.trim();
 
   if (normalizedIdentifier.includes("@")) {
-    const user = await prisma.user.findUnique({
-      where: { email: normalizeEmailIdentifier(normalizedIdentifier) },
+    const user = await prisma.user.findFirst({
+      where: {
+        email: {
+          equals: normalizeEmailIdentifier(normalizedIdentifier),
+          mode: "insensitive",
+        },
+      },
     });
 
     return user ? [user] : [];
@@ -160,9 +164,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async redirect({ url, baseUrl }) {
-      return resolveAuthRedirectUrl(url, baseUrl);
-    },
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;

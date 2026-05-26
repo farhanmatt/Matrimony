@@ -58,12 +58,7 @@ function PreviewImage({
   return (
     <>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={displaySrc}
-        alt={alt}
-        className={className}
-        onError={handleError}
-      />
+      <img src={displaySrc} alt={alt} className={className} onError={handleError} />
     </>
   );
 }
@@ -79,10 +74,9 @@ async function readJson<T>(response: Response) {
   }
 }
 
-async function uploadLandingImage(file: File, assetType: "hero" | "logo") {
+async function uploadLandingImage(file: File) {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("assetType", assetType);
 
   const response = await fetch("/api/admin/upload-image", {
     method: "POST",
@@ -251,6 +245,8 @@ export default function AdminLandingSettingsForm({
     handleFiles: handleLogoFiles,
     applySavedValue: applyLogoSavedValue,
   } = logo;
+  const heroHasDraft = Boolean(heroPendingFile);
+  const logoHasDraft = Boolean(logoPendingFile);
 
   const saveHeroImage = useCallback(async () => {
     setSavingHero(true);
@@ -258,7 +254,7 @@ export default function AdminLandingSettingsForm({
 
     try {
       const nextHeroImageUrl = heroPendingFile
-        ? await uploadLandingImage(heroPendingFile, "hero")
+        ? await uploadLandingImage(heroPendingFile)
         : heroSavedValue;
 
       await saveLandingSetting("heroImageUrl", nextHeroImageUrl);
@@ -286,7 +282,7 @@ export default function AdminLandingSettingsForm({
 
     try {
       const nextLogoImageUrl = logoPendingFile
-        ? await uploadLandingImage(logoPendingFile, "logo")
+        ? await uploadLandingImage(logoPendingFile)
         : logoSavedValue;
 
       await saveLandingSetting("logoImageUrl", nextLogoImageUrl);
@@ -333,238 +329,401 @@ export default function AdminLandingSettingsForm({
   );
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
-      <div className="space-y-6">
-        <div className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <div className="mb-6 flex items-start gap-3">
-            <div className="rounded-2xl bg-rose-50 p-3 text-rose-500">
-              <ImagePlus className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">Landing Hero Image</h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Upload, drag and drop, or replace the homepage hero banner.
-              </p>
-            </div>
-          </div>
+    <div className="relative">
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(circle_at_top_left,rgba(244,63,94,0.14),transparent_34%),radial-gradient(circle_at_top_right,rgba(251,113,133,0.14),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,247,250,0.98))]" />
 
-          <input
-            ref={heroFileInputRef}
-            type="file"
-            accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/svg+xml"
-            className="hidden"
-            onChange={(event) => handleHeroFiles(event.target.files)}
-          />
+      <div className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr] 2xl:gap-8">
+        <div className="space-y-6">
+          <div className="overflow-hidden rounded-[2rem] border border-rose-100/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.06)]">
+            <div className="relative border-b border-rose-100/80 px-6 py-3 sm:px-8">
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-full bg-[radial-gradient(circle_at_top_left,rgba(244,63,94,0.12),transparent_42%),radial-gradient(circle_at_right,rgba(251,113,133,0.1),transparent_34%)]" />
 
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={openHeroFilePicker}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                openHeroFilePicker();
-              }
-            }}
-            onDragEnter={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              setHeroDragActive(true);
-            }}
-            onDragOver={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              setHeroDragActive(true);
-            }}
-            onDragLeave={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              setHeroDragActive(false);
-            }}
-            onDrop={onDropHero}
-            className={[
-              "flex min-h-[16rem] flex-col items-center justify-center rounded-[1.75rem] border-2 border-dashed px-6 text-center transition-colors",
-              heroDragActive
-                ? "border-rose-500 bg-rose-50/70"
-                : "border-rose-200 bg-gradient-to-br from-rose-50/60 via-white to-pink-50/40 hover:border-rose-300 hover:bg-rose-50/40",
-            ].join(" ")}
-          >
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-rose-500 shadow-sm">
-              <Upload className="h-6 w-6" />
-            </div>
-            <div className="mt-4 max-w-md">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {heroDragActive ? "Drop the banner image here" : "Drag and drop a banner image"}
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-gray-500">
-                JPG, PNG, WEBP, GIF, or SVG up to 10 MB. Click anywhere in this box to browse files.
-              </p>
-            </div>
+              <div className="relative flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] bg-gradient-to-br from-rose-100 via-white to-pink-100 text-rose-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_12px_30px_rgba(244,63,94,0.12)]">
+                    <ImagePlus className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h2 className="whitespace-nowrap text-2xl font-bold leading-none tracking-tight text-slate-900">
+                      Landing Hero Image
+                    </h2>
+                  </div>
+                </div>
 
-            {heroSelectedFileName ? (
-              <div className="mt-4 rounded-full border border-rose-200 bg-white px-4 py-2 text-xs font-medium text-rose-700 shadow-sm">
-                Selected file: {heroSelectedFileName}
+                <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+                  <span
+                    className={[
+                      "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold shadow-sm",
+                      heroHasDraft
+                        ? "border border-rose-200 bg-rose-50 text-rose-600"
+                        : "border border-emerald-200 bg-emerald-50 text-emerald-600",
+                    ].join(" ")}
+                  >
+                    <span
+                      className={[
+                        "h-2 w-2 rounded-full",
+                        heroHasDraft ? "bg-rose-500" : "bg-emerald-500",
+                      ].join(" ")}
+                    />
+                    {heroHasDraft ? "Draft selected" : "Live image"}
+                  </span>
+                </div>
               </div>
-            ) : (
-              <div className="mt-4 text-xs text-gray-400">
-                Current banner is kept until you save a new image.
-              </div>
-            )}
-          </div>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={openHeroFilePicker}
-              className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50"
-            >
-              <ImagePlus className="h-4 w-4" />
-              Choose File
-            </button>
-            <button
-              type="button"
-              onClick={() => void saveHeroImage()}
-              disabled={savingHero}
-              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(244,63,94,0.22)] transition-colors disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {savingHero ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              {savingHero ? "Saving..." : "Save Hero Image"}
-            </button>
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <div className="mb-6 flex items-start gap-3">
-            <div className="rounded-2xl bg-rose-50 p-3 text-rose-500">
-              <ImagePlus className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">Site Logo Image</h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Upload the logo shown in the header across the public site.
-              </p>
-            </div>
-          </div>
-
-          <input
-            ref={logoFileInputRef}
-            type="file"
-            accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/svg+xml"
-            className="hidden"
-            onChange={(event) => handleLogoFiles(event.target.files)}
-          />
-
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={openLogoFilePicker}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                openLogoFilePicker();
-              }
-            }}
-            onDragEnter={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              setLogoDragActive(true);
-            }}
-            onDragOver={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              setLogoDragActive(true);
-            }}
-            onDragLeave={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              setLogoDragActive(false);
-            }}
-            onDrop={onDropLogo}
-            className={[
-              "flex min-h-[13rem] flex-col items-center justify-center rounded-[1.75rem] border-2 border-dashed px-6 text-center transition-colors",
-              logoDragActive
-                ? "border-rose-500 bg-rose-50/70"
-                : "border-rose-200 bg-gradient-to-br from-rose-50/60 via-white to-pink-50/40 hover:border-rose-300 hover:bg-rose-50/40",
-            ].join(" ")}
-          >
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-rose-500 shadow-sm">
-              <Upload className="h-6 w-6" />
-            </div>
-            <div className="mt-4 max-w-md">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {logoDragActive ? "Drop the logo image here" : "Drag and drop a logo image"}
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-gray-500">
-                JPG, PNG, WEBP, GIF, or SVG up to 10 MB. Click anywhere in this box to browse files.
-              </p>
             </div>
 
-            {logoSelectedFileName ? (
-              <div className="mt-4 rounded-full border border-rose-200 bg-white px-4 py-2 text-xs font-medium text-rose-700 shadow-sm">
-                Selected file: {logoSelectedFileName}
-              </div>
-            ) : (
-              <div className="mt-4 text-xs text-gray-400">
-                The current logo stays live until you save a new image.
-              </div>
-            )}
-          </div>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={openLogoFilePicker}
-              className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50"
-            >
-              <ImagePlus className="h-4 w-4" />
-              Choose File
-            </button>
-            <button
-              type="button"
-              onClick={() => void saveLogoImage()}
-              disabled={savingLogo}
-              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(244,63,94,0.22)] transition-colors disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {savingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              {savingLogo ? "Saving..." : "Save Logo Image"}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-6">
-        <div className="overflow-hidden rounded-3xl border border-rose-100 bg-white shadow-sm">
-          <div className="border-b border-rose-100 px-6 py-4">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-gray-500">
-              Banner Preview
-            </h3>
-          </div>
-
-          <div className="relative aspect-[16/10] bg-gradient-to-br from-rose-50 via-white to-pink-50">
-            <PreviewImage
-              src={heroPreviewUrl}
-              fallback={DEFAULT_HERO_IMAGE}
-              alt="Landing hero preview"
-              className="h-full w-full object-cover object-center"
-            />
-          </div>
-        </div>
-
-        <div className="overflow-hidden rounded-3xl border border-rose-100 bg-white shadow-sm">
-          <div className="border-b border-rose-100 px-6 py-4">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-gray-500">
-              Site Logo Preview
-            </h3>
-          </div>
-
-          <div className="flex min-h-[15rem] items-center justify-center bg-gradient-to-br from-white via-rose-50/50 to-pink-50/60 p-6">
-            <div className="flex w-full max-w-md items-center justify-center rounded-[2rem] border border-rose-100 bg-white p-6 shadow-sm">
-              <PreviewImage
-                src={logoPreviewUrl}
-                fallback={DEFAULT_LOGO_IMAGE}
-                alt="Site logo preview"
-                className="max-h-40 w-full object-contain object-center"
+            <div className="p-[1.125rem] sm:p-5">
+              <input
+                ref={heroFileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/svg+xml"
+                className="hidden"
+                onChange={(event) => handleHeroFiles(event.target.files)}
               />
+
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={openHeroFilePicker}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    openHeroFilePicker();
+                  }
+                }}
+                onDragEnter={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setHeroDragActive(true);
+                }}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setHeroDragActive(true);
+                }}
+                onDragLeave={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setHeroDragActive(false);
+                }}
+                onDrop={onDropHero}
+                className={[
+                  "group relative isolate flex min-h-[9.5rem] flex-col items-center justify-center overflow-hidden rounded-[1.75rem] border px-6 py-4 text-center transition-all duration-300 sm:px-8",
+                  heroDragActive
+                    ? "border-rose-400 bg-rose-50 shadow-[0_18px_45px_rgba(244,63,94,0.12)]"
+                    : "border-rose-200/90 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.98),rgba(255,241,242,0.92)_42%,rgba(253,242,248,0.76)_100%)] hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-[0_18px_45px_rgba(244,63,94,0.08)]",
+                ].join(" ")}
+              >
+                <div className="pointer-events-none absolute inset-x-10 top-0 h-24 rounded-full bg-white/70 blur-3xl" />
+                <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/80 bg-white/90 text-rose-500 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+                  <Upload className="h-7 w-7" />
+                </div>
+                <div className="relative mt-2.5 max-w-lg">
+                  <h3 className="text-2xl font-bold tracking-tight text-slate-900">
+                    {heroDragActive ? "Drop the banner image here" : "Drag and drop a banner image"}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-500">
+                    JPG, PNG, WEBP, GIF, or SVG up to 10 MB. Click anywhere in this box to browse files.
+                  </p>
+                </div>
+
+                {heroSelectedFileName ? (
+                  <div className="relative mt-3 inline-flex max-w-full items-center gap-2 rounded-full border border-rose-200 bg-white/95 px-4 py-2 text-xs font-semibold text-rose-700 shadow-sm">
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-rose-500" />
+                    <span className="truncate">Pending file: {heroSelectedFileName}</span>
+                  </div>
+                ) : (
+                  <div className="relative mt-3 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-xs font-medium text-slate-500 shadow-sm">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    Current banner is kept until you save a new image.
+                  </div>
+                )}
+
+              </div>
+
+              <div className="mt-4 flex flex-col gap-3 rounded-[1.5rem] border border-rose-100 bg-gradient-to-r from-white to-rose-50/70 p-3.5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {heroHasDraft ? "New banner selected and ready to save" : "Choose a new banner when you're ready"}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    The preview updates immediately, but the public homepage changes only after you save.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => void saveHeroImage()}
+                    disabled={savingHero}
+                    className="inline-flex min-w-[11rem] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(244,63,94,0.24)] transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_42px_rgba(244,63,94,0.28)] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+                  >
+                    {savingHero ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    {savingHero ? "Saving..." : "Save Hero Image"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-[2rem] border border-rose-100/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.06)]">
+            <div className="relative border-b border-rose-100/80 px-6 py-3.5 sm:px-8">
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-full bg-[radial-gradient(circle_at_top_left,rgba(244,63,94,0.1),transparent_40%),radial-gradient(circle_at_right,rgba(251,113,133,0.08),transparent_34%)]" />
+
+              <div className="relative flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] bg-gradient-to-br from-rose-100 via-white to-pink-100 text-rose-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_12px_30px_rgba(244,63,94,0.1)]">
+                    <ImagePlus className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h2 className="whitespace-nowrap text-2xl font-bold leading-none tracking-tight text-slate-900">
+                      Site Logo Image
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+                  <span
+                    className={[
+                      "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold shadow-sm",
+                      logoHasDraft
+                        ? "border border-rose-200 bg-rose-50 text-rose-600"
+                        : "border border-emerald-200 bg-emerald-50 text-emerald-600",
+                    ].join(" ")}
+                  >
+                    <span
+                      className={[
+                        "h-2 w-2 rounded-full",
+                        logoHasDraft ? "bg-rose-500" : "bg-emerald-500",
+                      ].join(" ")}
+                    />
+                    {logoHasDraft ? "Draft selected" : "Live image"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 sm:p-6">
+              <input
+                ref={logoFileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/webp,image/gif,image/svg+xml"
+                className="hidden"
+                onChange={(event) => handleLogoFiles(event.target.files)}
+              />
+
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={openLogoFilePicker}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    openLogoFilePicker();
+                  }
+                }}
+                onDragEnter={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setLogoDragActive(true);
+                }}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setLogoDragActive(true);
+                }}
+                onDragLeave={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setLogoDragActive(false);
+                }}
+                onDrop={onDropLogo}
+                className={[
+                  "group relative isolate flex min-h-[9.25rem] flex-col items-center justify-center overflow-hidden rounded-[1.75rem] border px-6 py-3.5 text-center transition-all duration-300 sm:px-8",
+                  logoDragActive
+                    ? "border-rose-400 bg-rose-50 shadow-[0_18px_45px_rgba(244,63,94,0.12)]"
+                    : "border-rose-200/90 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.98),rgba(255,241,242,0.92)_42%,rgba(253,242,248,0.76)_100%)] hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-[0_18px_45px_rgba(244,63,94,0.08)]",
+                ].join(" ")}
+              >
+                <div className="pointer-events-none absolute inset-x-10 top-0 h-24 rounded-full bg-white/70 blur-3xl" />
+                <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/80 bg-white/90 text-rose-500 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+                  <Upload className="h-7 w-7" />
+                </div>
+                <div className="relative mt-2.5 max-w-lg">
+                  <h3 className="text-2xl font-bold tracking-tight text-slate-900">
+                    {logoDragActive ? "Drop the logo image here" : "Drag and drop a logo image"}
+                  </h3>
+                  <p className="mt-2 text-sm leading-5 text-slate-500">
+                    JPG, PNG, WEBP, GIF, or SVG up to 10 MB. Click anywhere in this box to browse files.
+                  </p>
+                </div>
+
+                {logoSelectedFileName ? (
+                  <div className="relative mt-2.5 inline-flex max-w-full items-center gap-2 rounded-full border border-rose-200 bg-white/95 px-4 py-2 text-xs font-semibold text-rose-700 shadow-sm">
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-rose-500" />
+                    <span className="truncate">Pending file: {logoSelectedFileName}</span>
+                  </div>
+                ) : (
+                  <div className="relative mt-2.5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-xs font-medium text-slate-500 shadow-sm">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    The current logo stays live until you save a new image.
+                  </div>
+                )}
+
+              </div>
+
+              <div className="mt-3.5 flex flex-col gap-3 rounded-[1.5rem] border border-rose-100 bg-gradient-to-r from-white to-rose-50/70 p-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {logoHasDraft ? "New logo selected and ready to save" : "Choose a new logo when you're ready"}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    The live site logo changes only after saving, so you can review the preview first.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => void saveLogoImage()}
+                    disabled={savingLogo}
+                    className="inline-flex min-w-[11rem] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(244,63,94,0.24)] transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_42px_rgba(244,63,94,0.28)] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+                  >
+                    {savingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    {savingLogo ? "Saving..." : "Save Logo Image"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-6 xl:sticky xl:top-6 xl:self-start">
+          <div className="overflow-hidden rounded-[2rem] border border-rose-100/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.06)]">
+            <div className="flex flex-col gap-3 border-b border-rose-100/80 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  Banner Preview
+                </h3>
+                <p className="mt-2 text-xs leading-6 text-slate-500">
+                  This view updates as soon as you pick a new banner file.
+                </p>
+              </div>
+              <span
+                className={[
+                  "inline-flex items-center gap-2 self-start rounded-full px-3 py-1 text-xs font-semibold shadow-sm sm:self-auto",
+                  heroHasDraft
+                    ? "border border-rose-200 bg-rose-50 text-rose-600"
+                    : "border border-slate-200 bg-white text-slate-500",
+                ].join(" ")}
+              >
+                <span
+                  className={[
+                    "h-2 w-2 rounded-full",
+                    heroHasDraft ? "bg-rose-500" : "bg-emerald-500",
+                  ].join(" ")}
+                />
+                {heroHasDraft ? "Draft preview" : "Live preview"}
+              </span>
+            </div>
+
+            <div className="p-4 sm:p-5">
+              <div className="relative overflow-hidden rounded-[1.75rem] border border-rose-100 bg-[radial-gradient(circle_at_top,rgba(251,113,133,0.14),rgba(255,255,255,0.96)_44%,rgba(253,242,248,0.88)_100%)] p-2 sm:p-3">
+                <div className="pointer-events-none absolute inset-x-16 top-0 h-20 rounded-full bg-white/70 blur-3xl" />
+                <div className="absolute left-5 top-5 z-10 inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-sm">
+                  Homepage hero
+                </div>
+                <div
+                  className={[
+                    "absolute right-5 top-5 z-10 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] shadow-sm",
+                    heroHasDraft
+                      ? "bg-rose-600 text-white"
+                      : "bg-white/90 text-slate-600",
+                  ].join(" ")}
+                >
+                  <span
+                    className={[
+                      "h-2 w-2 rounded-full",
+                      heroHasDraft ? "bg-white" : "bg-emerald-500",
+                    ].join(" ")}
+                  />
+                  {heroHasDraft ? "Unsaved changes" : "Current live image"}
+                </div>
+
+                <div className="relative aspect-[16/10] overflow-hidden rounded-[1.35rem] border border-white/70 bg-gradient-to-br from-rose-50 via-white to-pink-50 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+                  <PreviewImage
+                    src={heroPreviewUrl}
+                    fallback={DEFAULT_HERO_IMAGE}
+                    alt="Landing hero preview"
+                    className="h-full w-full object-cover object-center"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/10 via-transparent to-white/10" />
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-[2rem] border border-rose-100/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.06)]">
+            <div className="flex flex-col gap-3 border-b border-rose-100/80 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  Site Logo Preview
+                </h3>
+                <p className="mt-2 text-xs leading-6 text-slate-500">
+                  Review how the header logo looks before publishing the change.
+                </p>
+              </div>
+              <span
+                className={[
+                  "inline-flex items-center gap-2 self-start rounded-full px-3 py-1 text-xs font-semibold shadow-sm sm:self-auto",
+                  logoHasDraft
+                    ? "border border-rose-200 bg-rose-50 text-rose-600"
+                    : "border border-slate-200 bg-white text-slate-500",
+                ].join(" ")}
+              >
+                <span
+                  className={[
+                    "h-2 w-2 rounded-full",
+                    logoHasDraft ? "bg-rose-500" : "bg-emerald-500",
+                  ].join(" ")}
+                />
+                {logoHasDraft ? "Draft preview" : "Live preview"}
+              </span>
+            </div>
+
+            <div className="p-4 sm:p-5">
+              <div className="relative overflow-hidden rounded-[1.75rem] border border-rose-100 bg-[linear-gradient(135deg,rgba(255,255,255,1),rgba(255,241,242,0.84),rgba(253,242,248,0.92))] p-5 sm:p-7">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(244,63,94,0.14),transparent_42%)]" />
+                <div className="relative flex min-h-[18rem] items-center justify-center rounded-[1.75rem] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(255,250,251,0.96))] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_20px_50px_rgba(15,23,42,0.08)]">
+                  <div className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-sm">
+                    Header logo
+                  </div>
+                  <div
+                    className={[
+                      "absolute right-4 top-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] shadow-sm",
+                      logoHasDraft
+                        ? "bg-rose-600 text-white"
+                        : "bg-white/90 text-slate-600",
+                    ].join(" ")}
+                  >
+                    <span
+                      className={[
+                        "h-2 w-2 rounded-full",
+                        logoHasDraft ? "bg-white" : "bg-emerald-500",
+                      ].join(" ")}
+                    />
+                    {logoHasDraft ? "Unsaved changes" : "Current live image"}
+                  </div>
+                  <div className="pointer-events-none absolute inset-4 rounded-[1.35rem] border border-dashed border-rose-100/80" />
+                  <PreviewImage
+                    src={logoPreviewUrl}
+                    fallback={DEFAULT_LOGO_IMAGE}
+                    alt="Site logo preview"
+                    className="relative z-10 max-h-40 w-full max-w-[290px] object-contain object-center drop-shadow-[0_16px_32px_rgba(15,23,42,0.12)]"
+                  />
+                </div>
+              </div>
+
             </div>
           </div>
         </div>

@@ -23,6 +23,7 @@ type TableRow = {
 interface AdminMatchesTableProps {
   columns: TableColumn[];
   rows: TableRow[];
+  listFooter?: ReactNode;
 }
 
 function SelectableCheckbox({
@@ -49,7 +50,7 @@ function SelectableCheckbox({
   );
 }
 
-export default function AdminMatchesTable({ columns, rows }: AdminMatchesTableProps) {
+export default function AdminMatchesTable({ columns, rows, listFooter }: AdminMatchesTableProps) {
   const router = useRouter();
   const [visibleRows, setVisibleRows] = useState(rows);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -279,8 +280,8 @@ export default function AdminMatchesTable({ columns, rows }: AdminMatchesTablePr
   };
 
   return (
-    <div className="space-y-4">
-      <div className="px-4 pt-4 sm:px-4">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="min-h-0 flex-1 overflow-auto px-4 pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <table className="w-full min-w-[1240px] table-fixed text-sm xl:min-w-full">
             <colgroup>
@@ -289,22 +290,22 @@ export default function AdminMatchesTable({ columns, rows }: AdminMatchesTablePr
                 <col key={column.key} style={{ width: column.width }} />
               ))}
             </colgroup>
-            <thead>
-              <tr className="border-b border-rose-100 bg-rose-50/80">
-                <th className="sticky left-0 z-10 bg-rose-50/80 px-4 py-3.5 text-left">
+            <thead className="sticky top-0 z-10">
+              <tr className="border-b border-rose-100 bg-rose-50/95 backdrop-blur">
+                <th className="sticky left-0 z-20 bg-rose-50/95 px-4 py-3.5 text-left">
                   <SelectableCheckbox checked={allSelected} onChange={toggleAll} ariaLabel="Select all matches" />
                 </th>
                 {columns.map((column) => (
                   <th
                     key={column.key}
-                    className="px-4 py-3.5 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700"
+                    className="bg-rose-50/95 px-4 py-3.5 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700"
                   >
                     {column.label}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-rose-100">
+            <tbody className="divide-y divide-rose-100 bg-white">
               {visibleRows.map((row) => {
                 const checked = selectedSet.has(row.id);
 
@@ -414,9 +415,15 @@ export default function AdminMatchesTable({ columns, rows }: AdminMatchesTablePr
             </tbody>
           </table>
         </div>
+
+        {listFooter ? (
+          <div className="mt-4 border-t border-rose-100 bg-rose-50/30 px-4 py-3">
+            {listFooter}
+          </div>
+        ) : null}
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-rose-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+      <div className="shrink-0 flex flex-col gap-3 border-t border-rose-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-4">
         <div className="flex items-center gap-3 text-sm text-slate-600">
           <span className="inline-flex items-center gap-2 rounded-xl border border-rose-100 bg-white px-3 py-2 shadow-sm">
             <span className="font-semibold text-slate-900">{selectedCount}</span> Selected
