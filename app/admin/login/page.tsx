@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -30,6 +30,18 @@ import { PageLoader } from "@/components/common/LoadingSpinner";
 
 const DEFAULT_LOGO_IMAGE = "/default-logo.svg";
 
+function getSafeCallbackUrl(value: string | null, fallback = "/admin") {
+  if (!value) {
+    return fallback;
+  }
+
+  if (!value.startsWith("/") || value.startsWith("//")) {
+    return fallback;
+  }
+
+  return value;
+}
+
 function DotPattern({ className }: { className: string }) {
   return (
     <div
@@ -47,9 +59,8 @@ function DotPattern({ className }: { className: string }) {
 }
 
 function AdminLoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/admin";
+  const callbackUrl = getSafeCallbackUrl(searchParams.get("callbackUrl"));
   const [showPassword, setShowPassword] = useState(false);
   const [logoImageUrl, setLogoImageUrl] = useState(DEFAULT_LOGO_IMAGE);
 
@@ -104,8 +115,7 @@ function AdminLoginForm() {
       }
 
       toast.success("Admin access granted. Welcome back.");
-      router.replace(result?.url ?? callbackUrl);
-      router.refresh();
+      window.location.replace(result?.url ?? callbackUrl);
     } catch (error) {
       toast.error("An unexpected error occurred. Please try again.");
     }

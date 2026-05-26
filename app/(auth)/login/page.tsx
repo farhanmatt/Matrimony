@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -19,11 +19,22 @@ import { PageLoader } from "@/components/common/LoadingSpinner";
 
 const DEFAULT_LOGO_IMAGE = "/default-logo.svg";
 
+function getSafeCallbackUrl(value: string | null, fallback = "/dashboard") {
+  if (!value) {
+    return fallback;
+  }
+
+  if (!value.startsWith("/") || value.startsWith("//")) {
+    return fallback;
+  }
+
+  return value;
+}
+
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { status } = useSession();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
+  const callbackUrl = getSafeCallbackUrl(searchParams.get("callbackUrl"));
   const authErrorMessage = getAuthPageErrorMessage(searchParams.get("error"));
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -34,9 +45,8 @@ function LoginForm() {
       return;
     }
 
-    router.replace(callbackUrl);
-    router.refresh();
-  }, [callbackUrl, router, status]);
+    window.location.replace(callbackUrl);
+  }, [callbackUrl, status]);
 
   useEffect(() => {
     setLogoImageUrl(
@@ -84,8 +94,7 @@ function LoginForm() {
       }
 
       toast.success("Welcome back!");
-      router.push(callbackUrl);
-      router.refresh();
+      window.location.replace(callbackUrl);
     } catch (error) {
       toast.error("Authentication failed. Please try again.");
     }
