@@ -1,6 +1,11 @@
 import { z } from "zod";
 
-const passwordRule = z
+export const emailSchema = z
+  .string()
+  .trim()
+  .email("Please enter a valid email address");
+
+export const passwordSchema = z
   .string()
   .min(8, "Password must be at least 8 characters")
   .regex(
@@ -11,8 +16,8 @@ const passwordRule = z
 export const registerSchema = z
   .object({
     name: z.string().min(2, "Name must be at least 2 characters").max(100),
-    email: z.string().email("Please enter a valid email address"),
-    password: passwordRule,
+    email: emailSchema,
+    password: passwordSchema,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -37,25 +42,14 @@ export const adminLoginSchema = z.object({
 });
 
 export const forgotPasswordEmailSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .email("Please enter a valid email address"),
+  email: emailSchema,
 });
 
-export const forgotPasswordNewPasswordSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .email("Please enter a valid email address"),
-  password: passwordRule,
+export const forgotPasswordPasswordSchema = z.object({
+  password: passwordSchema,
 });
 
 export const forgotPasswordVerificationSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .email("Please enter a valid email address"),
   code: z
     .string()
     .trim()
@@ -66,9 +60,5 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type AdminLoginInput = z.infer<typeof adminLoginSchema>;
 export type ForgotPasswordEmailInput = z.infer<typeof forgotPasswordEmailSchema>;
-export type ForgotPasswordNewPasswordInput = z.infer<
-  typeof forgotPasswordNewPasswordSchema
->;
-export type ForgotPasswordVerificationInput = z.infer<
-  typeof forgotPasswordVerificationSchema
->;
+export type ForgotPasswordPasswordInput = z.infer<typeof forgotPasswordPasswordSchema>;
+export type ForgotPasswordVerificationInput = z.infer<typeof forgotPasswordVerificationSchema>;

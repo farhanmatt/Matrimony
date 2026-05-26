@@ -66,11 +66,12 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts Account[]
-  sessions Session[]
-  profile  Profile?
-  payments Payment[]
-  unlocks  Unlock[]
+  accounts              Account[]
+  sessions              Session[]
+  passwordResetRequests PasswordResetRequest[]
+  profile               Profile?
+  payments              Payment[]
+  unlocks               Unlock[]
 
   @@index([email])
 }
@@ -112,6 +113,26 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model PasswordResetRequest {
+  id                       String   @id @default(cuid())
+  userId                   String
+  email                    String
+  sessionTokenHash         String   @unique
+  pendingPasswordHash      String?
+  verificationCodeHash     String?
+  verificationCodeExpiresAt DateTime?
+  verificationAttempts     Int      @default(0)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+  expiresAt                DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([email])
+  @@index([expiresAt])
 }
 
 // ─── Profile ─────────────────────────────────────────────────────────────────

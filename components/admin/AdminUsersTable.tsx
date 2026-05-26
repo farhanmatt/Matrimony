@@ -46,6 +46,7 @@ type UserTableRow = {
 
 interface AdminUsersTableProps {
   users: UserTableRow[];
+  listFooter?: React.ReactNode;
 }
 
 function formatAge(dateOfBirth: Date) {
@@ -93,7 +94,10 @@ function SelectableCheckbox({
   );
 }
 
-export default function AdminUsersTable({ users }: AdminUsersTableProps) {
+export default function AdminUsersTable({
+  users,
+  listFooter,
+}: AdminUsersTableProps) {
   const router = useRouter();
   const [visibleUsers, setVisibleUsers] = useState(users);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -326,8 +330,8 @@ export default function AdminUsersTable({ users }: AdminUsersTableProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="px-4 pt-4 sm:px-4">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="min-h-0 flex-1 overflow-auto px-4 pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             <table className="w-full min-w-[1180px] table-fixed text-sm xl:min-w-[1180px]">
             <colgroup>
@@ -339,27 +343,27 @@ export default function AdminUsersTable({ users }: AdminUsersTableProps) {
               <col style={{ width: "120px" }} />
               <col style={{ width: "80px" }} />
             </colgroup>
-            <thead>
-              <tr className="border-b border-rose-100 bg-rose-50/80">
-                <th className="w-10 px-3 py-3.5 text-left">
+            <thead className="sticky top-0 z-10">
+              <tr className="border-b border-rose-100 bg-rose-50/95 backdrop-blur">
+                <th className="w-10 bg-rose-50/95 px-3 py-3.5 text-left">
                   <SelectableCheckbox checked={allSelected} onChange={toggleAll} ariaLabel="Select all users" />
                 </th>
-                <th className="px-3 py-3 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700">
+                <th className="bg-rose-50/95 px-3 py-3 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700">
                   User
                 </th>
-                <th className="px-3 py-3 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700">
+                <th className="bg-rose-50/95 px-3 py-3 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700">
                   Contact
                 </th>
-                <th className="px-3 py-3 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700">
+                <th className="bg-rose-50/95 px-3 py-3 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700">
                   Personal Details
                 </th>
-                <th className="px-3 py-3 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700">
+                <th className="bg-rose-50/95 px-3 py-3 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700">
                   Status
                 </th>
-                <th className="px-3 py-3 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700">
+                <th className="bg-rose-50/95 px-3 py-3 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700">
                   Joined
                 </th>
-                <th className="px-3 py-3 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700">
+                <th className="bg-rose-50/95 px-3 py-3 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700">
                   Actions
                 </th>
               </tr>
@@ -544,9 +548,15 @@ export default function AdminUsersTable({ users }: AdminUsersTableProps) {
             </tbody>
           </table>
         </div>
+
+        {listFooter ? (
+          <div className="mt-4 border-t border-rose-100 bg-rose-50/30 px-4 py-3">
+            {listFooter}
+          </div>
+        ) : null}
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-rose-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+      <div className="shrink-0 flex flex-col gap-3 border-t border-rose-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-4">
         <div className="flex items-center gap-3 text-sm text-slate-600">
           <span className="inline-flex items-center gap-2 rounded-xl border border-rose-100 bg-white px-3 py-2 shadow-sm">
             <span className="font-semibold text-slate-900">{selectedCount}</span> Selected

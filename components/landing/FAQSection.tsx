@@ -39,18 +39,24 @@ const faqs = [
   },
 ];
 
-export default function FAQSection() {
+export default function FAQSection({
+  showIntro = true,
+}: {
+  showIntro?: boolean;
+}) {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   return (
     <section className="py-24 section-gradient" id="faq">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="section-title">Frequently Asked Questions</h2>
-          <p className="section-subtitle mx-auto">
-            Everything you need to know about Vivah Bandhan.
-          </p>
-        </div>
+        {showIntro ? (
+          <div className="text-center mb-16">
+            <h2 className="section-title">Frequently Asked Questions</h2>
+            <p className="section-subtitle mx-auto">
+              Everything you need to know about Vivah Bandhan.
+            </p>
+          </div>
+        ) : null}
 
         <div className="space-y-3">
           {faqs.map((faq, idx) => (

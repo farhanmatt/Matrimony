@@ -238,7 +238,7 @@ export default function DashboardSidebar({
     <>
       <header className="fixed inset-x-0 top-0 z-40 border-b border-rose-100/80 bg-white/95 backdrop-blur-md shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
         <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
-          <div className="relative flex h-16 items-center justify-between gap-4">
+          <div className="flex h-16 items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -258,9 +258,9 @@ export default function DashboardSidebar({
               </Link>
             </div>
 
-            <div className="hidden lg:absolute lg:left-1/2 lg:top-1/2 lg:flex lg:w-max lg:-translate-x-1/2 lg:-translate-y-1/2">
-              <nav className="flex items-center justify-center">
-                <div className="dashboard-nav-scroll flex w-max items-center justify-center gap-2 py-2">
+            <div className="hidden min-w-0 flex-1 px-6 lg:flex">
+              <nav className="flex min-w-0 flex-1 items-center">
+                <div className="dashboard-nav-scroll flex min-w-0 flex-1 items-center gap-2 overflow-x-auto py-2">
                   {desktopNavItems.map((item) => {
                     const isActive = isActivePath(pathname, item.href);
 

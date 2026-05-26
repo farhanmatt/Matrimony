@@ -11,10 +11,10 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
+  Heart,
   Loader2,
   Sparkles,
 } from "lucide-react";
-import BrandLogo from "@/components/common/BrandLogo";
 import ImageUpload from "@/components/common/ImageUpload";
 import { NAKSHATRA_OPTIONS, RASI_OPTIONS } from "@/lib/constants/astrology";
 import { MOTHER_TONGUE_OPTIONS } from "@/lib/constants/languages";
@@ -228,7 +228,7 @@ export default function RegisterOnboardingWizard() {
 
   const handleGoogle = async () => {
     setIsGoogleLoading(true);
-    await signIn("google", { redirectTo: "/dashboard" });
+    await signIn("google", { callbackUrl: "/dashboard" });
   };
 
   const handleAccountNext = async () => {
@@ -399,10 +399,15 @@ export default function RegisterOnboardingWizard() {
   return (
     <div className="w-full max-w-5xl">
       <div className="text-center mb-8">
-        <BrandLogo
-          wrapperClassName="inline-flex items-center justify-center"
-          className="h-14 max-w-[260px] sm:h-16 sm:max-w-[320px]"
-        />
+        <Link href="/" className="inline-flex items-center gap-2.5">
+          <div className="w-11 h-11 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
+            <Heart className="w-6 h-6 text-white fill-white" />
+          </div>
+          <span className="font-display text-2xl font-bold">
+            <span className="text-rose-600">Vivah</span>
+            <span className="text-gray-800"> Bandhan</span>
+          </span>
+        </Link>
         <h1 className="text-3xl font-display font-bold text-gray-900 mt-5 mb-1">
           {isAccountStep ? "Create your account" : stepMeta?.title}
         </h1>

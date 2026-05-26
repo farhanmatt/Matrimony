@@ -48,15 +48,10 @@ export default async function AdminLandingPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-display font-bold text-gray-900">
+        <h1 className="text-3xl font-display font-bold tracking-tight text-slate-900">
           Landing Banner &amp; Logo
         </h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Update the hero image and the site logo used across the frontend.
-        </p>
       </div>
-
-      <div className="border-t border-gray-200" />
 
       <AdminLandingSettingsForm
         initialHeroImageUrl={settings.heroImageUrl}

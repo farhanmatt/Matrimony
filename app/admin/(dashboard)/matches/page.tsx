@@ -217,6 +217,65 @@ export default async function AdminMatchesPage({
       columns: visibleColumns,
       limit,
     });
+    const paginationFooter =
+      totalPages > 0 ? (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <span className="font-medium text-slate-700">{total} total matches</span>
+
+          <div className="flex flex-wrap items-center justify-end gap-2.5">
+            <AdminMatchStatusQuickLinks
+              items={[]}
+              deletedMatchesHref="/admin/matches/deleted"
+            />
+
+            <AdminPageSizeSelector value={limit} />
+
+            <div className="flex items-center gap-2">
+              <a
+                href={buildPageHref({
+                  page: Math.max(1, page - 1),
+                  search,
+                  unlockStatus,
+                  dateFrom,
+                  dateTo,
+                  columns: visibleColumns,
+                  limit,
+                })}
+                aria-label="Previous page"
+                className={`flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition-colors ${
+                  page === 1 ? "pointer-events-none opacity-40" : "hover:border-rose-300 hover:text-rose-500"
+                }`}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </a>
+
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700">
+                {page}
+              </div>
+
+              <span className="text-sm text-gray-500">of {totalPages || 1}</span>
+
+              <a
+                href={buildPageHref({
+                  page: Math.min(totalPages || 1, page + 1),
+                  search,
+                  unlockStatus,
+                  dateFrom,
+                  dateTo,
+                  columns: visibleColumns,
+                  limit,
+                })}
+                aria-label="Next page"
+                className={`flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition-colors ${
+                  page >= totalPages ? "pointer-events-none opacity-40" : "hover:border-rose-300 hover:text-rose-500"
+                }`}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
+        </div>
+      ) : null;
 
     const rows = matches.map((match) => {
     const row = match as MatchRow;
@@ -306,8 +365,8 @@ export default async function AdminMatchesPage({
   };
 
     return (
-      <div className="flex min-h-[calc(100vh-8rem)] flex-col space-y-6">
-        <div>
+      <div className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col gap-6 overflow-hidden sm:h-[calc(100dvh-6.5rem)] lg:h-[calc(100dvh-3rem)]">
+        <div className="shrink-0">
           {showBackToMatches ? (
             <Link
               href="/admin/matches"
@@ -323,8 +382,11 @@ export default async function AdminMatchesPage({
           </p>
         </div>
 
-      <AdminListCard
-          className="min-h-0"
+        <div className="shrink-0 border-t border-gray-200" />
+
+        <AdminListCard
+          className="flex-1 min-h-0"
+          bodyClassName="flex min-h-0 flex-col overflow-hidden"
           toolbar={
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
               <AdminSearchInput placeholder="Search by name or location..." />
@@ -335,63 +397,6 @@ export default async function AdminMatchesPage({
               </div>
             </div>
           }
-          summaryLeft={<span className="font-medium text-gray-700">{total} total matches</span>}
-          summaryRight={
-            totalPages > 0 ? (
-              <div className="flex flex-wrap items-center justify-end gap-2.5">
-                <AdminMatchStatusQuickLinks
-                  items={[]}
-                  deletedMatchesHref="/admin/matches/deleted"
-                />
-
-                <AdminPageSizeSelector value={limit} />
-
-                <div className="flex items-center gap-2">
-                  <a
-                    href={buildPageHref({
-                      page: Math.max(1, page - 1),
-                      search,
-                      unlockStatus,
-                      dateFrom,
-                      dateTo,
-                      columns: visibleColumns,
-                      limit,
-                    })}
-                    aria-label="Previous page"
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition-colors ${
-                      page === 1 ? "pointer-events-none opacity-40" : "hover:border-rose-300 hover:text-rose-500"
-                    }`}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </a>
-
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700">
-                    {page}
-                  </div>
-
-                  <span className="text-sm text-gray-500">of {totalPages || 1}</span>
-
-                  <a
-                    href={buildPageHref({
-                      page: Math.min(totalPages || 1, page + 1),
-                      search,
-                      unlockStatus,
-                      dateFrom,
-                      dateTo,
-                      columns: visibleColumns,
-                      limit,
-                    })}
-                    aria-label="Next page"
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition-colors ${
-                      page >= totalPages ? "pointer-events-none opacity-40" : "hover:border-rose-300 hover:text-rose-500"
-                    }`}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </a>
-                </div>
-              </div>
-            ) : null
-          }
         >
           <AdminMatchesTable
             columns={visibleColumns.map((column) => ({
@@ -400,6 +405,7 @@ export default async function AdminMatchesPage({
               width: columnWidths[column],
             }))}
             rows={rows}
+            listFooter={paginationFooter}
           />
         </AdminListCard>
       </div>

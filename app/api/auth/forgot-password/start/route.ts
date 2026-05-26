@@ -1,40 +1,83 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getPrismaClient } from "@/lib/prisma";
 import {
-  forgotPasswordEmailSchema,
-} from "@/lib/validations/auth";
-import { normalizePasswordResetEmail } from "@/lib/password-reset";
+  createPasswordResetSessionToken,
+  getPasswordResetCookieOptions,
+  getPasswordResetSessionExpiry,
+  normalizeEmailAddress,
+  PASSWORD_RESET_COOKIE_NAME,
+} from "@/lib/password-reset";
+import { forgotPasswordEmailSchema } from "@/lib/validations/auth";
 
 export async function POST(req: NextRequest) {
   try {
+    const prisma = getPrismaClient();
     const body = await req.json();
-    const validated = forgotPasswordEmailSchema.safeParse(body);
+    const validatedData = forgotPasswordEmailSchema.safeParse(body);
 
-    if (!validated.success) {
+    if (!validatedData.success) {
       return NextResponse.json(
-        { error: validated.error.errors[0]?.message ?? "Invalid email address" },
+        { error: validatedData.error.errors[0].message },
         { status: 400 }
       );
     }
 
-    const email = normalizePasswordResetEmail(validated.data.email);
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: { email: true },
+    const normalizedEmail = normalizeEmailAddress(validatedData.data.email);
+
+    const user = await prisma.user.findFirst({
+      where: {
+        email: {
+          equals: normalizedEmail,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        id: true,
+        email: true,
+      },
     });
 
     if (!user) {
       return NextResponse.json(
-        { error: "No account found with this email address" },
+        { error: "No account was found with that email address." },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ email: user.email });
+    const { token, tokenHash } = createPasswordResetSessionToken();
+    const expiresAt = getPasswordResetSessionExpiry();
+
+    await prisma.passwordResetRequest.deleteMany({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    await prisma.passwordResetRequest.create({
+      data: {
+        userId: user.id,
+        email: user.email,
+        sessionTokenHash: tokenHash,
+        expiresAt,
+      },
+    });
+
+    const response = NextResponse.json({
+      message: "Email confirmed.",
+      email: user.email,
+    });
+
+    response.cookies.set(
+      PASSWORD_RESET_COOKIE_NAME,
+      token,
+      getPasswordResetCookieOptions(expiresAt)
+    );
+
+    return response;
   } catch (error) {
     console.error("Forgot password start error:", error);
     return NextResponse.json(
-      { error: "Failed to validate the email address" },
+      { error: "Something went wrong. Please try again." },
       { status: 500 }
     );
   }

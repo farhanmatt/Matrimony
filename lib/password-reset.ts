@@ -1,54 +1,112 @@
-import { randomInt } from "node:crypto";
+import "server-only";
 
-export const PASSWORD_RESET_CODE_LENGTH = 6;
-export const PASSWORD_RESET_EXPIRES_MINUTES = 15;
+import crypto from "crypto";
+import { cookies } from "next/headers";
+import type { Prisma } from "@prisma/client";
+import { getPrismaClient } from "@/lib/prisma";
 
-export type PasswordResetTokenPayload = {
-  codeHash: string;
-  passwordHash: string;
-};
+export const PASSWORD_RESET_COOKIE_NAME = "vivah-password-reset";
+export const PASSWORD_RESET_SESSION_TTL_MINUTES = 30;
+export const PASSWORD_RESET_CODE_TTL_MINUTES = 2;
+export const PASSWORD_RESET_MAX_ATTEMPTS = 5;
 
-export function normalizePasswordResetEmail(email: string) {
+const PASSWORD_RESET_SESSION_TTL_MS =
+  PASSWORD_RESET_SESSION_TTL_MINUTES * 60 * 1000;
+
+const passwordResetRequestWithUser = {
+  user: {
+    select: {
+      id: true,
+      email: true,
+      emailVerified: true,
+      name: true,
+      password: true,
+    },
+  },
+} satisfies Prisma.PasswordResetRequestInclude;
+
+export type PasswordResetRequestWithUser =
+  Prisma.PasswordResetRequestGetPayload<{
+    include: typeof passwordResetRequestWithUser;
+  }>;
+
+export function normalizeEmailAddress(email: string) {
   return email.trim().toLowerCase();
 }
 
-export function getPasswordResetIdentifier(email: string) {
-  return `password-reset:${normalizePasswordResetEmail(email)}`;
+function sha256(value: string) {
+  return crypto.createHash("sha256").update(value).digest("hex");
 }
 
-export function generatePasswordResetCode() {
-  const min = 10 ** (PASSWORD_RESET_CODE_LENGTH - 1);
-  const max = 10 ** PASSWORD_RESET_CODE_LENGTH;
+export function createPasswordResetSessionToken() {
+  const token = crypto.randomBytes(32).toString("hex");
 
-  return String(randomInt(min, max));
+  return {
+    token,
+    tokenHash: sha256(token),
+  };
 }
 
-export function getPasswordResetExpiryDate() {
-  return new Date(Date.now() + PASSWORD_RESET_EXPIRES_MINUTES * 60 * 1000);
+export function createPasswordResetVerificationCode() {
+  return crypto.randomInt(100000, 1_000_000).toString();
 }
 
-export function encodePasswordResetToken(payload: PasswordResetTokenPayload) {
-  return Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+export function getPasswordResetSessionExpiry() {
+  return new Date(Date.now() + PASSWORD_RESET_SESSION_TTL_MS);
 }
 
-export function decodePasswordResetToken(token: string) {
-  try {
-    const parsed = JSON.parse(
-      Buffer.from(token, "base64url").toString("utf8")
-    ) as Partial<PasswordResetTokenPayload>;
+export function getPasswordResetCookieOptions(expiresAt: Date) {
+  return {
+    httpOnly: true,
+    sameSite: "lax" as const,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    expires: expiresAt,
+  };
+}
 
-    if (
-      typeof parsed.codeHash !== "string" ||
-      typeof parsed.passwordHash !== "string"
-    ) {
-      return null;
-    }
+export function getExpiredPasswordResetCookieOptions() {
+  return {
+    ...getPasswordResetCookieOptions(new Date(0)),
+    maxAge: 0,
+  };
+}
 
-    return {
-      codeHash: parsed.codeHash,
-      passwordHash: parsed.passwordHash,
-    };
-  } catch {
+export async function getPasswordResetSessionTokenFromCookies() {
+  const cookieStore = await cookies();
+  return cookieStore.get(PASSWORD_RESET_COOKIE_NAME)?.value?.trim() || null;
+}
+
+async function findPasswordResetRequestBySessionToken(sessionToken: string) {
+  const prisma = getPrismaClient();
+
+  return prisma.passwordResetRequest.findUnique({
+    where: { sessionTokenHash: sha256(sessionToken) },
+    include: passwordResetRequestWithUser,
+  });
+}
+
+export async function getPasswordResetRequestFromCookies() {
+  const sessionToken = await getPasswordResetSessionTokenFromCookies();
+
+  if (!sessionToken) {
     return null;
   }
+
+  const request = await findPasswordResetRequestBySessionToken(sessionToken);
+
+  if (!request) {
+    return null;
+  }
+
+  if (request.expiresAt <= new Date()) {
+    const prisma = getPrismaClient();
+
+    await prisma.passwordResetRequest
+      .delete({ where: { id: request.id } })
+      .catch(() => {});
+    return null;
+  }
+
+  return request;
 }

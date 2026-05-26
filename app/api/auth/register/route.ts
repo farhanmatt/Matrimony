@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations/auth";
-import { isPrismaMissingTableError } from "@/lib/utils/errors";
 import {
   preferenceSchema,
   profileSchema,
@@ -157,7 +156,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { name, email, password } = validatedData.data;
+    const { name, password } = validatedData.data;
+    const email = validatedData.data.email.trim().toLowerCase();
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
@@ -239,17 +239,6 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error("Register error:", error);
-
-    if (isPrismaMissingTableError(error)) {
-      return NextResponse.json(
-        {
-          error:
-            "Database schema is not set up yet. Run `npm run db:push` and try again.",
-        },
-        { status: 503 }
-      );
-    }
-
     return NextResponse.json(
       { error: "Something went wrong. Please try again." },
       { status: 500 }

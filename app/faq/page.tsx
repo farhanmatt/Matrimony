@@ -24,7 +24,7 @@ export default function FAQPage() {
           </p>
         </div>
       </div>
-      <FAQSection />
+      <FAQSection showIntro={false} />
       <Footer />
     </main>
   );

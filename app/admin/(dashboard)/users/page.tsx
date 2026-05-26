@@ -323,17 +323,61 @@ export default async function AdminUsersPage({
     return `?${params.toString()}`;
   };
 
+  const paginationFooter =
+    totalPages > 0 ? (
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <span className="font-medium text-slate-700">{total} total users</span>
+
+        <div className="flex flex-wrap items-center justify-end gap-2.5">
+          <AdminPageSizeSelector value={limit} />
+
+          <div className="flex items-center gap-2">
+            <a
+              href={buildPageHref(Math.max(1, page - 1))}
+              aria-label="Previous page"
+              className={`flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition-colors ${
+                page === 1
+                  ? "pointer-events-none opacity-40"
+                  : "hover:border-rose-300 hover:text-rose-500"
+              }`}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </a>
+
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700">
+              {page}
+            </div>
+
+            <span className="text-sm text-gray-500">of {totalPages || 1}</span>
+
+            <a
+              href={buildPageHref(Math.min(totalPages || 1, page + 1))}
+              aria-label="Next page"
+              className={`flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition-colors ${
+                page >= totalPages
+                  ? "pointer-events-none opacity-40"
+                  : "hover:border-rose-300 hover:text-rose-500"
+              }`}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+      </div>
+    ) : null;
+
     return (
-    <div className="flex min-h-[calc(100vh-8rem)] flex-col space-y-6">
-      <div>
+    <div className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col gap-6 overflow-hidden sm:h-[calc(100dvh-6.5rem)] lg:h-[calc(100dvh-3rem)]">
+      <div className="shrink-0">
         <h1 className="text-2xl font-display font-bold text-gray-900">Manage Users</h1>
         <p className="mt-1 text-sm text-gray-500">{total} total users</p>
       </div>
 
-      <div className="border-t border-gray-200" />
+      <div className="shrink-0 border-t border-gray-200" />
 
       <AdminListCard
-        className="min-h-0"
+        className="flex-1 min-h-0"
+        bodyClassName="flex min-h-0 flex-col overflow-hidden"
         toolbar={
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
             <AdminSearchInput placeholder="Search by name or email..." />
@@ -343,42 +387,6 @@ export default async function AdminUsersPage({
               <AdminUserFieldSelector selectedColumns={selectedColumns} />
             </div>
           </div>
-        }
-        summaryLeft={<span className="font-medium text-slate-700">{total} total users</span>}
-        summaryRight={
-          totalPages > 0 ? (
-            <div className="flex flex-wrap items-center justify-end gap-2.5">
-              <AdminPageSizeSelector value={limit} />
-
-              <div className="flex items-center gap-2">
-                <a
-                  href={buildPageHref(Math.max(1, page - 1))}
-                  aria-label="Previous page"
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition-colors ${
-                    page === 1 ? "pointer-events-none opacity-40" : "hover:border-rose-300 hover:text-rose-500"
-                  }`}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </a>
-
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700">
-                  {page}
-                </div>
-
-                <span className="text-sm text-gray-500">of {totalPages || 1}</span>
-
-                <a
-                  href={buildPageHref(Math.min(totalPages || 1, page + 1))}
-                  aria-label="Next page"
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition-colors ${
-                    page >= totalPages ? "pointer-events-none opacity-40" : "hover:border-rose-300 hover:text-rose-500"
-                  }`}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </a>
-              </div>
-            </div>
-          ) : null
         }
       >
         {!hasCustomColumns ? (
@@ -409,16 +417,18 @@ export default async function AdminUsersPage({
                   : null,
               };
             })}
+            listFooter={paginationFooter}
           />
         ) : (
-          <>
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="min-h-0 flex-1 overflow-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             <table className="w-full min-w-max table-auto text-sm">
-              <thead>
+              <thead className="sticky top-0 z-10">
                 <tr className="border-b border-slate-100 bg-slate-50/90">
                   {visibleColumns.map((column) => (
                     <th
                       key={column.key}
-                      className="whitespace-nowrap px-6 py-4 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700"
+                      className="whitespace-nowrap bg-slate-50/95 px-6 py-4 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700 backdrop-blur"
                     >
                       {column.label}
                     </th>
@@ -442,10 +452,17 @@ export default async function AdminUsersPage({
               </tbody>
             </table>
 
+            {paginationFooter ? (
+              <div className="border-t border-rose-100 bg-rose-50/30 px-4 py-3">
+                {paginationFooter}
+              </div>
+            ) : null}
+            </div>
+
             {users.length === 0 ? (
               <div className="py-12 text-center text-gray-400">No users found.</div>
             ) : null}
-          </>
+          </div>
         )}
       </AdminListCard>
     </div>

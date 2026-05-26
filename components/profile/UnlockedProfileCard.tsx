@@ -139,7 +139,7 @@ export default function UnlockedProfileCard({
 
   return (
     <article
-      className="group relative overflow-hidden rounded-[22px] border border-emerald-100/80 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.07)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(15,23,42,0.1)] cursor-pointer"
+      className="group relative overflow-hidden rounded-[26px] border border-emerald-100/80 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.07)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(15,23,42,0.1)] cursor-pointer"
       onClick={openProfile}
       onKeyDown={handleCardKeyDown}
       role="link"
@@ -149,7 +149,7 @@ export default function UnlockedProfileCard({
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(236,253,245,0.6)_0%,rgba(255,255,255,0)_36%)]" />
 
       <div className="relative px-4 pb-4 pt-4">
-        <div className="relative h-[170px] overflow-hidden rounded-[18px] bg-[linear-gradient(135deg,#e8faf0_0%,#f5fff9_100%)]">
+        <div className="relative h-[182px] overflow-hidden rounded-[20px] bg-[linear-gradient(135deg,#e8faf0_0%,#f5fff9_100%)]">
           {primaryPhoto ? (
             <Image
               src={primaryPhoto}

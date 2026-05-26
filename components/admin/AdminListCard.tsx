@@ -6,6 +6,7 @@ interface AdminListCardProps {
   summaryRight?: ReactNode;
   footer?: ReactNode;
   className?: string;
+  bodyClassName?: string;
   children: ReactNode;
 }
 
@@ -15,6 +16,7 @@ export default function AdminListCard({
   summaryRight,
   footer,
   className,
+  bodyClassName,
   children,
 }: AdminListCardProps) {
   return (
@@ -34,7 +36,11 @@ export default function AdminListCard({
         </div>
       ) : null}
 
-      <div className="flex-1 min-h-0 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <div
+        className={`flex-1 min-h-0 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
+          bodyClassName ?? ""
+        }`}
+      >
         {children}
       </div>
 
