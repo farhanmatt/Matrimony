@@ -2,11 +2,18 @@ import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+function isSecureRequest(req: NextRequest) {
+  const forwardedProto = req.headers.get("x-forwarded-proto");
+
+  return forwardedProto === "https" || req.nextUrl.protocol === "https:";
+}
+
 export async function proxy(req: NextRequest) {
   const { nextUrl } = req;
   const token = await getToken({
     req,
     secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+    secureCookie: isSecureRequest(req),
   });
   const isLoggedIn = Boolean(token);
   const isAdmin = token?.role === "ADMIN";
