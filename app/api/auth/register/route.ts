@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import {
+  normalizeEmailIdentifier,
+  normalizeNameLookup,
+} from "@/lib/utils/user-identity";
 import { registerSchema } from "@/lib/validations/auth";
 import {
   preferenceSchema,
@@ -157,7 +161,8 @@ export async function POST(req: NextRequest) {
     }
 
     const { name, password } = validatedData.data;
-    const email = validatedData.data.email.trim().toLowerCase();
+    const email = normalizeEmailIdentifier(validatedData.data.email);
+    const normalizedNameLookup = normalizeNameLookup(name);
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
@@ -171,7 +176,12 @@ export async function POST(req: NextRequest) {
 
     const result = await prisma.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
-        data: { name, email, password: hashedPassword },
+        data: {
+          name,
+          nameLookup: normalizedNameLookup,
+          email,
+          password: hashedPassword,
+        },
         select: { id: true, name: true, email: true },
       });
 

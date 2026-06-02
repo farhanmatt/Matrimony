@@ -204,7 +204,7 @@ export default function AdminNotificationBell({ notifications }: AdminNotificati
         <div
           role="dialog"
           aria-label="Admin notifications"
-          className="absolute right-0 top-[calc(100%+12px)] z-30 w-[min(92vw,380px)] overflow-hidden rounded-[28px] border border-rose-100 bg-white shadow-2xl shadow-rose-100/60"
+          className="absolute right-0 top-[calc(100%+12px)] z-50 w-[min(92vw,380px)] overflow-hidden rounded-[28px] border border-rose-100 bg-white shadow-2xl shadow-rose-100/60"
         >
           <div className="border-b border-rose-100 bg-gradient-to-r from-rose-50 to-pink-50 px-5 py-4">
             <div className="flex items-center gap-3">

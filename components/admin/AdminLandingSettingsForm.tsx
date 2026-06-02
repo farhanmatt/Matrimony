@@ -315,17 +315,20 @@ export default function AdminLandingSettingsForm({
 
   return (
     <div className="relative">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(circle_at_top_left,rgba(244,63,94,0.14),transparent_34%),radial-gradient(circle_at_top_right,rgba(251,113,133,0.14),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,247,250,0.98))]" />
+      <div className="ui-overlay-fade pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(circle_at_top_left,rgba(244,63,94,0.14),transparent_34%),radial-gradient(circle_at_top_right,rgba(251,113,133,0.14),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,247,250,0.98))]" />
 
       <div className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr] 2xl:gap-8">
         <div className="space-y-6">
-          <div className="overflow-hidden rounded-[2rem] border border-rose-100/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.06)]">
+          <div
+            className="group overflow-hidden rounded-[2rem] border border-rose-100/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.06)] ui-card-lift-soft ui-enter-left"
+            style={{ animationDelay: "90ms" }}
+          >
             <div className="relative border-b border-rose-100/80 px-6 py-3 sm:px-8">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-full bg-[radial-gradient(circle_at_top_left,rgba(244,63,94,0.12),transparent_42%),radial-gradient(circle_at_right,rgba(251,113,133,0.1),transparent_34%)]" />
 
               <div className="relative flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] bg-gradient-to-br from-rose-100 via-white to-pink-100 text-rose-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_12px_30px_rgba(244,63,94,0.12)]">
+                  <div className="ui-icon-lift flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] bg-gradient-to-br from-rose-100 via-white to-pink-100 text-rose-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_12px_30px_rgba(244,63,94,0.12)]">
                     <ImagePlus className="h-6 w-6" />
                   </div>
                   <div>
@@ -386,10 +389,11 @@ export default function AdminLandingSettingsForm({
                         open();
                       }
                     }}
-                    className="group relative isolate flex min-h-[9.5rem] flex-col items-center justify-center overflow-hidden rounded-[1.75rem] border border-rose-200/90 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.98),rgba(255,241,242,0.92)_42%,rgba(253,242,248,0.76)_100%)] px-6 py-4 text-center transition-all duration-300 hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-[0_18px_45px_rgba(244,63,94,0.08)] sm:px-8"
+                    className="group relative isolate flex min-h-[9.5rem] flex-col items-center justify-center overflow-hidden rounded-[1.75rem] border border-rose-200/90 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.98),rgba(255,241,242,0.92)_42%,rgba(253,242,248,0.76)_100%)] px-6 py-4 text-center ui-enter-scale transition-all duration-300 hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-[0_18px_45px_rgba(244,63,94,0.08)] sm:px-8"
+                    style={{ animationDelay: "160ms" }}
                   >
                     <div className="pointer-events-none absolute inset-x-10 top-0 h-24 rounded-full bg-white/70 blur-3xl" />
-                    <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/80 bg-white/90 text-rose-500 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+                    <div className="ui-icon-lift relative flex h-16 w-16 items-center justify-center rounded-full border border-white/80 bg-white/90 text-rose-500 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
                       <Upload className="h-7 w-7" />
                     </div>
                     <div className="relative mt-2.5 max-w-lg">
@@ -417,7 +421,10 @@ export default function AdminLandingSettingsForm({
                 )}
               </CldUploadWidget>
 
-              <div className="mt-4 flex flex-col gap-3 rounded-[1.5rem] border border-rose-100 bg-gradient-to-r from-white to-rose-50/70 p-3.5 sm:flex-row sm:items-center sm:justify-between">
+              <div
+                className="mt-4 flex flex-col gap-3 rounded-[1.5rem] border border-rose-100 bg-gradient-to-r from-white to-rose-50/70 p-3.5 ui-enter-up sm:flex-row sm:items-center sm:justify-between"
+                style={{ animationDelay: "220ms" }}
+              >
                 <div>
                   <p className="text-sm font-semibold text-slate-900">
                     {heroHasDraft ? "New banner selected and ready to save" : "Choose a new banner when you're ready"}
@@ -432,9 +439,13 @@ export default function AdminLandingSettingsForm({
                     type="button"
                     onClick={() => void saveHeroImage()}
                     disabled={savingHero}
-                    className="inline-flex min-w-[11rem] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(244,63,94,0.24)] transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_42px_rgba(244,63,94,0.28)] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+                    className="group inline-flex min-w-[11rem] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(244,63,94,0.24)] ui-link-shift transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_42px_rgba(244,63,94,0.28)] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
                   >
-                    {savingHero ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    {savingHero ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="ui-icon-lift h-4 w-4" />
+                    )}
                     {savingHero ? "Saving..." : "Save Hero Image"}
                   </button>
                 </div>
@@ -442,13 +453,16 @@ export default function AdminLandingSettingsForm({
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-[2rem] border border-rose-100/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.06)]">
+          <div
+            className="group overflow-hidden rounded-[2rem] border border-rose-100/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.06)] ui-card-lift-soft ui-enter-left"
+            style={{ animationDelay: "180ms" }}
+          >
             <div className="relative border-b border-rose-100/80 px-6 py-3.5 sm:px-8">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-full bg-[radial-gradient(circle_at_top_left,rgba(244,63,94,0.1),transparent_40%),radial-gradient(circle_at_right,rgba(251,113,133,0.08),transparent_34%)]" />
 
               <div className="relative flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] bg-gradient-to-br from-rose-100 via-white to-pink-100 text-rose-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_12px_30px_rgba(244,63,94,0.1)]">
+                  <div className="ui-icon-lift flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] bg-gradient-to-br from-rose-100 via-white to-pink-100 text-rose-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_12px_30px_rgba(244,63,94,0.1)]">
                     <ImagePlus className="h-6 w-6" />
                   </div>
                   <div>
@@ -509,10 +523,11 @@ export default function AdminLandingSettingsForm({
                         open();
                       }
                     }}
-                    className="group relative isolate flex min-h-[9.25rem] flex-col items-center justify-center overflow-hidden rounded-[1.75rem] border border-rose-200/90 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.98),rgba(255,241,242,0.92)_42%,rgba(253,242,248,0.76)_100%)] px-6 py-3.5 text-center transition-all duration-300 hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-[0_18px_45px_rgba(244,63,94,0.08)] sm:px-8"
+                    className="group relative isolate flex min-h-[9.25rem] flex-col items-center justify-center overflow-hidden rounded-[1.75rem] border border-rose-200/90 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.98),rgba(255,241,242,0.92)_42%,rgba(253,242,248,0.76)_100%)] px-6 py-3.5 text-center ui-enter-scale transition-all duration-300 hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-[0_18px_45px_rgba(244,63,94,0.08)] sm:px-8"
+                    style={{ animationDelay: "250ms" }}
                   >
                     <div className="pointer-events-none absolute inset-x-10 top-0 h-24 rounded-full bg-white/70 blur-3xl" />
-                    <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/80 bg-white/90 text-rose-500 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+                    <div className="ui-icon-lift relative flex h-16 w-16 items-center justify-center rounded-full border border-white/80 bg-white/90 text-rose-500 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
                       <Upload className="h-7 w-7" />
                     </div>
                     <div className="relative mt-2.5 max-w-lg">
@@ -540,7 +555,10 @@ export default function AdminLandingSettingsForm({
                 )}
               </CldUploadWidget>
 
-              <div className="mt-3.5 flex flex-col gap-3 rounded-[1.5rem] border border-rose-100 bg-gradient-to-r from-white to-rose-50/70 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <div
+                className="mt-3.5 flex flex-col gap-3 rounded-[1.5rem] border border-rose-100 bg-gradient-to-r from-white to-rose-50/70 p-3 ui-enter-up sm:flex-row sm:items-center sm:justify-between"
+                style={{ animationDelay: "310ms" }}
+              >
                 <div>
                   <p className="text-sm font-semibold text-slate-900">
                     {logoHasDraft ? "New logo selected and ready to save" : "Choose a new logo when you're ready"}
@@ -555,9 +573,13 @@ export default function AdminLandingSettingsForm({
                     type="button"
                     onClick={() => void saveLogoImage()}
                     disabled={savingLogo}
-                    className="inline-flex min-w-[11rem] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(244,63,94,0.24)] transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_42px_rgba(244,63,94,0.28)] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+                    className="group inline-flex min-w-[11rem] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(244,63,94,0.24)] ui-link-shift transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_42px_rgba(244,63,94,0.28)] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
                   >
-                    {savingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    {savingLogo ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="ui-icon-lift h-4 w-4" />
+                    )}
                     {savingLogo ? "Saving..." : "Save Logo Image"}
                   </button>
                 </div>
@@ -567,7 +589,10 @@ export default function AdminLandingSettingsForm({
         </div>
 
         <div className="space-y-6 xl:sticky xl:top-6 xl:self-start">
-          <div className="overflow-hidden rounded-[2rem] border border-rose-100/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.06)]">
+          <div
+            className="group overflow-hidden rounded-[2rem] border border-rose-100/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.06)] ui-card-lift-soft ui-enter-right"
+            style={{ animationDelay: "130ms" }}
+          >
             <div className="flex flex-col gap-3 border-b border-rose-100/80 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
@@ -596,7 +621,7 @@ export default function AdminLandingSettingsForm({
             </div>
 
             <div className="p-4 sm:p-5">
-              <div className="relative overflow-hidden rounded-[1.75rem] border border-rose-100 bg-[radial-gradient(circle_at_top,rgba(251,113,133,0.14),rgba(255,255,255,0.96)_44%,rgba(253,242,248,0.88)_100%)] p-2 sm:p-3">
+              <div className="relative overflow-hidden rounded-[1.75rem] border border-rose-100 bg-[radial-gradient(circle_at_top,rgba(251,113,133,0.14),rgba(255,255,255,0.96)_44%,rgba(253,242,248,0.88)_100%)] p-2 ui-enter-scale sm:p-3">
                 <div className="pointer-events-none absolute inset-x-16 top-0 h-20 rounded-full bg-white/70 blur-3xl" />
                 <div className="absolute left-5 top-5 z-10 inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-sm">
                   Homepage hero
@@ -618,12 +643,15 @@ export default function AdminLandingSettingsForm({
                   {heroHasDraft ? "Unsaved changes" : "Current live image"}
                 </div>
 
-                <div className="relative aspect-[16/10] overflow-hidden rounded-[1.35rem] border border-white/70 bg-gradient-to-br from-rose-50 via-white to-pink-50 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+                <div
+                  key={heroPreviewUrl}
+                  className="relative aspect-[16/10] overflow-hidden rounded-[1.35rem] border border-white/70 bg-gradient-to-br from-rose-50 via-white to-pink-50 shadow-[0_18px_40px_rgba(15,23,42,0.08)] ui-enter-scale"
+                >
                   <PreviewImage
                     src={heroPreviewUrl}
                     fallback={DEFAULT_HERO_IMAGE}
                     alt="Landing hero preview"
-                    className="h-full w-full object-cover object-center"
+                    className="ui-media-zoom h-full w-full object-cover object-center"
                   />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/10 via-transparent to-white/10" />
                 </div>
@@ -632,7 +660,10 @@ export default function AdminLandingSettingsForm({
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-[2rem] border border-rose-100/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.06)]">
+          <div
+            className="group overflow-hidden rounded-[2rem] border border-rose-100/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.06)] ui-card-lift-soft ui-enter-right"
+            style={{ animationDelay: "230ms" }}
+          >
             <div className="flex flex-col gap-3 border-b border-rose-100/80 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
@@ -661,9 +692,12 @@ export default function AdminLandingSettingsForm({
             </div>
 
             <div className="p-4 sm:p-5">
-              <div className="relative overflow-hidden rounded-[1.75rem] border border-rose-100 bg-[linear-gradient(135deg,rgba(255,255,255,1),rgba(255,241,242,0.84),rgba(253,242,248,0.92))] p-5 sm:p-7">
+              <div className="relative overflow-hidden rounded-[1.75rem] border border-rose-100 bg-[linear-gradient(135deg,rgba(255,255,255,1),rgba(255,241,242,0.84),rgba(253,242,248,0.92))] p-5 ui-enter-scale sm:p-7">
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(244,63,94,0.14),transparent_42%)]" />
-                <div className="relative flex min-h-[18rem] items-center justify-center rounded-[1.75rem] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(255,250,251,0.96))] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_20px_50px_rgba(15,23,42,0.08)]">
+                <div
+                  key={logoPreviewUrl}
+                  className="relative flex min-h-[18rem] items-center justify-center rounded-[1.75rem] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(255,250,251,0.96))] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_20px_50px_rgba(15,23,42,0.08)] ui-enter-scale"
+                >
                   <div className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-sm">
                     Header logo
                   </div>
@@ -688,7 +722,7 @@ export default function AdminLandingSettingsForm({
                     src={logoPreviewUrl}
                     fallback={DEFAULT_LOGO_IMAGE}
                     alt="Site logo preview"
-                    className="relative z-10 max-h-40 w-full max-w-[290px] object-contain object-center drop-shadow-[0_16px_32px_rgba(15,23,42,0.12)]"
+                    className="ui-media-zoom relative z-10 max-h-40 w-full max-w-[290px] object-contain object-center drop-shadow-[0_16px_32px_rgba(15,23,42,0.12)]"
                   />
                 </div>
               </div>

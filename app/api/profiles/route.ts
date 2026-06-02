@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { subYears } from "date-fns";
 import { Gender, Prisma } from "@prisma/client";
 
+const DEFAULT_PROFILE_PAGE_SIZE = 12;
+const MAX_PROFILE_PAGE_SIZE = 24;
+
 function getDefaultBrowseGender(gender: Gender | null | undefined) {
   if (gender === "MALE") return "FEMALE";
   if (gender === "FEMALE") return "MALE";
@@ -33,8 +36,16 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const page = parseInt(searchParams.get("page") ?? "1");
-  const limit = parseInt(searchParams.get("limit") ?? "12");
+  const requestedPage = Number.parseInt(searchParams.get("page") ?? "1", 10);
+  const requestedLimit = Number.parseInt(
+    searchParams.get("limit") ?? `${DEFAULT_PROFILE_PAGE_SIZE}`,
+    10
+  );
+  const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+  const limit =
+    Number.isFinite(requestedLimit) && requestedLimit > 0
+      ? Math.min(requestedLimit, MAX_PROFILE_PAGE_SIZE)
+      : DEFAULT_PROFILE_PAGE_SIZE;
   const requestedGender = searchParams.get("gender") ?? undefined;
   const gender = requestedGender ?? getDefaultBrowseGender(currentUserProfile.gender);
   const search = searchParams.get("search") ?? undefined;

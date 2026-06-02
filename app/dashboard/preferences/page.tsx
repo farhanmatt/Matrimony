@@ -26,17 +26,26 @@ export default async function PreferencesPage() {
   if (!profile) {
     return (
       <div>
-        <h1 className="text-2xl font-display font-bold text-gray-900 mb-2">
+        <h1
+          className="ui-enter-up mb-2 text-2xl font-display font-bold text-gray-900"
+          style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
+        >
           Partner Preferences
         </h1>
-        <p className="text-gray-500 text-sm mb-8">
+        <p
+          className="ui-enter-up mb-8 text-sm text-gray-500"
+          style={{ animationDelay: "110ms", animationFillMode: "forwards" }}
+        >
           Create your profile first, then add the details you prefer in a life
           partner.
         </p>
 
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
+        <div
+          className="ui-enter-scale ui-card-lift-soft rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8"
+          style={{ animationDelay: "180ms", animationFillMode: "forwards" }}
+        >
           <div className="flex flex-col sm:flex-row items-start gap-5">
-            <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 ui-icon-lift">
               <Heart className="w-7 h-7" />
             </div>
             <div className="flex-1">
@@ -49,9 +58,9 @@ export default async function PreferencesPage() {
               </p>
               <Link
                 href="/dashboard/profile/create"
-                className="btn-primary mt-5 inline-flex items-center gap-2 py-2.5 px-6 text-sm"
+                className="btn-primary ui-link-shift mt-5 inline-flex items-center gap-2 px-6 py-2.5 text-sm"
               >
-                <PlusCircle className="w-4 h-4" />
+                <PlusCircle className="ui-arrow-shift w-4 h-4" />
                 Create Profile
               </Link>
             </div>
@@ -79,8 +88,11 @@ export default async function PreferencesPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <div className="inline-flex items-center gap-2 rounded-full bg-rose-50 border border-rose-100 px-3 py-1 text-xs font-semibold text-rose-600 mb-4">
+      <div
+        className="ui-enter-up mb-8"
+        style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
+      >
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600">
           <Sparkles className="w-3.5 h-3.5" />
           Matchmaking Preferences
         </div>
@@ -93,13 +105,19 @@ export default async function PreferencesPage() {
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_280px] gap-6 items-start">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+      <div className="grid items-start gap-6 lg:grid-cols-[1fr_280px]">
+        <div
+          className="ui-enter-scale ui-card-lift-soft rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8"
+          style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
+        >
           <PreferenceForm defaultValues={defaultValues} />
         </div>
 
-        <aside className="bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl p-6 text-white shadow-lg">
-          <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-5">
+        <aside
+          className="ui-enter-right rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 p-6 text-white shadow-lg"
+          style={{ animationDelay: "190ms", animationFillMode: "forwards" }}
+        >
+          <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 ui-icon-lift">
             <SlidersHorizontal className="w-6 h-6" />
           </div>
           <h2 className="font-display text-xl font-bold mb-2">

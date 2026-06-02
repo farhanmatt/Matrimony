@@ -166,7 +166,7 @@ export default function AdminProfileRowActions({
         ref={triggerRef}
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:border-gray-300 hover:text-gray-700"
+        className="ui-link-shift inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-all duration-300 hover:border-gray-300 hover:text-gray-700 hover:shadow-md"
         aria-label="Profile actions"
         aria-haspopup="menu"
         aria-expanded={open}
@@ -178,7 +178,7 @@ export default function AdminProfileRowActions({
         ? createPortal(
             <div
               ref={menuRef}
-              className="fixed z-[9999] w-52 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl"
+              className="ui-modal-pop fixed z-[9999] w-52 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl"
               style={{
                 top: `${menuPosition.top}px`,
                 left: `${menuPosition.left}px`,

@@ -90,9 +90,9 @@ export default async function ReceivedLikesPage() {
 
   if (dbUnavailable) {
     return (
-      <div className="rounded-[28px] border border-amber-200 bg-white p-6 shadow-sm sm:p-8">
+      <div className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-amber-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl bg-amber-100 text-amber-700">
+          <div className="ui-soft-float flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl bg-amber-100 text-amber-700">
             <DatabaseZap className="h-7 w-7" />
           </div>
           <div className="flex-1">
@@ -107,14 +107,14 @@ export default async function ReceivedLikesPage() {
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href="/dashboard/received-likes"
-                className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-600"
+                className="ui-link-shift inline-flex items-center gap-2 rounded-full bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-600"
               >
                 <RefreshCw className="h-4 w-4" />
                 Retry Page
               </Link>
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-rose-300 hover:text-rose-600"
+                className="ui-link-shift inline-flex items-center gap-2 rounded-full border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-rose-300 hover:text-rose-600"
               >
                 Back to Dashboard
               </Link>
@@ -128,9 +128,12 @@ export default async function ReceivedLikesPage() {
   if (!ownProfile) {
     return (
       <div>
-        <div className="mb-6">
+        <div
+          className="ui-enter-up mb-6"
+          style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
+        >
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 text-rose-500 shadow-sm">
+            <div className="ui-soft-float flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 text-rose-500 shadow-sm">
               <Heart className="h-4.5 w-4.5" />
             </div>
             <h1 className="font-display text-[1.8rem] font-bold tracking-tight text-slate-900">
@@ -142,12 +145,17 @@ export default async function ReceivedLikesPage() {
           </p>
         </div>
 
-        <EmptyState
-          icon="heart"
-          title="Create your profile to receive likes"
-          description="Once your profile is live, interested members will appear here."
-          action={{ label: "Create Profile", href: "/dashboard/profile/create" }}
-        />
+        <div
+          className="ui-enter-scale"
+          style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
+        >
+          <EmptyState
+            icon="heart"
+            title="Create your profile to receive likes"
+            description="Once your profile is live, interested members will appear here."
+            action={{ label: "Create Profile", href: "/dashboard/profile/create" }}
+          />
+        </div>
       </div>
     );
   }
@@ -174,9 +182,12 @@ export default async function ReceivedLikesPage() {
   if (initialLikes.length === 0) {
     return (
       <div>
-        <div className="mb-6">
+        <div
+          className="ui-enter-up mb-6"
+          style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
+        >
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 text-rose-500 shadow-sm">
+            <div className="ui-soft-float flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 text-rose-500 shadow-sm">
               <Heart className="h-4.5 w-4.5" />
             </div>
             <h1 className="font-display text-[1.8rem] font-bold tracking-tight text-slate-900">
@@ -188,23 +199,28 @@ export default async function ReceivedLikesPage() {
           </p>
         </div>
 
-        <EmptyState
-          icon="heart"
-          title={
-            matchedReceivedCount > 0
-              ? "No pending received likes"
-              : "No received likes yet"
-          }
-          description={
-            matchedReceivedCount > 0
-              ? "Profiles you liked back have been moved to Mutual Interest."
-              : "Keep your profile updated and active to attract more interest."
-          }
-          action={{
-            label: matchedReceivedCount > 0 ? "View Mutual Interests" : "Browse Profiles",
-            href: matchedReceivedCount > 0 ? "/dashboard/matches" : "/dashboard/browse",
-          }}
-        />
+        <div
+          className="ui-enter-scale"
+          style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
+        >
+          <EmptyState
+            icon="heart"
+            title={
+              matchedReceivedCount > 0
+                ? "No pending received likes"
+                : "No received likes yet"
+            }
+            description={
+              matchedReceivedCount > 0
+                ? "Profiles you liked back have been moved to Mutual Interest."
+                : "Keep your profile updated and active to attract more interest."
+            }
+            action={{
+              label: matchedReceivedCount > 0 ? "View Mutual Interests" : "Browse Profiles",
+              href: matchedReceivedCount > 0 ? "/dashboard/matches" : "/dashboard/browse",
+            }}
+          />
+        </div>
       </div>
     );
   }

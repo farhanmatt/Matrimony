@@ -110,26 +110,26 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen hero-gradient flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="hero-gradient flex min-h-screen items-center justify-center px-4 py-12">
+      <div className="ui-enter-scale w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center justify-center">
+        <div className="mb-8 text-center">
+          <Link href="/" className="ui-link-shift inline-flex items-center justify-center">
             <SiteLogo
               src={logoImageUrl}
               alt="Vivah Bandhan logo"
-              className="h-14 max-w-[260px] sm:h-16 sm:max-w-[320px]"
+              className="ui-soft-float h-14 max-w-[260px] sm:h-16 sm:max-w-[320px]"
             />
           </Link>
-          <h1 className="text-2xl font-display font-bold text-gray-900 mt-5 mb-1">
+          <h1 className="ui-enter-up mt-5 mb-1 text-2xl font-display font-bold text-gray-900" style={{ animationDelay: "120ms" }}>
             Welcome back
           </h1>
-          <p className="text-gray-500 text-sm">
+          <p className="ui-enter-up text-sm text-gray-500" style={{ animationDelay: "180ms" }}>
             Sign in to continue your journey
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="ui-enter-up ui-card-lift rounded-2xl bg-white p-8 shadow-xl" style={{ animationDelay: "240ms" }}>
           {authErrorMessage ? (
             <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
               {authErrorMessage}
@@ -141,7 +141,7 @@ function LoginForm() {
             onClick={handleGoogle}
             disabled={isGoogleLoading}
             suppressHydrationWarning
-            className="w-full flex items-center justify-center gap-3 border-2 border-gray-200 rounded-xl py-3 px-4 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-300 transition-all mb-6 disabled:opacity-60"
+            className="ui-link-shift mb-6 flex w-full items-center justify-center gap-3 rounded-xl border-2 border-gray-200 px-4 py-3 font-medium text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50 disabled:opacity-60"
           >
             {isGoogleLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -189,7 +189,7 @@ function LoginForm() {
                 <label className="block text-sm font-medium text-gray-700" htmlFor="login-password">
                   Password
                 </label>
-                <Link href="/forgot-password" className="text-xs text-rose-500 hover:text-rose-600 transition-colors">
+                <Link href="/forgot-password" className="ui-link-shift text-xs text-rose-500 transition-colors hover:text-rose-600">
                   Forgot password?
                 </Link>
               </div>
@@ -207,7 +207,7 @@ function LoginForm() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   suppressHydrationWarning
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="ui-link-shift absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -221,7 +221,7 @@ function LoginForm() {
               type="submit"
               disabled={isSubmitting}
               suppressHydrationWarning
-              className="w-full btn-primary flex items-center justify-center gap-2 py-3 rounded-xl"
+              className="btn-primary ui-link-shift flex w-full items-center justify-center gap-2 rounded-xl py-3"
             >
               {isSubmitting ? (
                 <><Loader2 className="w-5 h-5 animate-spin" /> Signing in...</>
@@ -233,7 +233,7 @@ function LoginForm() {
 
           <p className="text-center text-sm text-gray-600 mt-6">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="text-rose-600 font-semibold hover:text-rose-700">
+            <Link href="/register" className="ui-link-shift font-semibold text-rose-600 hover:text-rose-700">
               Register Free
             </Link>
           </p>

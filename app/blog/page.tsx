@@ -20,17 +20,17 @@ export default function BlogListingPage() {
 
       <section className="pt-28 sm:pt-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Link href="/" className="transition-colors hover:text-rose-500">
+          <div className="ui-enter-up flex items-center gap-2 text-sm text-slate-500" style={{ animationDelay: "40ms" }}>
+            <Link href="/" className="ui-link-shift transition-colors hover:text-rose-500">
               Home
             </Link>
             <ChevronRight className="h-4 w-4" />
             <span className="font-medium text-slate-700">Blog</span>
           </div>
 
-          <div className="mt-6 rounded-[2rem] border border-rose-100 bg-white/90 p-8 shadow-[0_24px_60px_rgba(244,63,94,0.08)] backdrop-blur md:p-10">
+          <div className="ui-enter-scale mt-6 rounded-[2rem] border border-rose-100 bg-white/90 p-8 shadow-[0_24px_60px_rgba(244,63,94,0.08)] backdrop-blur md:p-10" style={{ animationDelay: "100ms" }}>
             <div className="flex items-center gap-2 text-rose-500">
-              <Heart className="h-5 w-5 fill-rose-100" />
+              <Heart className="ui-soft-float h-5 w-5 fill-rose-100" />
               <span className="text-sm font-semibold uppercase tracking-[0.24em]">
                 Expert Advice
               </span>
@@ -45,11 +45,12 @@ export default function BlogListingPage() {
           </div>
 
           <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {blogPosts.map((post) => (
+            {blogPosts.map((post, index) => (
               <Link
                 key={post.slug}
                 href={`/blog/${post.slug}`}
-                className="group overflow-hidden rounded-[1.75rem] border border-rose-100 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_52px_rgba(244,63,94,0.12)]"
+                className="ui-enter-up ui-card-lift group overflow-hidden rounded-[1.75rem] border border-rose-100 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.06)]"
+                style={{ animationDelay: `${160 + index * 70}ms` }}
               >
                 <article>
                   <div className="relative h-64 overflow-hidden">
@@ -57,7 +58,7 @@ export default function BlogListingPage() {
                       src={post.imageSrc}
                       alt={post.imageAlt}
                       fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="ui-media-zoom object-cover"
                       style={{ objectPosition: post.cardObjectPosition }}
                       sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                     />
@@ -83,9 +84,9 @@ export default function BlogListingPage() {
                         <BookOpen className="h-4 w-4 text-rose-400" />
                         {formatBlogDate(post.publishedAt)}
                       </div>
-                      <span className="inline-flex items-center gap-2 font-semibold text-rose-500 transition-colors group-hover:text-rose-600">
+                      <span className="ui-link-shift inline-flex items-center gap-2 font-semibold text-rose-500 transition-colors group-hover:text-rose-600">
                         Read article
-                        <ArrowRight className="h-4 w-4" />
+                        <ArrowRight className="ui-arrow-shift h-4 w-4" />
                       </span>
                     </div>
                   </div>
@@ -98,10 +99,10 @@ export default function BlogListingPage() {
 
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-[2rem] border border-rose-100 bg-gradient-to-r from-rose-50 via-pink-50 to-white p-8 shadow-[0_16px_40px_rgba(244,63,94,0.08)] lg:flex lg:items-center lg:justify-between">
+          <div className="ui-enter-up ui-card-lift mt-2 rounded-[2rem] border border-rose-100 bg-gradient-to-r from-rose-50 via-pink-50 to-white p-8 shadow-[0_16px_40px_rgba(244,63,94,0.08)] lg:flex lg:items-center lg:justify-between" style={{ animationDelay: "120ms" }}>
             <div>
               <div className="flex items-center gap-2 text-rose-500">
-                <Heart className="h-5 w-5 fill-rose-100" />
+                <Heart className="ui-soft-float h-5 w-5 fill-rose-100" />
                 <span className="text-sm font-semibold uppercase tracking-[0.24em]">
                   Start Your Journey
                 </span>
@@ -118,13 +119,13 @@ export default function BlogListingPage() {
             <div className="mt-6 flex flex-col gap-3 sm:flex-row lg:mt-0">
               <Link
                 href="/register"
-                className="inline-flex h-12 items-center justify-center rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-6 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(244,63,94,0.22)]"
+                className="ui-link-shift inline-flex h-12 items-center justify-center rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-6 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(244,63,94,0.22)]"
               >
                 Register Free
               </Link>
               <Link
                 href="/#find-match"
-                className="inline-flex h-12 items-center justify-center rounded-xl border border-rose-200 bg-white px-6 text-sm font-semibold text-rose-500 transition-colors hover:bg-rose-50"
+                className="ui-link-shift inline-flex h-12 items-center justify-center rounded-xl border border-rose-200 bg-white px-6 text-sm font-semibold text-rose-500 transition-colors hover:bg-rose-50"
               >
                 Search Now
               </Link>

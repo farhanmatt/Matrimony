@@ -139,7 +139,7 @@ export default function UnlockedProfileCard({
 
   return (
     <article
-      className="group relative overflow-hidden rounded-[26px] border border-emerald-100/80 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.07)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(15,23,42,0.1)] cursor-pointer"
+      className="ui-card-lift group relative cursor-pointer overflow-hidden rounded-[26px] border border-emerald-100/80 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.07)]"
       onClick={openProfile}
       onKeyDown={handleCardKeyDown}
       role="link"
@@ -155,7 +155,7 @@ export default function UnlockedProfileCard({
               src={primaryPhoto}
               alt={`${profile.fullName} matrimony profile`}
               fill
-              className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
+              className="ui-media-zoom object-cover object-center"
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
               quality={75}
             />
@@ -183,18 +183,18 @@ export default function UnlockedProfileCard({
                 stopCardNavigation(event);
                 setIsMenuOpen((current) => !current);
               }}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/32 text-white backdrop-blur-sm transition-colors hover:bg-black/45"
+              className="ui-link-shift inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/32 text-white backdrop-blur-sm transition-colors hover:bg-black/45"
               aria-label="Open unlocked profile actions"
             >
               <EllipsisVertical className="h-[18px] w-[18px]" />
             </button>
 
             {isMenuOpen ? (
-              <div className="absolute right-0 top-12 w-48 overflow-hidden rounded-[18px] border border-emerald-100 bg-white py-2 shadow-[0_20px_44px_rgba(15,23,42,0.16)]">
+              <div className="ui-enter-up absolute right-0 top-12 w-48 overflow-hidden rounded-[18px] border border-emerald-100 bg-white py-2 shadow-[0_20px_44px_rgba(15,23,42,0.16)]">
                 <Link
                   href={profileHref}
                   onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+                  className="ui-link-shift flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
                 >
                   <ExternalLink className="h-4 w-4" />
                   Open full profile
@@ -205,7 +205,7 @@ export default function UnlockedProfileCard({
                     stopCardNavigation(event);
                     void copyPhoneNumber();
                   }}
-                  className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+                  className="ui-link-shift flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
                 >
                   <Copy className="h-4 w-4" />
                   Copy phone number
@@ -216,7 +216,7 @@ export default function UnlockedProfileCard({
                     target="_blank"
                     rel="noreferrer"
                     onClick={stopCardNavigation}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+                    className="ui-link-shift flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
                   >
                     <MessageCircle className="h-4 w-4" />
                     Open WhatsApp
@@ -232,7 +232,7 @@ export default function UnlockedProfileCard({
             <h3 className="font-display text-[1.52rem] font-bold tracking-tight text-slate-900">
               {profile.fullName.split(" ")[0]}, {age}
             </h3>
-            <BadgeCheck className="h-[18px] w-[18px] text-emerald-500" />
+            <BadgeCheck className="ui-icon-lift h-[18px] w-[18px] text-emerald-500" />
           </div>
 
           <div className="mt-4 space-y-2.5 text-[14px] text-slate-600">
@@ -260,7 +260,7 @@ export default function UnlockedProfileCard({
             ) : null}
           </div>
 
-          <div className="mt-4 rounded-[14px] bg-[linear-gradient(90deg,rgba(236,253,245,0.95)_0%,rgba(240,253,244,0.72)_100%)] px-4 py-2.5 text-center text-[13px] font-semibold text-emerald-700">
+          <div className="ui-card-lift-soft mt-4 rounded-[14px] bg-[linear-gradient(90deg,rgba(236,253,245,0.95)_0%,rgba(240,253,244,0.72)_100%)] px-4 py-2.5 text-center text-[13px] font-semibold text-emerald-700">
             Unlocked on {formatDate(unlockedAt)}
           </div>
         </div>

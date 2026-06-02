@@ -155,9 +155,12 @@ export default function UnlockedPageClient({
   return (
     <div className="space-y-8">
       <section className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-        <div className="space-y-3">
+        <div
+          className="ui-enter-up space-y-3"
+          style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
+        >
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-[linear-gradient(135deg,rgba(236,253,245,0.98)_0%,rgba(220,252,231,0.9)_100%)] text-emerald-600 shadow-sm">
+            <div className="ui-soft-float flex h-14 w-14 items-center justify-center rounded-[22px] bg-[linear-gradient(135deg,rgba(236,253,245,0.98)_0%,rgba(220,252,231,0.9)_100%)] text-emerald-600 shadow-sm">
               <Unlock className="h-6 w-6" />
             </div>
             <div>
@@ -171,8 +174,11 @@ export default function UnlockedPageClient({
           </div>
         </div>
 
-        <div className="flex w-full flex-col gap-3 sm:flex-row xl:max-w-[470px]">
-          <label className="relative block flex-1">
+        <div
+          className="ui-enter-right flex w-full flex-col gap-3 sm:flex-row xl:max-w-[470px]"
+          style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
+        >
+          <label className="ui-card-lift-soft relative block flex-1 rounded-[18px]">
             <Search className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-400" />
             <input
               type="text"
@@ -187,7 +193,7 @@ export default function UnlockedPageClient({
             <button
               type="button"
               onClick={() => setShowFilterMenu((current) => !current)}
-              className="inline-flex h-12 w-12 items-center justify-center rounded-[16px] border border-emerald-100 bg-white text-slate-700 shadow-sm transition-colors hover:border-emerald-200 hover:text-emerald-700"
+              className="ui-link-shift inline-flex h-12 w-12 items-center justify-center rounded-[16px] border border-emerald-100 bg-white text-slate-700 shadow-sm transition-colors hover:border-emerald-200 hover:text-emerald-700"
               aria-label="Filter unlocked profiles"
               title="Filter unlocked profiles"
             >
@@ -195,7 +201,7 @@ export default function UnlockedPageClient({
             </button>
 
             {showFilterMenu ? (
-              <div className="absolute right-0 top-14 z-20 min-w-[210px] overflow-hidden rounded-[20px] border border-emerald-100 bg-white py-2 shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
+              <div className="ui-enter-up absolute right-0 top-14 z-20 min-w-[210px] overflow-hidden rounded-[20px] border border-emerald-100 bg-white py-2 shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
                 {[
                   { key: "all", label: "All Profiles" },
                   { key: "recent", label: "Recently Unlocked" },
@@ -208,7 +214,7 @@ export default function UnlockedPageClient({
                       setActiveFilter(option.key as FilterKey);
                       setShowFilterMenu(false);
                     }}
-                    className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-sm font-medium transition-colors ${
+                    className={`ui-link-shift flex w-full items-center justify-between px-4 py-2.5 text-left text-sm font-medium transition-colors ${
                       activeFilter === option.key
                         ? "bg-emerald-50 text-emerald-700"
                         : "text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
@@ -227,14 +233,22 @@ export default function UnlockedPageClient({
       </section>
 
       {unlocks.length === 0 ? (
-        <EmptyState
-          icon="heart"
-          title="No unlocked profiles yet"
-          description="Unlock your mutual matches to see their full details and contact information."
-          action={{ label: "View Matches", href: "/dashboard/matches" }}
-        />
+        <div
+          className="ui-enter-scale"
+          style={{ animationDelay: "160ms", animationFillMode: "forwards" }}
+        >
+          <EmptyState
+            icon="heart"
+            title="No unlocked profiles yet"
+            description="Unlock your mutual matches to see their full details and contact information."
+            action={{ label: "View Matches", href: "/dashboard/matches" }}
+          />
+        </div>
       ) : unlockCards.length === 0 ? (
-        <section className="rounded-[30px] border border-emerald-100 bg-white px-6 py-12 text-center shadow-sm">
+        <section
+          className="ui-enter-scale ui-card-lift-soft rounded-[30px] border border-emerald-100 bg-white px-6 py-12 text-center shadow-sm"
+          style={{ animationDelay: "160ms", animationFillMode: "forwards" }}
+        >
           <h2 className="font-display text-[1.6rem] font-bold text-slate-900">
             No unlocked profiles found
           </h2>
@@ -245,21 +259,32 @@ export default function UnlockedPageClient({
       ) : (
         <>
           <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {visibleCards.map(({ unlock, profile }) => (
-              <UnlockedProfileCard
+            {visibleCards.map(({ unlock, profile }, index) => (
+              <div
                 key={unlock.id}
-                profile={profile}
-                unlockedAt={unlock.createdAt}
-              />
+                className="ui-enter-scale"
+                style={{
+                  animationDelay: `${140 + (index % 8) * 55}ms`,
+                  animationFillMode: "forwards",
+                }}
+              >
+                <UnlockedProfileCard
+                  profile={profile}
+                  unlockedAt={unlock.createdAt}
+                />
+              </div>
             ))}
           </section>
 
           {canLoadMore ? (
-            <div className="flex justify-center">
+            <div
+              className="ui-enter-up flex justify-center"
+              style={{ animationDelay: "200ms", animationFillMode: "forwards" }}
+            >
               <button
                 type="button"
                 onClick={() => setVisibleCount((current) => current + LOAD_MORE_COUNT)}
-                className="inline-flex items-center justify-center gap-2 rounded-[18px] border border-emerald-100 bg-white px-8 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:border-emerald-200 hover:text-emerald-700"
+                className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-[18px] border border-emerald-100 bg-white px-8 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:border-emerald-200 hover:text-emerald-700"
               >
                 Load More
                 <ChevronDown className="h-[18px] w-[18px]" />
@@ -269,9 +294,12 @@ export default function UnlockedPageClient({
         </>
       )}
 
-      <section className="flex flex-col gap-5 rounded-[30px] border border-rose-100/80 bg-white px-6 py-5 shadow-sm md:flex-row md:items-center md:justify-between">
+      <section
+        className="ui-enter-up ui-card-lift-soft flex flex-col gap-5 rounded-[30px] border border-rose-100/80 bg-white px-6 py-5 shadow-sm md:flex-row md:items-center md:justify-between"
+        style={{ animationDelay: "240ms", animationFillMode: "forwards" }}
+      >
         <div className="flex items-start gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+          <div className="ui-icon-lift flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
             <ShieldCheck className="h-6 w-6" />
           </div>
           <div>
@@ -287,10 +315,10 @@ export default function UnlockedPageClient({
 
         <Link
           href="/privacy"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-rose-500 transition-colors hover:text-rose-600"
+          className="ui-link-shift inline-flex items-center gap-2 text-sm font-semibold text-rose-500 transition-colors hover:text-rose-600"
         >
           Know more about safety
-          <ChevronDown className="h-4 w-4 -rotate-90" />
+          <ChevronDown className="ui-arrow-shift h-4 w-4 -rotate-90" />
         </Link>
       </section>
     </div>

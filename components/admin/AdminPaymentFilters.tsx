@@ -118,7 +118,7 @@ export default function AdminPaymentFilters({ activeCount = 0 }: AdminPaymentFil
       <button
         type="button"
         onClick={openFilters}
-        className="inline-flex h-12 items-center gap-2 rounded-xl border border-rose-100 bg-white px-4 text-sm font-medium text-gray-700 shadow-[0_10px_24px_rgba(244,63,94,0.06)] transition-colors hover:border-rose-200 hover:bg-rose-50"
+        className="ui-link-shift inline-flex h-12 items-center gap-2 rounded-xl border border-rose-100 bg-white px-4 text-sm font-medium text-gray-700 shadow-[0_10px_24px_rgba(244,63,94,0.06)] transition-all duration-300 hover:border-rose-200 hover:bg-rose-50 hover:shadow-md active:scale-[0.985]"
       >
         <SlidersHorizontal className="h-4 w-4" />
         Filters
@@ -131,9 +131,9 @@ export default function AdminPaymentFilters({ activeCount = 0 }: AdminPaymentFil
 
       {open ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-rose-950/25 backdrop-blur-sm" onClick={closeFilters} />
+          <div className="ui-overlay-fade absolute inset-0 bg-rose-950/25 backdrop-blur-sm" onClick={closeFilters} />
 
-          <div className="relative z-10 w-full max-w-3xl rounded-3xl border border-rose-100 bg-white p-6 shadow-2xl sm:p-7">
+          <div className="ui-modal-pop relative z-10 w-full max-w-3xl rounded-3xl border border-rose-100 bg-white p-6 shadow-2xl sm:p-7">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-rose-500">
@@ -150,7 +150,7 @@ export default function AdminPaymentFilters({ activeCount = 0 }: AdminPaymentFil
               <button
                 type="button"
                 onClick={closeFilters}
-                className="rounded-full border border-rose-100 p-2 text-gray-500 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500"
+                className="ui-link-shift rounded-full border border-rose-100 p-2 text-gray-500 transition-all duration-300 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500"
                 aria-label="Close filters"
               >
                 <X className="h-5 w-5" />
@@ -242,7 +242,7 @@ export default function AdminPaymentFilters({ activeCount = 0 }: AdminPaymentFil
               <button
                 type="button"
                 onClick={clearFilters}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-100 px-4 py-3 text-sm font-semibold text-gray-600 transition-colors hover:border-rose-200 hover:text-rose-600"
+                className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-xl border border-rose-100 px-4 py-3 text-sm font-semibold text-gray-600 transition-all duration-300 hover:border-rose-200 hover:text-rose-600"
               >
                 <RotateCcw className="h-4 w-4" />
                 Clear Filters
@@ -251,7 +251,7 @@ export default function AdminPaymentFilters({ activeCount = 0 }: AdminPaymentFil
               <button
                 type="button"
                 onClick={applyFilters}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md"
+                className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:shadow-md"
               >
                 <SlidersHorizontal className="h-4 w-4" />
                 Apply Filters

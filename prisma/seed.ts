@@ -5,6 +5,7 @@ import {
   ADMIN_PASSWORD,
   upsertAdminUser,
 } from "./admin-user";
+import { normalizeNameLookup } from "@/lib/utils/user-identity";
 
 const prisma = new PrismaClient();
 
@@ -195,6 +196,7 @@ async function main() {
       update: {},
       create: {
         name: data.name,
+        nameLookup: normalizeNameLookup(data.name),
         email: data.email,
         password: hashedPassword,
         emailVerified: new Date(),

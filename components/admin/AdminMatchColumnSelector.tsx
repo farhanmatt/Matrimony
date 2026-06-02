@@ -61,7 +61,7 @@ export default function AdminMatchColumnSelector({
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-12 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
+        className="ui-link-shift inline-flex h-12 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition-all duration-300 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md active:scale-[0.985]"
         aria-haspopup="menu"
         aria-expanded={open}
       >
@@ -71,7 +71,7 @@ export default function AdminMatchColumnSelector({
       </button>
 
       {open ? (
-        <div className="absolute right-0 top-14 z-20 w-56 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
+        <div className="ui-modal-pop absolute right-0 top-14 z-20 w-56 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
           {columnOptions.map((option) => (
             <button
               key={option.key}

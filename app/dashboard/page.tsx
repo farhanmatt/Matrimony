@@ -598,7 +598,7 @@ export default async function DashboardPage() {
 
   if (dbUnavailable) {
     return (
-      <div className="rounded-[32px] border border-amber-200 bg-white p-6 shadow-sm sm:p-8">
+      <div className="ui-enter-scale ui-card-lift-soft rounded-[32px] border border-amber-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl bg-amber-100 text-amber-700">
             <DatabaseZap className="h-7 w-7" />
@@ -615,14 +615,14 @@ export default async function DashboardPage() {
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-600"
+                className="ui-link-shift inline-flex items-center gap-2 rounded-full bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-600"
               >
                 <RefreshCw className="h-4 w-4" />
                 Retry Dashboard
               </Link>
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-rose-300 hover:text-rose-600"
+                className="ui-link-shift inline-flex items-center gap-2 rounded-full border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-rose-300 hover:text-rose-600"
               >
                 Back to Home
               </Link>
@@ -636,18 +636,30 @@ export default async function DashboardPage() {
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,2.05fr)_290px]">
       <div className="space-y-6">
-        <section className="relative overflow-hidden rounded-[14px] border border-rose-100 bg-[linear-gradient(135deg,#fff9f3_0%,#fff6ef_22%,#ffe9ef_58%,#fff7fb_100%)] shadow-[0_22px_60px_rgba(15,23,42,0.08)]">
+        <section
+          className="ui-enter-up ui-card-lift-soft group relative overflow-hidden rounded-[14px] border border-rose-100 bg-[linear-gradient(135deg,#fff9f3_0%,#fff6ef_22%,#ffe9ef_58%,#fff7fb_100%)] shadow-[0_22px_60px_rgba(15,23,42,0.08)]"
+          style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
+        >
           <div className="absolute inset-0">
             <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.78)_0%,rgba(255,248,238,0.72)_28%,rgba(255,232,240,0.28)_66%,rgba(255,255,255,0.1)_100%)]" />
-            <div className="absolute -left-20 top-10 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(255,231,180,0.88)_0%,rgba(255,231,180,0.34)_42%,rgba(255,231,180,0)_74%)] blur-[6px]" />
-            <div className="absolute bottom-[-4.5rem] left-[18%] h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(255,214,224,0.55)_0%,rgba(255,214,224,0.18)_42%,rgba(255,214,224,0)_74%)]" />
-            <div className="absolute right-[-6rem] top-[-2rem] h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(255,205,168,0.44)_0%,rgba(255,205,168,0.14)_40%,rgba(255,205,168,0)_74%)]" />
+            <div className="ui-soft-float absolute -left-20 top-10 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(255,231,180,0.88)_0%,rgba(255,231,180,0.34)_42%,rgba(255,231,180,0)_74%)] blur-[6px]" />
+            <div
+              className="ui-soft-float absolute bottom-[-4.5rem] left-[18%] h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(255,214,224,0.55)_0%,rgba(255,214,224,0.18)_42%,rgba(255,214,224,0)_74%)]"
+              style={{ animationDelay: "0.9s" }}
+            />
+            <div
+              className="ui-soft-float absolute right-[-6rem] top-[-2rem] h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(255,205,168,0.44)_0%,rgba(255,205,168,0.14)_40%,rgba(255,205,168,0)_74%)]"
+              style={{ animationDelay: "1.6s" }}
+            />
             <div className="absolute inset-y-0 right-[12%] w-px bg-white/35" />
             <div className="absolute inset-y-8 right-[18%] w-px bg-rose-100/40" />
           </div>
 
           <div className="relative z-10 flex flex-col gap-7 px-6 py-5 sm:px-10 xl:min-h-[220px] xl:flex-row xl:items-center xl:justify-between">
-            <div className="max-w-[42rem] xl:max-w-[26rem]">
+            <div
+              className="ui-enter-left max-w-[42rem] xl:max-w-[26rem]"
+              style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
+            >
               <h1 className="font-display text-[1.15rem] font-bold leading-tight text-gray-900 sm:text-[1.45rem] sm:whitespace-nowrap lg:text-[1.6rem]">
                 Let&apos;s find your <span className="text-rose-600">perfect match</span>
               </h1>
@@ -658,25 +670,29 @@ export default async function DashboardPage() {
               <div className="mt-5 flex flex-wrap gap-3">
                 <Link
                   href={profile ? "/dashboard/browse" : "/dashboard/profile/create"}
-                  className="inline-flex items-center gap-2.5 rounded-[10px] bg-[#e11d48] px-3.5 py-2 text-[13px] font-semibold text-white shadow-lg shadow-rose-200 transition-all hover:-translate-y-0.5 hover:bg-[#be123c] hover:shadow-xl"
+                  className="ui-link-shift inline-flex items-center gap-2.5 rounded-[10px] bg-[#e11d48] px-3.5 py-2 text-[13px] font-semibold text-white shadow-lg shadow-rose-200 transition-all hover:-translate-y-0.5 hover:bg-[#be123c] hover:shadow-xl"
                 >
                   {profile ? "Explore Matches" : "Create Your Profile"}
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-rose-600 shadow-sm">
-                    <ArrowRight className="h-3 w-3" />
+                  <span className="ui-icon-lift flex h-7 w-7 items-center justify-center rounded-full bg-white text-rose-600 shadow-sm">
+                    <ArrowRight className="ui-arrow-shift h-3 w-3" />
                   </span>
                 </Link>
               </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:ml-8 xl:min-w-0 xl:flex-1 xl:grid-cols-5 xl:gap-0 xl:divide-x xl:divide-rose-100/60">
-              {statCards.map((card) => (
+              {statCards.map((card, index) => (
                 <div
                   key={card.label}
-                  className="rounded-[22px] border border-white/70 bg-white/88 px-4 py-3 shadow-sm backdrop-blur-sm xl:rounded-none xl:border-0 xl:bg-transparent xl:px-5 xl:py-1 xl:shadow-none"
+                  className="ui-enter-scale ui-card-lift-soft group rounded-[22px] border border-white/70 bg-white/88 px-4 py-3 shadow-sm backdrop-blur-sm xl:rounded-none xl:border-0 xl:bg-transparent xl:px-5 xl:py-1 xl:shadow-none"
+                  style={{
+                    animationDelay: `${180 + index * 70}ms`,
+                    animationFillMode: "forwards",
+                  }}
                 >
                   <div className="flex flex-col items-center text-center">
                     <div
-                      className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${card.iconWrap}`}
+                      className={`ui-icon-lift inline-flex h-9 w-9 items-center justify-center rounded-full ${card.iconWrap}`}
                     >
                       <card.icon className="h-4 w-4" />
                     </div>
@@ -696,7 +712,10 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        <section className="rounded-[30px] border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
+        <section
+          className="ui-enter-up rounded-[30px] border border-gray-100 bg-white p-5 shadow-sm sm:p-6"
+          style={{ animationDelay: "140ms", animationFillMode: "forwards" }}
+        >
           <div className="mb-5 flex items-center justify-between gap-4">
             <div>
               <h2 className="font-display text-2xl font-bold text-gray-900">
@@ -708,7 +727,7 @@ export default async function DashboardPage() {
             </div>
             <Link
               href="/dashboard/browse"
-              className="shrink-0 text-sm font-semibold text-rose-600 transition-colors hover:text-rose-700"
+              className="ui-link-shift shrink-0 text-sm font-semibold text-rose-600 transition-colors hover:text-rose-700"
             >
               View All
             </Link>
@@ -716,17 +735,21 @@ export default async function DashboardPage() {
 
           {visibleRecommendedCards.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {visibleRecommendedCards.map((candidate) => (
+              {visibleRecommendedCards.map((candidate, index) => (
                 <article
                   key={candidate.id}
-                  className="overflow-hidden rounded-[18px] border border-gray-100 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+                  className="ui-enter-scale ui-card-lift group overflow-hidden rounded-[18px] border border-gray-100 bg-white shadow-sm"
+                  style={{
+                    animationDelay: `${220 + index * 70}ms`,
+                    animationFillMode: "forwards",
+                  }}
                 >
                   <div className="relative h-40 bg-rose-50">
                     <Image
                       src={candidate.image}
                       alt={candidate.fullName}
                       fill
-                      className="scale-[1.04] object-cover blur-[5px]"
+                      className="ui-media-zoom scale-[1.04] object-cover blur-[5px]"
                       sizes="(max-width: 640px) 100vw, 260px"
                     />
                     <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-rose-600 shadow-sm backdrop-blur">
@@ -748,7 +771,7 @@ export default async function DashboardPage() {
               ))}
             </div>
           ) : (
-            <div className="rounded-[18px] border border-dashed border-gray-200 bg-rose-50/40 px-6 py-12 text-center">
+            <div className="ui-enter-scale rounded-[18px] border border-dashed border-gray-200 bg-rose-50/40 px-6 py-12 text-center">
               <p className="text-sm font-semibold text-gray-900">
                 No recommended profiles yet
               </p>
@@ -760,15 +783,21 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        <section className="grid gap-4 lg:grid-cols-3">
-          <div className="rounded-[28px] border border-gray-100 bg-white p-5 shadow-sm">
+        <section
+          className="ui-enter-up grid gap-4 lg:grid-cols-3"
+          style={{ animationDelay: "220ms", animationFillMode: "forwards" }}
+        >
+          <div
+            className="ui-enter-up ui-card-lift-soft rounded-[28px] border border-gray-100 bg-white p-5 shadow-sm"
+            style={{ animationDelay: "260ms", animationFillMode: "forwards" }}
+          >
             <div className="mb-4 flex items-center justify-between">
               <h3 className="font-display text-xl font-bold text-gray-900">
                 Recent Interests
               </h3>
               <Link
                 href="/dashboard/liked"
-                className="text-xs font-semibold text-rose-600 transition-colors hover:text-rose-700"
+                className="ui-link-shift text-xs font-semibold text-rose-600 transition-colors hover:text-rose-700"
               >
                 View All
               </Link>
@@ -776,13 +805,16 @@ export default async function DashboardPage() {
 
             <div className="space-y-4">
               {recentInterestItems.map((item) => (
-                <div key={item.id} className="flex items-center gap-3">
+                <div
+                  key={item.id}
+                  className="flex items-center gap-3 rounded-2xl transition-transform duration-300 hover:translate-x-1"
+                >
                   <div className="relative h-12 w-12 overflow-hidden rounded-2xl bg-rose-50">
                     <Image
                       src={item.avatar}
                       alt={item.name}
                       fill
-                      className="object-cover"
+                      className="ui-media-zoom object-cover"
                       sizes="48px"
                     />
                   </div>
@@ -802,14 +834,17 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-gray-100 bg-white p-5 shadow-sm">
+          <div
+            className="ui-enter-up ui-card-lift-soft rounded-[28px] border border-gray-100 bg-white p-5 shadow-sm"
+            style={{ animationDelay: "330ms", animationFillMode: "forwards" }}
+          >
             <div className="mb-4 flex items-center justify-between">
               <h3 className="font-display text-xl font-bold text-gray-900">
                 Mutual Interest
               </h3>
               <Link
                 href="/dashboard/matches"
-                className="text-xs font-semibold text-rose-600 transition-colors hover:text-rose-700"
+                className="ui-link-shift text-xs font-semibold text-rose-600 transition-colors hover:text-rose-700"
               >
                 View All
               </Link>
@@ -817,13 +852,16 @@ export default async function DashboardPage() {
 
             <div className="space-y-4">
               {matchItems.map((item) => (
-                <div key={item.id} className="flex items-center gap-3">
+                <div
+                  key={item.id}
+                  className="flex items-center gap-3 rounded-2xl transition-transform duration-300 hover:translate-x-1"
+                >
                   <div className="relative h-12 w-12 overflow-hidden rounded-2xl bg-rose-50">
                     <Image
                       src={item.avatar}
                       alt={item.name}
                       fill
-                      className="object-cover"
+                      className="ui-media-zoom object-cover"
                       sizes="48px"
                     />
                   </div>
@@ -843,7 +881,10 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-gray-100 bg-white p-5 shadow-sm">
+          <div
+            className="ui-enter-up ui-card-lift-soft group rounded-[28px] border border-gray-100 bg-white p-5 shadow-sm"
+            style={{ animationDelay: "400ms", animationFillMode: "forwards" }}
+          >
             <div className="mb-4 flex items-center justify-between">
               <h3 className="font-display text-xl font-bold text-gray-900">
                 Success Story
@@ -859,7 +900,7 @@ export default async function DashboardPage() {
                   src={fallbackSuccessStory.image}
                   alt={fallbackSuccessStory.title}
                   fill
-                  className="object-cover"
+                  className="ui-media-zoom object-cover"
                   sizes="(max-width: 1024px) 100vw, 33vw"
                 />
               </div>
@@ -875,7 +916,10 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        <section className="grid gap-4 rounded-[30px] border border-rose-100 bg-gradient-to-r from-white via-rose-50 to-pink-50 p-5 shadow-sm sm:grid-cols-2 xl:grid-cols-4">
+        <section
+          className="ui-enter-up grid gap-4 rounded-[30px] border border-rose-100 bg-gradient-to-r from-white via-rose-50 to-pink-50 p-5 shadow-sm sm:grid-cols-2 xl:grid-cols-4"
+          style={{ animationDelay: "300ms", animationFillMode: "forwards" }}
+        >
           {[
             {
               icon: ShieldCheck,
@@ -897,9 +941,16 @@ export default async function DashboardPage() {
               title: "24/7 Support",
               description: "Help is always available whenever you need guidance.",
             },
-          ].map((item) => (
-            <div key={item.title} className="flex gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-rose-500 shadow-sm">
+          ].map((item, index) => (
+            <div
+              key={item.title}
+              className="ui-enter-up ui-card-lift-soft flex gap-3 rounded-[22px]"
+              style={{
+                animationDelay: `${360 + index * 60}ms`,
+                animationFillMode: "forwards",
+              }}
+            >
+              <div className="ui-icon-lift flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-rose-500 shadow-sm">
                 <item.icon className="h-5 w-5" />
               </div>
               <div>
@@ -914,9 +965,17 @@ export default async function DashboardPage() {
       </div>
 
       <aside className="space-y-6">
-        <DashboardNotificationsCard items={notificationItems} />
+        <div
+          className="ui-enter-right"
+          style={{ animationDelay: "110ms", animationFillMode: "forwards" }}
+        >
+          <DashboardNotificationsCard items={notificationItems} />
+        </div>
 
-        <section className="rounded-[14px] border border-gray-100 bg-white p-5 shadow-sm">
+        <section
+          className="ui-enter-right ui-card-lift-soft rounded-[14px] border border-gray-100 bg-white p-5 shadow-sm"
+          style={{ animationDelay: "190ms", animationFillMode: "forwards" }}
+        >
           <div className="flex items-center justify-between gap-3">
             <h2 className="font-display text-lg font-bold leading-tight text-gray-900">
               Profile Completeness
@@ -928,7 +987,7 @@ export default async function DashboardPage() {
 
           <div className="mt-5 h-2 overflow-hidden rounded-full bg-rose-100">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-rose-500 to-pink-500"
+              className="h-full rounded-full bg-gradient-to-r from-rose-500 to-pink-500 transition-all duration-700"
               style={{ width: `${profileCompletion.percent}%` }}
             />
           </div>
@@ -953,15 +1012,18 @@ export default async function DashboardPage() {
 
           <Link
             href={profile ? "/dashboard/profile/edit" : "/dashboard/profile/create"}
-            className="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-[13px] font-semibold text-white shadow-lg shadow-rose-200 transition-all hover:-translate-y-0.5 hover:shadow-xl"
+            className="ui-link-shift mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-[13px] font-semibold text-white shadow-lg shadow-rose-200 transition-all hover:-translate-y-0.5 hover:shadow-xl"
           >
             {profile ? "Complete Your Profile" : "Create Your Profile"}
           </Link>
         </section>
 
-        <section className="overflow-hidden rounded-[14px] border border-rose-100 bg-gradient-to-br from-white via-rose-50 to-pink-100 p-5 shadow-sm">
+        <section
+          className="ui-enter-right ui-card-lift-soft overflow-hidden rounded-[14px] border border-rose-100 bg-gradient-to-br from-white via-rose-50 to-pink-100 p-5 shadow-sm"
+          style={{ animationDelay: "270ms", animationFillMode: "forwards" }}
+        >
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-amber-500 shadow-sm">
+            <div className="ui-icon-lift flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-amber-500 shadow-sm">
               <Crown className="h-5 w-5" />
             </div>
             <div>
@@ -989,15 +1051,18 @@ export default async function DashboardPage() {
 
           <button
             type="button"
-            className="mt-6 inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-[13px] font-semibold text-white shadow-lg shadow-rose-200 transition-all hover:-translate-y-0.5 hover:shadow-xl"
+            className="ui-link-shift mt-6 inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-[13px] font-semibold text-white shadow-lg shadow-rose-200 transition-all hover:-translate-y-0.5 hover:shadow-xl"
           >
             Upgrade Now
           </button>
         </section>
 
-        <section className="rounded-[14px] border border-gray-100 bg-white p-5 shadow-sm">
+        <section
+          className="ui-enter-right ui-card-lift-soft rounded-[14px] border border-gray-100 bg-white p-5 shadow-sm"
+          style={{ animationDelay: "350ms", animationFillMode: "forwards" }}
+        >
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+            <div className="ui-icon-lift flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
               <LifeBuoy className="h-5 w-5" />
             </div>
             <div>
@@ -1012,7 +1077,7 @@ export default async function DashboardPage() {
 
           <button
             type="button"
-            className="mt-6 inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-200 px-5 py-3 text-[13px] font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+            className="ui-link-shift mt-6 inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-200 px-5 py-3 text-[13px] font-semibold text-rose-600 transition-colors hover:bg-rose-50"
           >
             <MessageCircle className="h-4 w-4" />
             Contact Support

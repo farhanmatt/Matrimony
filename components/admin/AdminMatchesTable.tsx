@@ -42,7 +42,7 @@ function SelectableCheckbox({
         event.stopPropagation();
         onChange();
       }}
-      className="inline-flex h-5 w-5 items-center justify-center rounded-sm border border-rose-300 bg-white text-rose-700 transition-colors hover:border-rose-500"
+      className="inline-flex h-5 w-5 items-center justify-center rounded-sm border border-rose-300 bg-white text-rose-700 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105 hover:border-rose-500"
       aria-label={ariaLabel}
     >
       {checked ? <Check className="h-3.5 w-3.5" /> : null}
@@ -306,16 +306,20 @@ export default function AdminMatchesTable({ columns, rows, listFooter }: AdminMa
               </tr>
             </thead>
             <tbody className="divide-y divide-rose-100 bg-white">
-              {visibleRows.map((row) => {
+              {visibleRows.map((row, rowIndex) => {
                 const checked = selectedSet.has(row.id);
+                const revealStyle = {
+                  animationDelay: `${180 + Math.min(rowIndex, 8) * 38}ms`,
+                };
 
                 return (
                   <tr
                     key={row.id}
                     className={cn(
-                      "cursor-pointer transition-colors hover:bg-rose-50/80",
+                      "group/row ui-enter-up cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-rose-50/80",
                       checked && "bg-rose-50/50",
                     )}
+                    style={revealStyle}
                     onClick={() => router.push(row.href)}
                     role="link"
                     tabIndex={0}
@@ -326,7 +330,7 @@ export default function AdminMatchesTable({ columns, rows, listFooter }: AdminMa
                       }
                     }}
                   >
-                    <td className="sticky left-0 z-10 bg-inherit px-4 py-4 align-middle">
+                    <td className="sticky left-0 z-10 bg-inherit px-4 py-4 align-middle transition-colors duration-300">
                       <SelectableCheckbox
                         checked={checked}
                         onChange={() => toggleSelected(row.id)}
@@ -336,7 +340,7 @@ export default function AdminMatchesTable({ columns, rows, listFooter }: AdminMa
                     {row.cells.map((cell, index) => (
                       <td
                         key={`${row.id}-${columns[index]?.key ?? index}`}
-                        className={`px-4 py-4 align-middle ${columns[index]?.key === "action" ? "relative overflow-visible" : ""}`}
+                        className={`px-4 py-4 align-middle transition-colors duration-300 ${columns[index]?.key === "action" ? "relative overflow-visible" : ""}`}
                       >
                         {columns[index]?.key === "action" ? (
                           <div className="relative flex justify-center">
@@ -347,7 +351,7 @@ export default function AdminMatchesTable({ columns, rows, listFooter }: AdminMa
                                 event.stopPropagation();
                                 setOpenActionRowId((current) => (current === row.id ? null : row.id));
                               }}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-100 bg-white text-slate-500 shadow-sm transition-colors hover:border-rose-200 hover:text-rose-600"
+                              className="ui-link-shift inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-100 bg-white text-slate-500 shadow-sm transition-all duration-300 hover:border-rose-200 hover:text-rose-600 hover:shadow-md"
                               aria-label={`Open actions for ${row.id}`}
                               aria-haspopup="menu"
                               aria-expanded={openActionRowId === row.id}
@@ -359,7 +363,7 @@ export default function AdminMatchesTable({ columns, rows, listFooter }: AdminMa
                               ? createPortal(
                                   <div
                                     ref={actionMenuRef}
-                                    className="fixed z-[9999] w-56 overflow-hidden rounded-2xl border border-rose-100 bg-white shadow-xl"
+                                    className="ui-modal-pop fixed z-[9999] w-56 overflow-hidden rounded-2xl border border-rose-100 bg-white shadow-xl"
                                     style={{
                                       top: `${menuPosition.top}px`,
                                       left: `${menuPosition.left}px`,
@@ -444,7 +448,7 @@ export default function AdminMatchesTable({ columns, rows, listFooter }: AdminMa
             ref={bulkTriggerRef}
             type="button"
             onClick={() => setBulkOpen((value) => !value)}
-            className="inline-flex h-11 items-center gap-2 rounded-xl border border-rose-100 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-rose-200 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="ui-link-shift inline-flex h-11 items-center gap-2 rounded-xl border border-rose-100 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-300 hover:border-rose-200 hover:bg-rose-50 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
             disabled={selectedCount === 0 || bulkLoading}
           >
             Bulk Actions
@@ -454,7 +458,7 @@ export default function AdminMatchesTable({ columns, rows, listFooter }: AdminMa
             ? createPortal(
                 <div
                   ref={bulkPanelRef}
-                  className="fixed z-[9999] w-56 overflow-hidden rounded-2xl border border-rose-100 bg-white shadow-xl"
+                  className="ui-modal-pop fixed z-[9999] w-56 overflow-hidden rounded-2xl border border-rose-100 bg-white shadow-xl"
                   style={{
                     top: `${bulkMenuPosition.top}px`,
                     left: `${bulkMenuPosition.left}px`,

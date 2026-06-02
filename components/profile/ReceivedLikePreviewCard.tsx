@@ -102,7 +102,7 @@ export default function ReceivedLikePreviewCard({
 
   return (
     <article
-      className="overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_14px_42px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_48px_rgba(15,23,42,0.1)]"
+      className="ui-card-lift overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_14px_42px_rgba(15,23,42,0.06)]"
     >
       <div className="relative h-[118px] overflow-hidden bg-[linear-gradient(135deg,#fff4f7_0%,#ffe6ee_100%)]">
         {primaryPhoto ? (
@@ -110,7 +110,7 @@ export default function ReceivedLikePreviewCard({
             src={primaryPhoto}
             alt={`${item.profile.fullName} received like`}
             fill
-            className="scale-[1.04] object-cover blur-[4px]"
+            className="ui-media-zoom scale-[1.04] object-cover blur-[4px]"
             style={{ objectPosition: "center 12%" }}
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
             quality={75}
@@ -146,7 +146,7 @@ export default function ReceivedLikePreviewCard({
             void handleLikeBack();
           }}
           disabled={loading || likedBack}
-          className={`absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full shadow-md transition-all ${
+          className={`ui-link-shift absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full shadow-md transition-all ${
             likedBack
               ? "bg-rose-500 text-white"
               : "bg-white text-gray-400 hover:bg-rose-50 hover:text-rose-500"

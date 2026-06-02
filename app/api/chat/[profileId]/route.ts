@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { publishUserNotification } from "@/lib/utils/notification-events";
+import {
+  getChatProfilePresence,
+  markChatProfileActive,
+} from "@/lib/server/chat-presence";
 import {
   canStartChatForProfiles,
   findConversationForProfiles,
@@ -34,7 +37,6 @@ async function resolveChatAccess(targetProfileId: string, userId: string) {
       where: { id: targetProfileId },
       select: {
         id: true,
-        userId: true,
         fullName: true,
         profession: true,
         city: true,
@@ -105,6 +107,8 @@ export async function GET(
   }
 
   const { ownProfile, targetProfile } = access;
+  markChatProfileActive(ownProfile.id);
+  const targetPresence = getChatProfilePresence(targetProfile.id);
   const conversation = await findConversationForProfiles(
     ownProfile.id,
     targetProfile.id
@@ -148,6 +152,8 @@ export async function GET(
           targetProfile.location ||
           "India",
         imageUrl: getPrimaryImage(targetProfile),
+        isOnline: targetPresence.isOnline,
+        lastActiveAt: targetPresence.lastActiveAt,
       },
       messages,
     },
@@ -171,6 +177,7 @@ export async function POST(
   }
 
   const { ownProfile, targetProfile } = access;
+  markChatProfileActive(ownProfile.id);
 
   try {
     const { content } = await req.json();
@@ -218,15 +225,6 @@ export async function POST(
       });
 
       return createdMessage;
-    });
-
-    publishUserNotification(targetProfile.userId, {
-      type: "message",
-      createdAt: message.createdAt.toISOString(),
-      conversationId: conversation.id,
-      messageId: message.id,
-      fromProfileId: ownProfile.id,
-      toProfileId: targetProfile.id,
     });
 
     return NextResponse.json({

@@ -135,7 +135,7 @@ export default function ProfileCard({
 
   return (
     <div
-      className={`flex h-full w-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm group ${
+      className={`ui-card-lift group flex h-full w-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm ${
         compact ? "w-full max-w-[320px] mx-auto" : ""
       } ${cardClickable ? "cursor-pointer" : ""}`}
       onClick={openProfile}
@@ -150,7 +150,7 @@ export default function ProfileCard({
             src={primaryPhoto}
             alt={`${profile.fullName} matrimony profile`}
             fill
-            className={`object-cover transition-all duration-300 ${
+            className={`ui-media-zoom object-cover transition-all duration-300 ${
               blurPhotoPreview ? "blur-[5px] scale-105" : ""
             }`}
             style={{ objectPosition: "center 12%" }}
@@ -159,7 +159,7 @@ export default function ProfileCard({
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-gray-100">
+            <div className="ui-icon-lift flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-gray-100">
               <UserCircle2 className="h-12 w-12 text-rose-400" />
             </div>
           </div>
@@ -182,7 +182,7 @@ export default function ProfileCard({
             void handleLike();
           }}
           disabled={loading || (liked && !allowUnlike)}
-          className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-all ${
+          className={`ui-icon-lift absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full shadow-md transition-all ${
             liked
               ? "bg-rose-500 text-white"
               : "bg-white/90 text-gray-400 hover:bg-rose-50 hover:text-rose-500"
@@ -206,18 +206,18 @@ export default function ProfileCard({
         <div className={`${compact ? "space-y-1 mb-3" : "space-y-1.5 mb-4"} min-w-0`}>
           {profile.profession && (
             <div className={`flex min-w-0 items-center gap-2 text-gray-600 ${compact ? "text-xs" : "text-[15px]"}`}>
-              <Briefcase className="w-4 h-4 text-rose-400 shrink-0" />
+              <Briefcase className="ui-icon-lift h-4 w-4 shrink-0 text-rose-400" />
               <span className="min-w-0 flex-1 truncate">{profile.profession}</span>
             </div>
           )}
           {profile.education && (
             <div className={`flex min-w-0 items-center gap-2 text-gray-600 ${compact ? "text-xs" : "text-[15px]"}`}>
-              <GraduationCap className="w-4 h-4 text-rose-400 shrink-0" />
+              <GraduationCap className="ui-icon-lift h-4 w-4 shrink-0 text-rose-400" />
               <span className="min-w-0 flex-1 truncate">{profile.education}</span>
             </div>
           )}
           <div className={`flex min-w-0 items-center gap-2 text-gray-600 ${compact ? "text-xs" : "text-[15px]"}`}>
-            <MapPin className="w-4 h-4 text-rose-400 shrink-0" />
+            <MapPin className="ui-icon-lift h-4 w-4 shrink-0 text-rose-400" />
             <span className="min-w-0 flex-1 truncate">{location}</span>
           </div>
         </div>

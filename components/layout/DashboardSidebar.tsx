@@ -8,6 +8,7 @@ import type { DashboardNotificationItem } from "@/lib/utils/notifications";
 import SiteLogo from "@/components/common/SiteLogo";
 import { resolveAllowedImageSrc } from "@/lib/utils/image";
 import {
+  Bookmark,
   ChevronDown,
   Edit3,
   Heart,
@@ -30,6 +31,7 @@ const baseNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Home" },
   { href: "/dashboard/browse", icon: Search, label: "Find Match" },
   { href: "/dashboard/liked", icon: Heart, label: "Interest" },
+  { href: "/dashboard/shortlist", icon: Bookmark, label: "Shortlist" },
   { href: "/dashboard/received-likes", icon: Inbox, label: "Received Likes" },
   { href: "/dashboard/matches", icon: HeartHandshake, label: "Mutual Interest" },
   { href: "/dashboard/unlocked", icon: Unlock, label: "Unlocked Profiles" },
@@ -38,6 +40,7 @@ const baseNavItems = [
 ];
 
 const DASHBOARD_MOBILE_NAV_OPEN_KEY = "vivah-bandhan-dashboard-mobile-nav-open";
+const DESKTOP_ACCOUNT_MENU_DURATION_MS = 240;
 
 function isActivePath(pathname: string, href: string) {
   return href === "/dashboard"
@@ -71,6 +74,7 @@ export default function DashboardSidebar({
   const [accountImage, setAccountImage] = useState<string | null>(initialAccountImage);
   const [logoImageUrl, setLogoImageUrl] = useState<string | null>(null);
   const [desktopAccountOpen, setDesktopAccountOpen] = useState(false);
+  const [desktopAccountMenuVisible, setDesktopAccountMenuVisible] = useState(false);
   const desktopAccountRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -142,6 +146,23 @@ export default function DashboardSidebar({
   useEffect(() => {
     setDesktopAccountOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (desktopAccountOpen) {
+      setDesktopAccountMenuVisible(true);
+      return;
+    }
+
+    if (!desktopAccountMenuVisible) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setDesktopAccountMenuVisible(false);
+    }, DESKTOP_ACCOUNT_MENU_DURATION_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [desktopAccountMenuVisible, desktopAccountOpen]);
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
@@ -306,25 +327,27 @@ export default function DashboardSidebar({
                 <button
                   type="button"
                   onClick={() => setDesktopAccountOpen((open) => !open)}
+                  aria-expanded={desktopAccountOpen}
+                  aria-haspopup="menu"
                   className={cn(
-                    "inline-flex items-center gap-3 rounded-full px-3 py-2 transition-all",
+                    "group inline-flex items-center gap-3 rounded-full px-3 py-2 transition-all ui-link-shift",
                     desktopAccountActive
                       ? "text-rose-600 shadow-[0_10px_28px_rgba(244,63,94,0.12)]"
-                      : ""
+                      : "hover:bg-rose-50/80"
                   )}
                 >
                   {visibleAccountImage ? (
-                    <div className="h-9 w-9 overflow-hidden rounded-full border border-white shadow-sm">
+                    <div className="h-9 w-9 overflow-hidden rounded-full border border-white shadow-sm ui-icon-lift">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={visibleAccountImage}
                         alt={currentUser.name ?? "User"}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-cover ui-media-zoom"
                         onError={handleAccountImageError}
                       />
                     </div>
                   ) : (
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-rose-400 to-pink-500 text-sm font-bold text-white">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-rose-400 to-pink-500 text-sm font-bold text-white ui-icon-lift">
                       {currentUser.name ? getInitials(currentUser.name) : "U"}
                     </div>
                   )}
@@ -350,23 +373,42 @@ export default function DashboardSidebar({
                   />
                 </button>
 
-                {desktopAccountOpen ? (
-                  <div className="absolute right-0 top-full z-50 mt-3 min-w-[180px] overflow-hidden rounded-2xl border border-rose-100 bg-white p-2 shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
-                    {accountMenuItems.map((item) => {
+                {desktopAccountMenuVisible ? (
+                  <div
+                    role="menu"
+                    aria-hidden={!desktopAccountOpen}
+                    className={cn(
+                      "absolute right-0 top-full z-50 mt-3 min-w-[180px] origin-top-right overflow-hidden rounded-2xl border border-rose-100 bg-white p-2 shadow-[0_20px_50px_rgba(15,23,42,0.12)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                      desktopAccountOpen
+                        ? "translate-y-0 scale-100 opacity-100"
+                        : "pointer-events-none -translate-y-2 scale-95 opacity-0"
+                    )}
+                  >
+                    {accountMenuItems.map((item, index) => {
                       const isActive = isActivePath(pathname, item.href);
 
                       return (
                         <Link
                           key={item.href}
                           href={item.href}
+                          role="menuitem"
+                          tabIndex={desktopAccountOpen ? 0 : -1}
                           className={cn(
-                            "inline-flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors",
+                            "ui-link-shift inline-flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                            desktopAccountOpen
+                              ? "translate-x-0 opacity-100"
+                              : "translate-x-3 opacity-0",
                             isActive
                               ? "bg-rose-50 text-rose-600"
                               : "text-gray-600 hover:bg-rose-50 hover:text-rose-600"
                           )}
+                          style={{
+                            transitionDelay: desktopAccountOpen
+                              ? `${70 + index * 35}ms`
+                              : "0ms",
+                          }}
                         >
-                          <item.icon className="h-4 w-4" />
+                          <item.icon className="h-4 w-4 ui-icon-lift" />
                           {item.label}
                         </Link>
                       );
@@ -374,9 +416,20 @@ export default function DashboardSidebar({
                     <button
                       type="button"
                       onClick={openLogoutConfirm}
-                      className="inline-flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-gray-600 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                      tabIndex={desktopAccountOpen ? 0 : -1}
+                      className={cn(
+                        "ui-link-shift inline-flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-gray-600 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-rose-50 hover:text-rose-600",
+                        desktopAccountOpen
+                          ? "translate-x-0 opacity-100"
+                          : "translate-x-3 opacity-0"
+                      )}
+                      style={{
+                        transitionDelay: desktopAccountOpen
+                          ? `${70 + accountMenuItems.length * 35}ms`
+                          : "0ms",
+                      }}
                     >
-                      <LogOut className="h-4 w-4" />
+                      <LogOut className="h-4 w-4 ui-icon-lift" />
                       Logout
                     </button>
                   </div>

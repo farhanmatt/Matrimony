@@ -707,48 +707,53 @@ export default async function AdminProfilesPage({
   });
 
     return (
-    <div className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col gap-6 overflow-hidden sm:h-[calc(100dvh-6.5rem)] lg:h-[calc(100dvh-3rem)]">
-      <div className="shrink-0">
-        {showBackToProfiles ? (
-          <Link
-            href="/admin/profiles"
-            className="mb-4 inline-flex h-11 items-center gap-2 rounded-full border border-rose-200 bg-white px-5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-rose-300 hover:bg-rose-50"
+      <div className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col gap-6 overflow-x-hidden overflow-y-auto sm:h-[calc(100dvh-6.5rem)] lg:h-[calc(100dvh-3rem)]">
+        <div className="ui-enter-left shrink-0" style={{ animationDelay: "40ms" }}>
+          {showBackToProfiles ? (
+            <Link
+              href="/admin/profiles"
+              className="ui-link-shift mb-4 inline-flex h-11 items-center gap-2 rounded-full border border-rose-200 bg-white px-5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-300 hover:border-rose-300 hover:bg-rose-50 hover:shadow-md"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Back to Profiles
+            </Link>
+          ) : null}
+          <h1 className="text-2xl font-display font-bold text-slate-900">{pageTitle}</h1>
+          <p className="mt-1 text-sm text-gray-500">{pageDescription}</p>
+        </div>
+
+        <div className="ui-enter-up shrink-0 border-t border-gray-200" style={{ animationDelay: "90ms" }} />
+
+        <div className="ui-enter-scale flex-1 min-h-0" style={{ animationDelay: "140ms" }}>
+          <AdminListCard
+            className="flex-1 min-h-0"
+            bodyClassName="flex min-h-0 flex-col overflow-hidden"
+            toolbar={
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+                <AdminSearchInput
+                  placeholder="Search by name or location..."
+                  className="ui-link-shift flex w-full max-w-[760px] overflow-hidden rounded-xl border border-rose-100 bg-white shadow-[0_10px_24px_rgba(244,63,94,0.06)] transition-all duration-300 hover:border-rose-200 hover:shadow-[0_16px_34px_rgba(244,63,94,0.1)] focus-within:-translate-y-0.5 focus-within:border-rose-200 focus-within:shadow-[0_16px_34px_rgba(244,63,94,0.1)]"
+                />
+
+                <div className="flex items-center gap-3 xl:ml-auto">
+                  <AdminProfileFilters />
+                  <AdminColumnSelector selectedColumns={selectedColumns} />
+                </div>
+              </div>
+            }
           >
-            <ChevronLeft className="h-4 w-4" />
-            Back to Profiles
-          </Link>
-        ) : null}
-        <h1 className="text-2xl font-display font-bold text-slate-900">{pageTitle}</h1>
-        <p className="mt-1 text-sm text-gray-500">{pageDescription}</p>
+            <AdminSelectableProfilesTable
+              columns={visibleColumns.map((column) => ({
+                key: column.key,
+                label: column.label,
+                width: getColumnWidth(column.key),
+              }))}
+              rows={profileTableRows}
+              listFooter={paginationFooter}
+            />
+          </AdminListCard>
+        </div>
       </div>
-
-      <div className="shrink-0 border-t border-gray-200" />
-
-      <AdminListCard
-        className="flex-1 min-h-0"
-        bodyClassName="flex min-h-0 flex-col overflow-hidden"
-        toolbar={
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-            <AdminSearchInput placeholder="Search by name or location..." />
-
-            <div className="flex items-center gap-3 xl:ml-auto">
-              <AdminProfileFilters />
-              <AdminColumnSelector selectedColumns={selectedColumns} />
-            </div>
-          </div>
-        }
-      >
-        <AdminSelectableProfilesTable
-          columns={visibleColumns.map((column) => ({
-            key: column.key,
-            label: column.label,
-            width: getColumnWidth(column.key),
-          }))}
-          rows={profileTableRows}
-          listFooter={paginationFooter}
-        />
-      </AdminListCard>
-    </div>
     );
   } catch {
     return (

@@ -83,30 +83,30 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen hero-gradient flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center justify-center">
+    <div className="hero-gradient flex min-h-screen items-center justify-center px-4 py-12">
+      <div className="ui-enter-scale w-full max-w-md">
+        <div className="mb-8 text-center">
+          <Link href="/" className="ui-link-shift inline-flex items-center justify-center">
             <SiteLogo
               src={logoImageUrl}
               alt="Vivah Bandhan logo"
-              className="h-14 max-w-[260px] sm:h-16 sm:max-w-[320px]"
+              className="ui-soft-float h-14 max-w-[260px] sm:h-16 sm:max-w-[320px]"
             />
           </Link>
-          <h1 className="text-2xl font-display font-bold text-gray-900 mt-5 mb-1">
+          <h1 className="ui-enter-up mt-5 mb-1 text-2xl font-display font-bold text-gray-900" style={{ animationDelay: "120ms" }}>
             Create your account
           </h1>
-          <p className="text-gray-500 text-sm">
+          <p className="ui-enter-up text-sm text-gray-500" style={{ animationDelay: "180ms" }}>
             Join 10 lakh+ members. Free forever for basic features.
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="ui-enter-up ui-card-lift rounded-2xl bg-white p-8 shadow-xl" style={{ animationDelay: "240ms" }}>
           <button
             onClick={handleGoogle}
             disabled={isGoogleLoading}
             suppressHydrationWarning
-            className="w-full flex items-center justify-center gap-3 border-2 border-gray-200 rounded-xl py-3 px-4 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-300 transition-all mb-6 disabled:opacity-60"
+            className="ui-link-shift mb-6 flex w-full items-center justify-center gap-3 rounded-xl border-2 border-gray-200 px-4 py-3 font-medium text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50 disabled:opacity-60"
           >
             {isGoogleLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -185,7 +185,7 @@ export default function RegisterPage() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   suppressHydrationWarning
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="ui-link-shift absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -217,7 +217,7 @@ export default function RegisterPage() {
               type="submit"
               disabled={isSubmitting}
               suppressHydrationWarning
-              className="w-full btn-primary flex items-center justify-center gap-2 py-3 rounded-xl"
+              className="btn-primary ui-link-shift flex w-full items-center justify-center gap-2 rounded-xl py-3"
             >
               {isSubmitting ? (
                 <><Loader2 className="w-5 h-5 animate-spin" /> Creating account...</>
@@ -229,13 +229,13 @@ export default function RegisterPage() {
 
           <p className="text-center text-xs text-gray-500 mt-4 leading-relaxed">
             By registering, you agree to our{" "}
-            <Link href="/terms" className="text-rose-500 hover:underline">Terms</Link> and{" "}
-            <Link href="/privacy" className="text-rose-500 hover:underline">Privacy Policy</Link>.
+            <Link href="/terms" className="ui-link-shift text-rose-500 hover:underline">Terms</Link> and{" "}
+            <Link href="/privacy" className="ui-link-shift text-rose-500 hover:underline">Privacy Policy</Link>.
           </p>
 
           <p className="text-center text-sm text-gray-600 mt-4">
             Already have an account?{" "}
-            <Link href="/login" className="text-rose-600 font-semibold hover:text-rose-700">
+            <Link href="/login" className="ui-link-shift font-semibold text-rose-600 hover:text-rose-700">
               Sign In
             </Link>
           </p>

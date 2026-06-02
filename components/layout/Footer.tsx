@@ -4,12 +4,12 @@ import { Heart, Mail, Phone, MapPin, Facebook, Instagram, Twitter, Youtube } fro
 export default function Footer() {
   return (
     <footer className="bg-gray-950 text-gray-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="ui-enter-up grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4" style={{ animationDelay: "40ms" }}>
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center">
+            <Link href="/" className="ui-link-shift mb-4 flex items-center gap-2">
+              <div className="ui-icon-lift flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-pink-600">
                 <Heart className="w-5 h-5 text-white fill-white" />
               </div>
               <span className="font-display text-xl font-bold text-white">
@@ -25,10 +25,10 @@ export default function Footer() {
                 <a
                   key={i}
                   href="#"
-                  className="w-9 h-9 rounded-full bg-gray-800 hover:bg-rose-600 flex items-center justify-center transition-colors"
+                  className="ui-card-lift-soft flex h-9 w-9 items-center justify-center rounded-full bg-gray-800 transition-colors hover:bg-rose-600"
                   aria-label="Social media"
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="ui-icon-lift w-4 h-4" />
                 </a>
               ))}
             </div>
@@ -49,7 +49,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-gray-400 hover:text-rose-400 transition-colors"
+                    className="ui-link-shift text-gray-400 transition-colors hover:text-rose-400"
                   >
                     {link.label}
                   </Link>
@@ -70,7 +70,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-gray-400 hover:text-rose-400 transition-colors"
+                    className="ui-link-shift text-gray-400 transition-colors hover:text-rose-400"
                   >
                     {link.label}
                   </Link>
@@ -84,20 +84,20 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-5 font-display">Contact Us</h3>
             <ul className="space-y-4 text-sm">
               <li className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-rose-400 mt-0.5 shrink-0" />
+                <MapPin className="ui-icon-lift mt-0.5 h-4 w-4 shrink-0 text-rose-400" />
                 <span className="text-gray-400">
                   123 Matrimony Lane, Mumbai, Maharashtra 400001
                 </span>
               </li>
               <li className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-rose-400 shrink-0" />
-                <a href="tel:+911800123456" className="text-gray-400 hover:text-rose-400 transition-colors">
+                <Phone className="ui-icon-lift h-4 w-4 shrink-0 text-rose-400" />
+                <a href="tel:+911800123456" className="ui-link-shift text-gray-400 transition-colors hover:text-rose-400">
                   +91 1800 123 456
                 </a>
               </li>
               <li className="flex items-center gap-3">
-                <Mail className="w-4 h-4 text-rose-400 shrink-0" />
-                <a href="mailto:support@vivahbandhan.com" className="text-gray-400 hover:text-rose-400 transition-colors">
+                <Mail className="ui-icon-lift h-4 w-4 shrink-0 text-rose-400" />
+                <a href="mailto:support@vivahbandhan.com" className="ui-link-shift text-gray-400 transition-colors hover:text-rose-400">
                   support@vivahbandhan.com
                 </a>
               </li>
@@ -105,10 +105,10 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+        <div className="ui-enter-up mt-12 flex flex-col items-center justify-between gap-4 border-t border-gray-800 pt-8 text-sm text-gray-500 sm:flex-row" style={{ animationDelay: "120ms" }}>
           <p>© {new Date().getFullYear()} Vivah Bandhan. All rights reserved.</p>
           <p className="flex items-center gap-1">
-            Made with <Heart className="w-4 h-4 text-rose-500 fill-rose-500" /> in India
+            Made with <Heart className="ui-soft-float h-4 w-4 fill-rose-500 text-rose-500" /> in India
           </p>
         </div>
       </div>

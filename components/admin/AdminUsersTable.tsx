@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -86,7 +86,7 @@ function SelectableCheckbox({
         event.stopPropagation();
         onChange();
       }}
-      className="inline-flex h-5 w-5 items-center justify-center rounded-sm border border-rose-300 bg-white text-rose-700 transition-colors hover:border-rose-500"
+      className="inline-flex h-5 w-5 items-center justify-center rounded-sm border border-rose-300 bg-white text-rose-700 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105 hover:border-rose-500"
       aria-label={ariaLabel}
     >
       {checked ? <Check className="h-3.5 w-3.5" /> : null}
@@ -333,7 +333,7 @@ export default function AdminUsersTable({
     <div className="flex h-full min-h-0 flex-col">
       <div className="min-h-0 flex-1 overflow-auto px-4 pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            <table className="w-full min-w-[1180px] table-fixed text-sm xl:min-w-[1180px]">
+          <table className="w-full min-w-[1180px] table-fixed text-sm xl:min-w-[1180px]">
             <colgroup>
               <col style={{ width: "40px" }} />
               <col style={{ width: "280px" }} />
@@ -369,14 +369,26 @@ export default function AdminUsersTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-rose-100">
-              {visibleUsers.map((user) => {
+              {visibleUsers.map((user, index) => {
                 const checked = selectedSet.has(user.id);
                 const profile = user.profile;
                 const imageSrc = profile?.profileImage ?? null;
+                const revealStyle = {
+                  animationDelay: `${180 + Math.min(index, 8) * 38}ms`,
+                };
 
                 return (
-                  <tr key={user.id} className={cn("transition-colors hover:bg-rose-50/80", checked && "bg-rose-50/50")}>
-                    <td className="px-3 py-4 align-middle">
+                  <tr
+                    key={user.id}
+                    className={cn(
+                      "group/row transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-rose-50/80",
+                      checked && "bg-rose-50/50"
+                    )}
+                  >
+                    <td
+                      className="ui-enter-up px-3 py-4 align-middle"
+                      style={revealStyle}
+                    >
                       <SelectableCheckbox
                         checked={checked}
                         onChange={() => toggleSelected(user.id)}
@@ -384,18 +396,21 @@ export default function AdminUsersTable({
                       />
                     </td>
 
-                    <td className="px-3 py-4 align-middle">
+                    <td
+                      className="ui-enter-up px-3 py-4 align-middle"
+                      style={revealStyle}
+                    >
                       <div className="flex items-center gap-2.5">
                         {imageSrc ? (
                           <AdminPreviewableImage
                             src={imageSrc}
                             alt={profile?.fullName ?? user.name ?? user.email}
-                            className="relative block h-11 w-11 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-rose-100 via-white to-pink-100 shadow-sm ring-1 ring-rose-100"
-                            imageClassName="object-cover object-[center_10%]"
+                            className="relative block h-11 w-11 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-rose-100 via-white to-pink-100 shadow-sm ring-1 ring-rose-100 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/row:-translate-y-0.5 group-hover/row:shadow-md"
+                            imageClassName="ui-media-zoom object-cover object-[center_10%]"
                             sizes="44px"
                           />
                         ) : (
-                          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-rose-100 via-white to-pink-100 shadow-sm ring-1 ring-rose-100">
+                          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-rose-100 via-white to-pink-100 shadow-sm ring-1 ring-rose-100 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/row:-translate-y-0.5 group-hover/row:shadow-md">
                             <div className="flex h-full w-full items-center justify-center bg-rose-50 text-[11px] font-semibold text-slate-500">
                               {getInitials(profile?.fullName ?? user.name ?? user.email)}
                             </div>
@@ -417,7 +432,10 @@ export default function AdminUsersTable({
                       </div>
                     </td>
 
-                    <td className="px-3 py-4 align-middle">
+                    <td
+                      className="ui-enter-up px-3 py-4 align-middle"
+                      style={revealStyle}
+                    >
                       {profile ? (
                         <div className="space-y-1 text-sm text-slate-600">
                           <div className="flex items-start gap-2">
@@ -448,7 +466,10 @@ export default function AdminUsersTable({
                       )}
                     </td>
 
-                    <td className="px-[15px] py-4 align-middle">
+                    <td
+                      className="ui-enter-up px-[15px] py-4 align-middle"
+                      style={revealStyle}
+                    >
                       {profile ? (
                         <div className="space-y-0.5">
                           <div className="truncate text-sm font-semibold text-slate-900">{profile.fullName}</div>
@@ -466,15 +487,24 @@ export default function AdminUsersTable({
                       )}
                     </td>
 
-                    <td className="px-3 py-4 align-middle">
+                    <td
+                      className="ui-enter-up px-3 py-4 align-middle"
+                      style={revealStyle}
+                    >
                       {profile ? <StatusBadge status={profile.status} /> : <span className="text-slate-300">-</span>}
                     </td>
 
-                    <td className="px-3 py-4 align-middle">
+                    <td
+                      className="ui-enter-up px-3 py-4 align-middle"
+                      style={revealStyle}
+                    >
                       <div className="whitespace-nowrap text-sm text-slate-600">{formatDate(user.createdAt)}</div>
                     </td>
 
-                    <td className="px-3 py-4 align-middle">
+                    <td
+                      className="ui-enter-up px-3 py-4 align-middle"
+                      style={revealStyle}
+                    >
                       <div className="relative flex justify-center">
                         <button
                           ref={openActionRowId === user.id ? actionTriggerRef : null}
@@ -483,7 +513,7 @@ export default function AdminUsersTable({
                             event.stopPropagation();
                             setOpenActionRowId((current) => (current === user.id ? null : user.id));
                           }}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-100 bg-white text-slate-500 shadow-sm transition-colors hover:border-rose-200 hover:text-rose-600"
+                          className="ui-link-shift inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-100 bg-white text-slate-500 shadow-sm transition-all duration-300 hover:border-rose-200 hover:text-rose-600 hover:shadow-md"
                           aria-label={`Open actions for ${user.id}`}
                           aria-haspopup="menu"
                           aria-expanded={openActionRowId === user.id}
@@ -495,7 +525,7 @@ export default function AdminUsersTable({
                           ? createPortal(
                               <div
                                 ref={actionMenuRef}
-                                className="fixed z-[9999] w-56 overflow-hidden rounded-2xl border border-rose-100 bg-white shadow-xl"
+                                className="ui-modal-pop fixed z-[9999] w-56 overflow-hidden rounded-2xl border border-rose-100 bg-white shadow-xl"
                                 style={{
                                   top: `${menuPosition.top}px`,
                                   left: `${menuPosition.left}px`,
@@ -557,19 +587,19 @@ export default function AdminUsersTable({
       </div>
 
       <div className="shrink-0 flex flex-col gap-3 border-t border-rose-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-4">
-        <div className="flex items-center gap-3 text-sm text-slate-600">
-          <span className="inline-flex items-center gap-2 rounded-xl border border-rose-100 bg-white px-3 py-2 shadow-sm">
-            <span className="font-semibold text-slate-900">{selectedCount}</span> Selected
-          </span>
-          {selectedCount > 0 ? (
-            <button
-              type="button"
-              onClick={() => setSelectedIds([])}
-              className="text-sm font-medium text-rose-600 transition-colors hover:text-rose-700"
-            >
-              Clear selection
-            </button>
-          ) : null}
+          <div className="flex items-center gap-3 text-sm text-slate-600">
+            <span className="inline-flex items-center gap-2 rounded-xl border border-rose-100 bg-white px-3 py-2 shadow-sm">
+              <span className="font-semibold text-slate-900">{selectedCount}</span> Selected
+            </span>
+            {selectedCount > 0 ? (
+              <button
+                type="button"
+                onClick={() => setSelectedIds([])}
+                className="text-sm font-medium text-rose-600 transition-colors hover:text-rose-700"
+              >
+                Clear selection
+              </button>
+            ) : null}
         </div>
 
         <div ref={bulkMenuRef} className="relative">
@@ -577,7 +607,7 @@ export default function AdminUsersTable({
             ref={bulkTriggerRef}
             type="button"
             onClick={() => setBulkOpen((value) => !value)}
-            className="inline-flex h-11 items-center gap-2 rounded-xl border border-rose-100 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-rose-200 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="ui-link-shift inline-flex h-11 items-center gap-2 rounded-xl border border-rose-100 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-300 hover:border-rose-200 hover:bg-rose-50 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
             disabled={selectedCount === 0 || bulkLoading}
           >
             Bulk Actions
@@ -587,7 +617,7 @@ export default function AdminUsersTable({
             ? createPortal(
                 <div
                   ref={bulkPanelRef}
-                  className="fixed z-[9999] w-56 overflow-hidden rounded-2xl border border-rose-100 bg-white shadow-xl"
+                  className="ui-modal-pop fixed z-[9999] w-56 overflow-hidden rounded-2xl border border-rose-100 bg-white shadow-xl"
                   style={{
                     top: `${bulkMenuPosition.top}px`,
                     left: `${bulkMenuPosition.left}px`,

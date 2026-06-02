@@ -465,13 +465,21 @@ function SectionBlock({
   title,
   description,
   children,
+  delayMs = 0,
 }: {
   title: string;
   description?: string;
   children: React.ReactNode;
+  delayMs?: number;
 }) {
   return (
-    <section>
+    <section
+      className="ui-enter-up"
+      style={{
+        animationDelay: `${delayMs}ms`,
+        animationFillMode: "forwards",
+      }}
+    >
       <div className="border-b border-gray-100 pb-3 mb-6">
         <h2 className="text-base font-display font-semibold text-gray-900">
           {title}
@@ -1763,10 +1771,10 @@ export default function ProfileForm({
     <form onSubmit={handleFormSubmit} className="space-y-8">
       {!isEdit ? (
         <>
-          <div className="overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_24px_72px_rgba(15,23,42,0.06)]">
+          <div className="ui-card-lift-soft overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_24px_72px_rgba(15,23,42,0.06)]">
             <div className="grid xl:grid-cols-[290px_minmax(0,1fr)]">
               <aside className="border-b border-gray-100 bg-[linear-gradient(180deg,#fffdfd_0%,#fff7fa_100%)] p-6 sm:p-7 xl:border-b-0 xl:border-r xl:p-8">
-                <div className="bg-white/85 p-5 backdrop-blur-sm">
+                <div className="ui-card-lift-soft bg-white/85 p-5 backdrop-blur-sm">
                   <h2 className="whitespace-nowrap text-[1.15rem] font-semibold text-gray-900">
                     Complete Your Profile
                   </h2>
@@ -1820,14 +1828,14 @@ export default function ProfileForm({
                   })}
                 </div>
 
-                <div className="mt-8 rounded-[12px] border border-rose-100 bg-[linear-gradient(135deg,#fff9fb_0%,#fff1f5_100%)] p-5 shadow-sm">
+                <div className="ui-card-lift-soft mt-8 rounded-[12px] border border-rose-100 bg-[linear-gradient(135deg,#fff9fb_0%,#fff1f5_100%)] p-5 shadow-sm">
                   <p className="text-sm font-semibold text-gray-900">Need Help?</p>
                   <p className="mt-1 text-sm leading-6 text-gray-500">
                     We&apos;re here to assist you at every step.
                   </p>
                   <Link
                     href="/contact"
-                    className="mt-4 inline-flex items-center text-sm font-semibold text-rose-600 transition-colors hover:text-rose-700"
+                    className="ui-link-shift mt-4 inline-flex items-center text-sm font-semibold text-rose-600 transition-colors hover:text-rose-700"
                   >
                     Contact Support
                   </Link>
@@ -1835,8 +1843,8 @@ export default function ProfileForm({
               </aside>
 
               <div className="bg-white p-6 sm:p-7 xl:p-8">
-                <div className="rounded-[14px] border border-gray-100 bg-[linear-gradient(180deg,#ffffff_0%,#fffdfd_100%)] p-6 shadow-[0_18px_48px_rgba(15,23,42,0.04)] sm:p-7 lg:p-8">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-50 text-rose-500 ring-1 ring-rose-100">
+                <div className="ui-card-lift-soft rounded-[14px] border border-gray-100 bg-[linear-gradient(180deg,#ffffff_0%,#fffdfd_100%)] p-6 shadow-[0_18px_48px_rgba(15,23,42,0.04)] sm:p-7 lg:p-8">
+                  <div className="ui-soft-float mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-50 text-rose-500 ring-1 ring-rose-100">
                     <CurrentCreateStepIcon className="h-8 w-8" />
                   </div>
 
@@ -1859,7 +1867,7 @@ export default function ProfileForm({
                       <button
                         type="button"
                         onClick={handleSaveAndExit}
-                        className="inline-flex items-center justify-center rounded-xl border border-rose-200 px-6 py-3 text-sm font-semibold text-rose-600 transition-colors hover:border-rose-300 hover:bg-rose-50"
+                        className="ui-link-shift inline-flex items-center justify-center rounded-xl border border-rose-200 px-6 py-3 text-sm font-semibold text-rose-600 transition-colors hover:border-rose-300 hover:bg-rose-50"
                       >
                         Save & Exit
                       </button>
@@ -1868,9 +1876,9 @@ export default function ProfileForm({
                         <button
                           type="button"
                           onClick={handlePreviousStep}
-                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-6 py-3 text-sm font-semibold text-gray-600 transition-colors hover:border-rose-200 hover:text-rose-600"
+                          className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-6 py-3 text-sm font-semibold text-gray-600 transition-colors hover:border-rose-200 hover:text-rose-600"
                         >
-                          <ArrowLeft className="h-4 w-4" />
+                          <ArrowLeft className="ui-arrow-shift h-4 w-4" />
                           Back
                         </button>
                       ) : null}
@@ -1880,17 +1888,17 @@ export default function ProfileForm({
                       <button
                         type="button"
                         onClick={handleNextStep}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-7 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(244,63,94,0.28)] transition-all hover:shadow-[0_18px_40px_rgba(244,63,94,0.34)]"
+                        className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-7 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(244,63,94,0.28)] transition-all hover:shadow-[0_18px_40px_rgba(244,63,94,0.34)]"
                       >
                         Save & Continue
-                        <ArrowRight className="h-4 w-4" />
+                        <ArrowRight className="ui-arrow-shift h-4 w-4" />
                       </button>
                     ) : (
                       <button
                         type="button"
                         onClick={handleCreateProfile}
                         disabled={isSubmitting}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-7 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(244,63,94,0.28)] transition-all hover:shadow-[0_18px_40px_rgba(244,63,94,0.34)] disabled:opacity-70"
+                        className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-7 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(244,63,94,0.28)] transition-all hover:shadow-[0_18px_40px_rgba(244,63,94,0.34)] disabled:opacity-70"
                       >
                         {isSubmitting ? (
                           <>
@@ -1911,9 +1919,9 @@ export default function ProfileForm({
             </div>
           </div>
 
-          <div className="rounded-[12px] border border-rose-100 bg-[linear-gradient(135deg,#fff7fa_0%,#fff1f6_100%)] px-5 py-4 shadow-sm">
+          <div className="ui-card-lift-soft rounded-[12px] border border-rose-100 bg-[linear-gradient(135deg,#fff7fa_0%,#fff1f6_100%)] px-5 py-4 shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-rose-500 shadow-sm">
+              <div className="ui-icon-lift flex h-12 w-12 items-center justify-center rounded-xl bg-white text-rose-500 shadow-sm">
                 <Sparkles className="h-5 w-5" />
               </div>
               <div>
@@ -1932,6 +1940,7 @@ export default function ProfileForm({
           <SectionBlock
             title="Personal Information"
             description="Update your basic and address details."
+            delayMs={40}
           >
             {renderPersonalInformation()}
           </SectionBlock>
@@ -1939,6 +1948,7 @@ export default function ProfileForm({
           <SectionBlock
             title="Family Details"
             description="Update your parents and family background details."
+            delayMs={110}
           >
             {renderFamilyDetails()}
           </SectionBlock>
@@ -1946,6 +1956,7 @@ export default function ProfileForm({
           <SectionBlock
             title="Education & Career Information"
             description="Keep your education and profession details current."
+            delayMs={180}
           >
             {renderEducationCareer()}
           </SectionBlock>
@@ -1953,6 +1964,7 @@ export default function ProfileForm({
           <SectionBlock
             title="Cultural Background"
             description="Edit your religion, mother tongue, caste, and sub caste details."
+            delayMs={250}
           >
             {renderCulturalBackground()}
           </SectionBlock>
@@ -1961,6 +1973,7 @@ export default function ProfileForm({
             <SectionBlock
               title="Horoscope"
               description="Update your astrology details if you use them."
+              delayMs={320}
             >
               {renderHoroscope()}
             </SectionBlock>
@@ -1969,6 +1982,7 @@ export default function ProfileForm({
           <SectionBlock
             title="Lifestyle"
             description="Share your food and habit preferences."
+            delayMs={390}
           >
             {renderLifestyle()}
           </SectionBlock>
@@ -1980,6 +1994,7 @@ export default function ProfileForm({
                 ? "Manage your profile and horoscope images."
                 : "Manage your profile image."
             }
+            delayMs={460}
           >
             {renderPhotoUploads()}
           </SectionBlock>
@@ -1987,12 +2002,15 @@ export default function ProfileForm({
       )}
 
       {isEdit ? (
-        <div className="flex flex-col gap-3 border-t border-gray-100 pt-2 sm:flex-row sm:justify-start">
+        <div
+          className="ui-enter-up flex flex-col gap-3 border-t border-gray-100 pt-2 sm:flex-row sm:justify-start"
+          style={{ animationDelay: "530ms", animationFillMode: "forwards" }}
+        >
           <div className="flex flex-col gap-3 sm:flex-row">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="btn-primary flex items-center justify-center gap-2 py-3 px-8"
+              className="btn-primary ui-link-shift flex items-center justify-center gap-2 px-8 py-3"
             >
               {isSubmitting ? (
                 <>

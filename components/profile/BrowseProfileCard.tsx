@@ -3,6 +3,7 @@
 import Image from "next/image";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   BadgeCheck,
   Briefcase,
@@ -126,7 +127,7 @@ export default function BrowseProfileCard({
   return (
     <>
       <div
-        className="group flex h-full flex-col overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(15,23,42,0.1)]"
+        className="ui-card-lift group flex h-full flex-col overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)]"
       >
         <div className="relative h-[184px] overflow-hidden bg-[linear-gradient(135deg,#fff2f6_0%,#ffe7ee_55%,#ffeef4_100%)]">
           {primaryPhoto ? (
@@ -134,7 +135,7 @@ export default function BrowseProfileCard({
               src={primaryPhoto}
               alt={`${profile.fullName} matrimony profile`}
               fill
-              className="scale-[1.04] object-cover object-center blur-[4px] transition-transform duration-500 group-hover:scale-[1.08]"
+              className="ui-media-zoom scale-[1.04] object-cover object-center blur-[4px]"
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, (max-width: 1536px) 25vw, 20vw"
               quality={75}
             />
@@ -170,7 +171,7 @@ export default function BrowseProfileCard({
             onClick={handleLikeClick}
             disabled={loading || liked}
             className={cn(
-              "absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/80 bg-white/95 shadow-[0_12px_28px_rgba(15,23,42,0.12)] backdrop-blur transition-all",
+              "ui-link-shift absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/80 bg-white/95 shadow-[0_12px_28px_rgba(15,23,42,0.12)] backdrop-blur transition-all",
               liked
                 ? "border-rose-500 bg-rose-500 text-white"
                 : "text-slate-400 hover:border-rose-200 hover:text-rose-500",
@@ -187,7 +188,7 @@ export default function BrowseProfileCard({
             <h3 className="min-w-0 flex-1 truncate font-display text-[1rem] font-bold leading-none text-slate-900 sm:text-[1.1rem]">
               {profile.fullName}, {age}
             </h3>
-            <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
+            <span className="ui-icon-lift mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
               <BadgeCheck className="h-3.5 w-3.5" />
             </span>
           </div>
@@ -225,49 +226,52 @@ export default function BrowseProfileCard({
         </div>
       </div>
 
-      {confirmOpen ? (
-        <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
-          onClick={() => setConfirmOpen(false)}
-        >
-          <div
-            className="w-full max-w-sm rounded-[24px] border border-rose-100 bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.14)]"
-            onClick={(event) => event.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={`like-confirm-title-${profile.id}`}
-          >
-            <h3
-              id={`like-confirm-title-${profile.id}`}
-              className="font-display text-xl font-bold text-slate-900"
+      {confirmOpen && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              className="ui-overlay-fade fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
+              onClick={() => setConfirmOpen(false)}
             >
-              Like this profile?
-            </h3>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              Do you want to add {profile.fullName} to your interests?
-            </p>
+              <div
+                className="ui-modal-pop w-full max-w-sm rounded-[24px] border border-rose-100 bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.14)]"
+                onClick={(event) => event.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={`like-confirm-title-${profile.id}`}
+              >
+                <h3
+                  id={`like-confirm-title-${profile.id}`}
+                  className="font-display text-xl font-bold text-slate-900"
+                >
+                  Like this profile?
+                </h3>
+                <p className="mt-3 text-sm leading-6 text-slate-600">
+                  Do you want to add {profile.fullName} to your interests?
+                </p>
 
-            <div className="mt-5 flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setConfirmOpen(false)}
-                disabled={loading}
-                className="inline-flex flex-1 items-center justify-center rounded-[16px] border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-rose-200 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                No
-              </button>
-              <button
-                type="button"
-                onClick={() => void confirmLike()}
-                disabled={loading}
-                className="inline-flex flex-1 items-center justify-center rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(244,63,94,0.2)] transition-all hover:shadow-[0_18px_36px_rgba(244,63,94,0.24)] disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {loading ? "Sending..." : "Yes"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+                <div className="mt-5 flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmOpen(false)}
+                    disabled={loading}
+                    className="ui-link-shift inline-flex flex-1 items-center justify-center rounded-[16px] border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-rose-200 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    No
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void confirmLike()}
+                    disabled={loading}
+                    className="ui-link-shift inline-flex flex-1 items-center justify-center rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(244,63,94,0.2)] transition-all hover:shadow-[0_18px_36px_rgba(244,63,94,0.24)] disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {loading ? "Sending..." : "Yes"}
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </>
   );
 }

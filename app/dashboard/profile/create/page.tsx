@@ -19,14 +19,25 @@ export default async function CreateProfilePage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-[1.7rem] font-display font-bold text-gray-900">
+      <h1
+        className="ui-enter-up mb-2 text-[1.7rem] font-display font-bold text-gray-900"
+        style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
+      >
         Create Your Profile
       </h1>
-      <p className="mb-8 text-[14px] text-gray-500">
+      <p
+        className="ui-enter-up mb-8 text-[14px] text-gray-500"
+        style={{ animationDelay: "110ms", animationFillMode: "forwards" }}
+      >
         Let&apos;s get to know you better! Please complete all the sections to
         increase your chances of finding the perfect match.
       </p>
-      <ProfileForm />
+      <div
+        className="ui-enter-scale"
+        style={{ animationDelay: "180ms", animationFillMode: "forwards" }}
+      >
+        <ProfileForm />
+      </div>
     </div>
   );
 }
