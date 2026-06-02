@@ -179,14 +179,14 @@ export default function LikedProfilePreviewCard({
 
   return (
     <>
-      <article className="group mx-auto w-full max-w-[288px] overflow-hidden rounded-[12px] border border-rose-100 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_60px_rgba(15,23,42,0.11)]">
+      <article className="ui-card-lift group mx-auto w-full max-w-[288px] overflow-hidden rounded-[12px] border border-rose-100 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
         <div className="relative h-[188px] overflow-hidden bg-[linear-gradient(135deg,#fff2f5_0%,#ffe4ec_100%)]">
           {primaryPhoto ? (
             <Image
               src={primaryPhoto}
               alt={`${profile.fullName} liked profile`}
               fill
-              className="object-cover object-center blur-[4px]"
+              className="ui-media-zoom object-cover object-center blur-[4px]"
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
               quality={75}
             />
@@ -207,18 +207,18 @@ export default function LikedProfilePreviewCard({
               type="button"
               onClick={handleMenuToggle}
               disabled={removing}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-600 shadow-md transition-transform hover:scale-105 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-70"
+              className="ui-link-shift inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-600 shadow-md transition-transform hover:scale-105 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-70"
               aria-label="Open interest actions"
             >
               <EllipsisVertical className="h-4.5 w-4.5" />
             </button>
 
             {menuOpen ? (
-              <div className="absolute right-0 top-11 w-48 overflow-hidden rounded-[18px] border border-rose-100 bg-white py-2 shadow-[0_20px_44px_rgba(15,23,42,0.16)]">
+              <div className="ui-enter-up absolute right-0 top-11 w-48 overflow-hidden rounded-[18px] border border-rose-100 bg-white py-2 shadow-[0_20px_44px_rgba(15,23,42,0.16)]">
                 <button
                   type="button"
                   onClick={handleShortlistToggle}
-                  className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                  className="ui-link-shift flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
                 >
                   <Bookmark
                     className={`h-4 w-4 ${
@@ -234,7 +234,7 @@ export default function LikedProfilePreviewCard({
                   type="button"
                   onClick={handleUnlikeClick}
                   disabled={removing}
-                  className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="ui-link-shift flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <X className="h-4 w-4 text-slate-500" />
                   <span className="flex-1">Remove interest</span>
@@ -251,7 +251,7 @@ export default function LikedProfilePreviewCard({
                 <span className="truncate">
                   {profile.fullName}, {age}
                 </span>
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                <CheckCircle2 className="ui-icon-lift h-4 w-4 shrink-0 text-emerald-500" />
               </h3>
               <p className="mt-1 text-sm text-slate-600">
                 {profile.profession || "Professional"}
@@ -275,7 +275,7 @@ export default function LikedProfilePreviewCard({
               <button
                 type="button"
                 onClick={handleChatClick}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-rose-200 bg-rose-50 text-rose-500 transition-colors hover:border-rose-300 hover:bg-rose-100"
+                className="ui-link-shift inline-flex h-10 w-10 items-center justify-center rounded-full border border-rose-200 bg-rose-50 text-rose-500 transition-colors hover:border-rose-300 hover:bg-rose-100"
                 aria-label={`Chat with ${profile.fullName}`}
               >
                 <MessageCircle className="h-4.5 w-4.5" />
@@ -287,11 +287,11 @@ export default function LikedProfilePreviewCard({
 
       {confirmOpen ? (
         <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
+          className="ui-overlay-fade fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
           onClick={() => setConfirmOpen(false)}
         >
           <div
-            className="w-full max-w-sm rounded-[24px] border border-rose-100 bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.14)]"
+            className="ui-modal-pop w-full max-w-sm rounded-[24px] border border-rose-100 bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.14)]"
             onClick={(event) => event.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -312,7 +312,7 @@ export default function LikedProfilePreviewCard({
                 type="button"
                 onClick={() => setConfirmOpen(false)}
                 disabled={removing}
-                className="inline-flex flex-1 items-center justify-center rounded-[16px] border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-rose-200 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+                className="ui-link-shift inline-flex flex-1 items-center justify-center rounded-[16px] border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-rose-200 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 No
               </button>
@@ -320,7 +320,7 @@ export default function LikedProfilePreviewCard({
                 type="button"
                 onClick={() => void handleUnlike()}
                 disabled={removing}
-                className="inline-flex flex-1 items-center justify-center rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(244,63,94,0.2)] transition-all hover:shadow-[0_18px_36px_rgba(244,63,94,0.24)] disabled:cursor-not-allowed disabled:opacity-70"
+                className="ui-link-shift inline-flex flex-1 items-center justify-center rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(244,63,94,0.2)] transition-all hover:shadow-[0_18px_36px_rgba(244,63,94,0.24)] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {removing ? "Removing..." : "Yes"}
               </button>

@@ -21,15 +21,33 @@ export async function GET() {
 
   const matches = await getMatchesForProfile(ownProfile.id);
 
-  // Attach unlock status per match for current user
-  const matchesWithUnlockStatus = matches.map((match) => ({
-    ...match,
-    isUnlocked: match.unlocks.some(
-      (u: { userId: string }) => u.userId === session.user.id
-    ),
-    otherProfile:
-      match.profileAId === ownProfile.id ? match.profileB : match.profileA,
-  }));
+  const matchesWithUnlockStatus = matches.map((match) => {
+    const otherProfile =
+      match.profileAId === ownProfile.id ? match.profileB : match.profileA;
+
+    return {
+      id: match.id,
+      createdAt: match.createdAt.toISOString(),
+      isUnlocked: match.unlocks.some((unlock) => unlock.userId === session.user.id),
+      otherProfile: {
+        id: otherProfile.id,
+        fullName: otherProfile.fullName,
+        gender: otherProfile.gender,
+        dateOfBirth: otherProfile.dateOfBirth.toISOString(),
+        height: otherProfile.height,
+        maritalStatus: otherProfile.maritalStatus,
+        profession: otherProfile.profession,
+        city: otherProfile.city,
+        state: otherProfile.state,
+        religion: otherProfile.religion,
+        education: otherProfile.education,
+        course: otherProfile.course,
+        phone: otherProfile.phone,
+        profileImage: otherProfile.profileImage,
+        photos: otherProfile.photos,
+      },
+    };
+  });
 
   return NextResponse.json({ data: matchesWithUnlockStatus });
 }

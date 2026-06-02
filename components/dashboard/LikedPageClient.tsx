@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { isAfter, subDays } from "date-fns";
 import {
   ArrowUpRight,
@@ -71,9 +71,11 @@ function areStringArraysEqual(first: string[], second: string[]) {
 export default function LikedPageClient({
   initialLikes,
   initialMatches,
+  viewMode = "interests",
 }: {
   initialLikes: LikedProfile[];
   initialMatches: MatchSummary[];
+  viewMode?: "interests" | "shortlist";
 }) {
   const { data: session } = useSession();
   const shortlistUserId = session?.user?.id ?? null;
@@ -81,11 +83,7 @@ export default function LikedPageClient({
   const [matches, setMatches] = useState<MatchSummary[]>(initialMatches);
   const [loading, setLoading] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOption>("recent");
-  const [showShortlistedOnly, setShowShortlistedOnly] = useState(false);
-  const [hasManualShortlistPreference, setHasManualShortlistPreference] =
-    useState(false);
   const [shortlistedProfileIds, setShortlistedProfileIds] = useState<string[]>([]);
-  const hasAutoOpenedShortlistRef = useRef(false);
 
   useEffect(() => {
     setLikes(initialLikes);
@@ -232,75 +230,37 @@ export default function LikedPageClient({
   const activeLikes = availableLikes.filter(
     (like) => !shortlistedProfileIdSet.has(like.toProfile.id)
   );
-  const savedShortlistedCount = shortlistedProfileIds.length;
-  const hasSavedShortlist = savedShortlistedCount > 0;
+  const isShortlistView = viewMode === "shortlist";
+  const hasSavedShortlist = shortlistedProfileIds.length > 0;
   const shortlistedCount = shortlistedLikes.length;
-  const shouldAutoShowShortlisted =
-    !hasManualShortlistPreference &&
-    activeLikes.length === 0 &&
-    shortlistedCount > 0;
-  const effectiveShowShortlistedOnly =
-    showShortlistedOnly || shouldAutoShowShortlisted;
-  const visibleLikes = effectiveShowShortlistedOnly
-    ? shortlistedLikes
-    : activeLikes;
+  const visibleLikes = isShortlistView ? shortlistedLikes : activeLikes;
   const showSavedShortlistEmptyState =
-    effectiveShowShortlistedOnly &&
+    isShortlistView &&
     hasSavedShortlist &&
     shortlistedCount === 0 &&
     availableLikes.length === 0;
 
-  useEffect(() => {
-    if (
-      !showShortlistedOnly &&
-      shouldAutoShowShortlisted &&
-      !hasAutoOpenedShortlistRef.current
-    ) {
-      hasAutoOpenedShortlistRef.current = true;
-      setShowShortlistedOnly(true);
-      return;
-    }
-
-    if (activeLikes.length > 0 || shortlistedCount === 0) {
-      hasAutoOpenedShortlistRef.current = false;
-    }
-  }, [activeLikes.length, shortlistedCount, shouldAutoShowShortlisted, showShortlistedOnly]);
-
-  const handleShortlistViewToggle = () => {
-    setHasManualShortlistPreference(true);
-    setShowShortlistedOnly((current) => !current);
-  };
-
-  const handleShowAllInterests = () => {
-    setHasManualShortlistPreference(true);
-    setShowShortlistedOnly(false);
-  };
-
-  const handleShowShortlistedProfiles = () => {
-    setHasManualShortlistPreference(true);
-    setShowShortlistedOnly(true);
-  };
-
   if (loading) return <PageLoader />;
 
-  const recentLikesCount = activeLikes.filter((like) =>
+  const recentLikesCount = visibleLikes.filter((like) =>
     isAfter(new Date(like.createdAt), subDays(new Date(), 7))
   ).length;
 
   const uniqueLocationsCount = new Set(
-    activeLikes
+    visibleLikes
       .map((like) => {
         const parts = [like.toProfile.city, like.toProfile.state].filter(Boolean);
         return parts.join(", ") || like.toProfile.location || "";
       })
       .filter(Boolean)
   ).size;
+  const PageIcon = isShortlistView ? Bookmark : Heart;
 
   const highlightStats = [
     {
-      label: "Interests",
-      value: activeLikes.length,
-      icon: Heart,
+      label: isShortlistView ? "Shortlisted" : "Interests",
+      value: visibleLikes.length,
+      icon: isShortlistView ? Bookmark : Heart,
       iconClass: "bg-rose-100 text-rose-500",
     },
     {
@@ -326,77 +286,55 @@ export default function LikedPageClient({
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-        <div className="space-y-2">
+        <div
+          className="ui-enter-up space-y-2"
+          style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
+        >
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 text-rose-500 shadow-sm">
-              <Heart className="h-4.5 w-4.5" />
+            <div className="ui-soft-float flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 text-rose-500 shadow-sm">
+              <PageIcon className="h-4.5 w-4.5" />
             </div>
             <h1 className="font-display text-[1.65rem] font-bold tracking-tight text-slate-900">
-              Interests
+              {isShortlistView ? "Shortlist" : "Interests"}
             </h1>
           </div>
           <p className="text-[13px] text-slate-600">
-            {effectiveShowShortlistedOnly
+            {isShortlistView
               ? "Showing the profiles you shortlisted from your interests."
               : "Profiles you've shown interest in. Shortlist your favorites to keep them handy."}
           </p>
         </div>
 
-        {activeLikes.length > 0 || hasSavedShortlist ? (
-          <div className="flex w-full items-center gap-3 xl:w-auto xl:flex-none">
-            <div className="min-w-0 flex-1 xl:flex-none">
-              <label className="sr-only" htmlFor="liked-sort-order">
-                Sort interests
-              </label>
-              <select
-                id="liked-sort-order"
-                value={sortOrder}
-                onChange={(event) => setSortOrder(event.target.value as SortOption)}
-                className="h-10 w-full rounded-[14px] border border-gray-200 bg-white px-4 text-xs font-medium text-slate-700 outline-none transition-colors hover:border-rose-200 focus:border-rose-300 xl:w-[320px]"
-              >
-                {sortOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    Sort By: {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleShortlistViewToggle}
-              aria-pressed={effectiveShowShortlistedOnly}
-              aria-label={
-                effectiveShowShortlistedOnly
-                  ? "Show all interests"
-                  : "Show shortlisted interests"
-              }
-              className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] border shadow-sm transition-colors ${
-                effectiveShowShortlistedOnly
-                  ? "border-rose-200 bg-rose-50 text-rose-500"
-                  : "border-gray-200 bg-white text-slate-500 hover:border-rose-200 hover:text-rose-500"
-              }`}
+        {availableLikes.length > 0 || hasSavedShortlist ? (
+          <div
+            className="ui-enter-right w-full xl:w-auto xl:flex-none"
+            style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
+          >
+            <label className="sr-only" htmlFor="liked-sort-order">
+              Sort interests
+            </label>
+            <select
+              id="liked-sort-order"
+              value={sortOrder}
+              onChange={(event) => setSortOrder(event.target.value as SortOption)}
+              className="ui-card-lift-soft h-10 w-full rounded-[14px] border border-gray-200 bg-white px-4 text-xs font-medium text-slate-700 outline-none transition-colors hover:border-rose-200 focus:border-rose-300 xl:w-[320px]"
             >
-              <Bookmark
-                className={`h-4.5 w-4.5 ${
-                  effectiveShowShortlistedOnly || hasSavedShortlist
-                    ? "fill-current"
-                    : ""
-                }`}
-              />
-              {savedShortlistedCount > 0 ? (
-                <span className="absolute -right-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-semibold text-white">
-                  {savedShortlistedCount}
-                </span>
-              ) : null}
-            </button>
+              {sortOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  Sort By: {option.label}
+                </option>
+              ))}
+            </select>
           </div>
         ) : null}
       </div>
 
-      {availableLikes.length === 0 && !showSavedShortlistEmptyState ? (
-        <div className="flex min-h-[58vh] flex-col items-center justify-center px-4 text-center">
-          <div className="flex h-28 w-28 items-center justify-center rounded-full bg-rose-50 text-rose-300">
+      {!isShortlistView && availableLikes.length === 0 && !showSavedShortlistEmptyState ? (
+        <div
+          className="ui-enter-scale flex min-h-[58vh] flex-col items-center justify-center px-4 text-center"
+          style={{ animationDelay: "100ms", animationFillMode: "forwards" }}
+        >
+          <div className="ui-soft-float flex h-28 w-28 items-center justify-center rounded-full bg-rose-50 text-rose-300">
             <Heart className="h-14 w-14" />
           </div>
           <h2 className="mt-8 font-display text-[1.6rem] font-bold text-slate-900 sm:text-[1.75rem]">
@@ -409,25 +347,32 @@ export default function LikedPageClient({
           </p>
           <Link
             href={matches.length > 0 ? "/dashboard/matches" : "/dashboard/browse"}
-            className="mt-8 inline-flex items-center justify-center rounded-[18px] bg-gradient-to-r from-rose-600 to-pink-500 px-6 py-3 text-base font-semibold text-white shadow-[0_18px_34px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5"
+            className="ui-link-shift mt-8 inline-flex items-center justify-center rounded-[18px] bg-gradient-to-r from-rose-600 to-pink-500 px-6 py-3 text-base font-semibold text-white shadow-[0_18px_34px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5"
           >
             {matches.length > 0 ? "View Mutual Interests" : "Browse Profiles"}
           </Link>
         </div>
       ) : (
         <>
-          <section className="mx-auto w-full max-w-[1420px] rounded-[12px] border border-rose-100 bg-[linear-gradient(135deg,rgba(255,255,255,0.98)_0%,rgba(255,246,249,0.94)_100%)] p-3 shadow-[0_20px_55px_rgba(15,23,42,0.05)]">
+          <section
+            className="ui-enter-up mx-auto w-full max-w-[1420px] rounded-[12px] border border-rose-100 bg-[linear-gradient(135deg,rgba(255,255,255,0.98)_0%,rgba(255,246,249,0.94)_100%)] p-3 shadow-[0_20px_55px_rgba(15,23,42,0.05)]"
+            style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
+          >
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {highlightStats.map((stat) => {
+              {highlightStats.map((stat, index) => {
                 const Icon = stat.icon;
 
                 return (
                   <div
                     key={stat.label}
-                    className="flex items-center gap-3 rounded-[18px] bg-white/70 px-3.5 py-2 backdrop-blur-sm"
+                    className="ui-enter-scale ui-card-lift-soft flex items-center gap-3 rounded-[18px] bg-white/70 px-3.5 py-2 backdrop-blur-sm"
+                    style={{
+                      animationDelay: `${180 + index * 60}ms`,
+                      animationFillMode: "forwards",
+                    }}
                   >
                     <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-full ${stat.iconClass}`}
+                      className={`ui-icon-lift flex h-10 w-10 items-center justify-center rounded-full ${stat.iconClass}`}
                     >
                       <Icon className="h-4 w-4" />
                     </div>
@@ -446,8 +391,11 @@ export default function LikedPageClient({
           </section>
 
           {showSavedShortlistEmptyState ? (
-            <section className="rounded-[28px] border border-rose-100 bg-white px-6 py-12 text-center shadow-sm">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+            <section
+              className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 bg-white px-6 py-12 text-center shadow-sm"
+              style={{ animationDelay: "160ms", animationFillMode: "forwards" }}
+            >
+              <div className="ui-soft-float mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
                 <Bookmark className="h-6 w-6" />
               </div>
               <h2 className="mt-5 font-display text-[1.6rem] font-bold text-slate-900">
@@ -458,24 +406,26 @@ export default function LikedPageClient({
                 They may have moved to Mutual Interest or Unlocked Profiles.
               </p>
               <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={handleShowAllInterests}
-                  className="inline-flex items-center justify-center rounded-[16px] border border-rose-200 px-6 py-3 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+                <Link
+                  href="/dashboard/liked"
+                  className="ui-link-shift inline-flex items-center justify-center rounded-[16px] border border-rose-200 px-6 py-3 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50"
                 >
                   Show All Interests
-                </button>
+                </Link>
                 <Link
                   href={matches.length > 0 ? "/dashboard/matches" : "/dashboard/browse"}
-                  className="inline-flex items-center justify-center rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5"
+                  className="ui-link-shift inline-flex items-center justify-center rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5"
                 >
                   {matches.length > 0 ? "View Mutual Interests" : "Browse Profiles"}
                 </Link>
               </div>
             </section>
-          ) : effectiveShowShortlistedOnly && visibleLikes.length === 0 ? (
-            <section className="rounded-[28px] border border-rose-100 bg-white px-6 py-12 text-center shadow-sm">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+          ) : isShortlistView && visibleLikes.length === 0 ? (
+            <section
+              className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 bg-white px-6 py-12 text-center shadow-sm"
+              style={{ animationDelay: "160ms", animationFillMode: "forwards" }}
+            >
+              <div className="ui-soft-float mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
                 <Bookmark className="h-6 w-6" />
               </div>
               <h2 className="mt-5 font-display text-[1.6rem] font-bold text-slate-900">
@@ -485,17 +435,19 @@ export default function LikedPageClient({
                 Use the three-dot menu on any interest card and tap shortlist to
                 save profiles here.
               </p>
-              <button
-                type="button"
-                onClick={handleShowAllInterests}
-                className="mt-7 inline-flex items-center justify-center rounded-[16px] border border-rose-200 px-6 py-3 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+              <Link
+                href="/dashboard/liked"
+                className="ui-link-shift mt-7 inline-flex items-center justify-center rounded-[16px] border border-rose-200 px-6 py-3 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50"
               >
                 Show All Interests
-              </button>
+              </Link>
             </section>
-          ) : !effectiveShowShortlistedOnly && visibleLikes.length === 0 ? (
-            <section className="rounded-[28px] border border-rose-100 bg-white px-6 py-12 text-center shadow-sm">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+          ) : !isShortlistView && visibleLikes.length === 0 ? (
+            <section
+              className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 bg-white px-6 py-12 text-center shadow-sm"
+              style={{ animationDelay: "160ms", animationFillMode: "forwards" }}
+            >
+              <div className="ui-soft-float mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
                 <Bookmark className="h-6 w-6" />
               </div>
               <h2 className="mt-5 font-display text-[1.6rem] font-bold text-slate-900">
@@ -504,31 +456,41 @@ export default function LikedPageClient({
               <p className="mt-2 text-[15px] text-slate-500">
                 Your shortlisted profiles are waiting in the bookmark view.
               </p>
-              <button
-                type="button"
-                onClick={handleShowShortlistedProfiles}
-                className="mt-7 inline-flex items-center justify-center rounded-[16px] border border-rose-200 px-6 py-3 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+              <Link
+                href="/dashboard/shortlist"
+                className="ui-link-shift mt-7 inline-flex items-center justify-center rounded-[16px] border border-rose-200 px-6 py-3 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50"
               >
                 View Shortlisted Profiles
-              </button>
+              </Link>
             </section>
           ) : (
             <>
               <section className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                {visibleLikes.map((like) => (
-                  <LikedProfilePreviewCard
+                {visibleLikes.map((like, index) => (
+                  <div
                     key={like.id}
-                    likedAt={like.createdAt}
-                    profile={like.toProfile}
-                    shortlistUserId={shortlistUserId}
-                    showChatAction={effectiveShowShortlistedOnly}
-                    onUnlike={handleUnlike}
-                  />
+                    className="ui-enter-scale"
+                    style={{
+                      animationDelay: `${120 + (index % 10) * 55}ms`,
+                      animationFillMode: "forwards",
+                    }}
+                  >
+                    <LikedProfilePreviewCard
+                      likedAt={like.createdAt}
+                      profile={like.toProfile}
+                      shortlistUserId={shortlistUserId}
+                      showChatAction={isShortlistView}
+                      onUnlike={handleUnlike}
+                    />
+                  </div>
                 ))}
               </section>
 
-              <section className="pb-6 pt-4 text-center">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+              <section
+                className="ui-enter-up pb-6 pt-4 text-center"
+                style={{ animationDelay: "180ms", animationFillMode: "forwards" }}
+              >
+                <div className="ui-soft-float mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
                   <Sparkles className="h-6 w-6" />
                 </div>
                 <h2 className="mt-5 font-display text-[1.6rem] font-bold text-slate-900">
@@ -539,10 +501,10 @@ export default function LikedPageClient({
                 </p>
                 <Link
                   href="/dashboard/browse"
-                  className="mt-7 inline-flex items-center gap-2 rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5"
+                  className="ui-link-shift mt-7 inline-flex items-center gap-2 rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5"
                 >
                   Browse Profiles
-                  <ArrowUpRight className="h-4.5 w-4.5" />
+                  <ArrowUpRight className="ui-arrow-shift h-4.5 w-4.5" />
                 </Link>
               </section>
             </>

@@ -47,7 +47,7 @@ export default async function AdminLandingPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="ui-enter-left" style={{ animationDelay: "60ms" }}>
         <h1 className="text-3xl font-display font-bold tracking-tight text-slate-900">
           Landing Banner &amp; Logo
         </h1>

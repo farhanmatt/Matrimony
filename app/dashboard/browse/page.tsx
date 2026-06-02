@@ -716,9 +716,12 @@ export default function BrowsePage() {
   );
 
   const renderBrowseToolbar = () => (
-    <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+    <div
+      className="ui-enter-right flex flex-col gap-3 lg:flex-row lg:items-center"
+      style={{ animationDelay: "140ms", animationFillMode: "forwards" }}
+    >
       <form onSubmit={handleSearchSubmit} className="flex-1">
-        <div className="relative">
+        <div className="ui-card-lift-soft relative rounded-[10px]">
           <input
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
@@ -727,7 +730,7 @@ export default function BrowsePage() {
           />
           <button
             type="submit"
-            className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-500"
+            className="ui-link-shift absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-500"
             aria-label="Search profiles"
           >
             <Search className="h-5 w-5" />
@@ -736,7 +739,7 @@ export default function BrowsePage() {
       </form>
 
       <div className="flex items-center gap-3">
-        <div className="relative">
+        <div className="ui-card-lift-soft relative rounded-[10px]">
           <select
             value={sortOrder}
             onChange={(event) => {
@@ -757,7 +760,7 @@ export default function BrowsePage() {
         <button
           type="button"
           onClick={openFilterModal}
-          className="relative inline-flex h-[48px] w-[48px] items-center justify-center rounded-[10px] border border-slate-200/80 bg-white text-slate-600 shadow-[0_10px_24px_rgba(15,23,42,0.06)] transition-all hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+          className="ui-link-shift relative inline-flex h-[48px] w-[48px] items-center justify-center rounded-[10px] border border-slate-200/80 bg-white text-slate-600 shadow-[0_10px_24px_rgba(15,23,42,0.06)] transition-all hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
           aria-label="Open filters"
           title="Open filters"
         >
@@ -774,12 +777,15 @@ export default function BrowsePage() {
 
   const renderRightRail = () => (
     <aside className="hidden xl:flex xl:w-[330px] xl:flex-col xl:gap-6 2xl:w-[350px]">
-      <div className="relative h-[414px] overflow-hidden rounded-[16px] border border-rose-100/90 bg-[#fff7f8] shadow-[0_20px_50px_rgba(15,23,42,0.06)]">
+      <div
+        className="ui-enter-right ui-card-lift-soft group relative h-[414px] overflow-hidden rounded-[16px] border border-rose-100/90 bg-[#fff7f8] shadow-[0_20px_50px_rgba(15,23,42,0.06)]"
+        style={{ animationDelay: "220ms", animationFillMode: "forwards" }}
+      >
         <Image
           src="/fm-1.png"
           alt="Matrimony trust banner"
           fill
-          className="object-cover object-center"
+          className="ui-media-zoom object-cover object-center"
           sizes="350px"
           quality={85}
         />
@@ -793,8 +799,14 @@ export default function BrowsePage() {
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-[18px] border border-rose-100/90 bg-[radial-gradient(circle_at_top_right,#fff7f8_0%,#fff4f6_44%,#ffffff_100%)] px-6 pb-4 pt-5 shadow-[0_20px_50px_rgba(15,23,42,0.06)]">
-        <Heart className="absolute right-5 top-12 h-16 w-16 text-rose-200" strokeWidth={1.5} />
+      <div
+        className="ui-enter-right ui-card-lift-soft relative overflow-hidden rounded-[18px] border border-rose-100/90 bg-[radial-gradient(circle_at_top_right,#fff7f8_0%,#fff4f6_44%,#ffffff_100%)] px-6 pb-4 pt-5 shadow-[0_20px_50px_rgba(15,23,42,0.06)]"
+        style={{ animationDelay: "300ms", animationFillMode: "forwards" }}
+      >
+        <Heart
+          className="ui-soft-float absolute right-5 top-12 h-16 w-16 text-rose-200"
+          strokeWidth={1.5}
+        />
 
         <h3 className="pr-16 whitespace-nowrap font-display text-[1.5rem] font-bold leading-none text-slate-900">
           Trusted by thousands
@@ -804,37 +816,46 @@ export default function BrowsePage() {
         </p>
 
         <div className="relative mt-6 h-24">
-          <div className="absolute bottom-1 right-24 h-20 w-16 rotate-[-8deg] overflow-hidden rounded-[16px] border-[3px] border-white bg-white shadow-[0_14px_28px_rgba(15,23,42,0.12)]">
+          <div
+            className="ui-soft-float absolute bottom-1 right-24 h-20 w-16 rotate-[-8deg] overflow-hidden rounded-[16px] border-[3px] border-white bg-white shadow-[0_14px_28px_rgba(15,23,42,0.12)]"
+            style={{ animationDelay: "0.5s" }}
+          >
             <Image
               src="/image-1.jpeg"
               alt="Happy matrimony member"
               fill
-              className="object-cover"
+              className="ui-media-zoom object-cover"
               sizes="64px"
             />
           </div>
-          <div className="absolute bottom-2 right-10 h-24 w-16 overflow-hidden rounded-[16px] border-[3px] border-white bg-white shadow-[0_16px_30px_rgba(15,23,42,0.14)]">
+          <div className="ui-soft-float absolute bottom-2 right-10 h-24 w-16 overflow-hidden rounded-[16px] border-[3px] border-white bg-white shadow-[0_16px_30px_rgba(15,23,42,0.14)]">
             <Image
               src="/main.jpeg"
               alt="Matrimony memories collage"
               fill
-              className="object-cover"
+              className="ui-media-zoom object-cover"
               sizes="64px"
             />
           </div>
-          <div className="absolute bottom-1 right-0 h-20 w-16 rotate-[8deg] overflow-hidden rounded-[16px] border-[3px] border-white bg-white shadow-[0_14px_28px_rgba(15,23,42,0.12)]">
+          <div
+            className="ui-soft-float absolute bottom-1 right-0 h-20 w-16 rotate-[8deg] overflow-hidden rounded-[16px] border-[3px] border-white bg-white shadow-[0_14px_28px_rgba(15,23,42,0.12)]"
+            style={{ animationDelay: "1s" }}
+          >
             <Image
               src="/image-3.png"
               alt="Trusted couples snapshot"
               fill
-              className="object-cover"
+              className="ui-media-zoom object-cover"
               sizes="64px"
             />
           </div>
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-[18px] border border-rose-100/90 bg-[radial-gradient(circle_at_bottom_right,#fff5f7_0%,#ffffff_55%)] p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)]">
+      <div
+        className="ui-enter-right ui-card-lift-soft relative overflow-hidden rounded-[18px] border border-rose-100/90 bg-[radial-gradient(circle_at_bottom_right,#fff5f7_0%,#ffffff_55%)] p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)]"
+        style={{ animationDelay: "380ms", animationFillMode: "forwards" }}
+      >
         <div className="absolute bottom-4 right-4 h-24 w-24 rounded-full bg-rose-50" />
         <div className="relative min-h-[210px]">
           <div>
@@ -845,7 +866,7 @@ export default function BrowsePage() {
               Our support team is always ready to assist you in your journey to find the right match.
             </p>
           </div>
-          <div className="absolute bottom-0 right-0 inline-flex h-24 w-24 items-center justify-center rounded-full bg-[linear-gradient(135deg,rgba(255,228,236,0.95)_0%,rgba(255,241,244,0.98)_100%)] text-rose-500">
+          <div className="ui-soft-float absolute bottom-0 right-0 inline-flex h-24 w-24 items-center justify-center rounded-full bg-[linear-gradient(135deg,rgba(255,228,236,0.95)_0%,rgba(255,241,244,0.98)_100%)] text-rose-500">
             <Headphones className="h-10 w-10" strokeWidth={1.8} />
           </div>
         </div>
@@ -860,7 +881,7 @@ export default function BrowsePage() {
   if (profileRequired) {
     return (
       <div className="space-y-8">
-        <div>
+        <div className="ui-enter-up" style={{ animationDelay: "40ms", animationFillMode: "forwards" }}>
           <div>
             <h1 className="font-display text-[2.6rem] font-bold leading-none text-slate-900">
               Browse Profiles
@@ -872,9 +893,12 @@ export default function BrowsePage() {
           </div>
         </div>
 
-        <div className="rounded-[32px] border border-rose-100 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-8">
+        <div
+          className="ui-enter-scale ui-card-lift-soft rounded-[32px] border border-rose-100 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-8"
+          style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
+        >
           <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[24px] bg-rose-50 text-rose-500">
+            <div className="ui-soft-float flex h-16 w-16 shrink-0 items-center justify-center rounded-[24px] bg-rose-50 text-rose-500">
               <Search className="h-7 w-7" />
             </div>
             <div className="flex-1">
@@ -888,7 +912,7 @@ export default function BrowsePage() {
               </p>
               <Link
                 href="/dashboard/profile/create"
-                className="btn-primary mt-5 inline-flex items-center gap-2 px-6 py-2.5 text-sm"
+                className="btn-primary ui-link-shift mt-5 inline-flex items-center gap-2 px-6 py-2.5 text-sm"
               >
                 <PlusCircle className="h-4 w-4" />
                 Create Profile
@@ -905,11 +929,11 @@ export default function BrowsePage() {
       {isFilterOpen ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-slate-950/35 backdrop-blur-sm"
+            className="ui-overlay-fade absolute inset-0 bg-slate-950/35 backdrop-blur-sm"
             onClick={closeFilterModal}
           />
 
-          <div className="relative z-10 flex max-h-[82vh] w-full max-w-3xl flex-col overflow-hidden rounded-[30px] border border-gray-100 bg-white p-5 shadow-2xl sm:p-6">
+          <div className="ui-modal-pop relative z-10 flex max-h-[82vh] w-full max-w-3xl flex-col overflow-hidden rounded-[30px] border border-gray-100 bg-white p-5 shadow-2xl sm:p-6">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-rose-500">
@@ -923,7 +947,7 @@ export default function BrowsePage() {
               <button
                 type="button"
                 onClick={closeFilterModal}
-                className="rounded-full border border-gray-200 p-2 text-gray-500 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500"
+                className="ui-link-shift rounded-full border border-gray-200 p-2 text-gray-500 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500"
                 aria-label="Close filters"
               >
                 <X className="h-5 w-5" />
@@ -938,7 +962,7 @@ export default function BrowsePage() {
               <div className="mt-5 flex flex-col gap-3 border-t border-gray-100 pt-4">
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md"
+                  className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md"
                 >
                   <Search className="h-4 w-4" />
                   Apply Filters
@@ -947,7 +971,7 @@ export default function BrowsePage() {
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 transition-colors hover:border-rose-200 hover:text-rose-600"
+                  className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 transition-colors hover:border-rose-200 hover:text-rose-600"
                 >
                   <RotateCcw className="h-4 w-4" />
                   Reset Filters
@@ -961,7 +985,10 @@ export default function BrowsePage() {
       <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_330px] xl:gap-6 2xl:grid-cols-[minmax(0,1fr)_350px]">
         <div className="space-y-6">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            <div className="max-w-xl">
+            <div
+              className="ui-enter-up max-w-xl"
+              style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
+            >
               <div>
                 <h1 className="whitespace-nowrap font-display text-[1.85rem] font-bold leading-none text-slate-900">
                   Find Match
@@ -979,7 +1006,7 @@ export default function BrowsePage() {
           {loading ? (
             <SkeletonGrid count={8} />
           ) : profiles.length === 0 ? (
-            <div className="rounded-[30px] border border-rose-100 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-8">
+            <div className="ui-enter-scale ui-card-lift-soft rounded-[30px] border border-rose-100 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-8">
               <EmptyState
                 icon="search"
                 title="No profiles found"
@@ -990,23 +1017,34 @@ export default function BrowsePage() {
             <>
               <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {profiles.map((profile, index) => (
-                  <BrowseProfileCard
+                  <div
                     key={profile.id}
-                    profile={profile}
-                    badge={index % 5 === 2 || index % 5 === 4 ? "Premium" : "New"}
-                    onLike={handleProfileLike}
-                    profileHref={buildProfileHref(profile.id)}
-                  />
+                    className="ui-enter-scale"
+                    style={{
+                      animationDelay: `${80 + (index % 8) * 55}ms`,
+                      animationFillMode: "forwards",
+                    }}
+                  >
+                    <BrowseProfileCard
+                      profile={profile}
+                      badge={index % 5 === 2 || index % 5 === 4 ? "Premium" : "New"}
+                      onLike={handleProfileLike}
+                      profileHref={buildProfileHref(profile.id)}
+                    />
+                  </div>
                 ))}
               </div>
 
               {totalPages > 1 ? (
-                <div className="flex flex-wrap items-center justify-center gap-3 py-2">
+                <div
+                  className="ui-enter-up flex flex-wrap items-center justify-center gap-3 py-2"
+                  style={{ animationDelay: "180ms", animationFillMode: "forwards" }}
+                >
                   <button
                     type="button"
                     onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
                     disabled={!hasPreviousPage}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-[14px] border border-slate-200 bg-white text-slate-500 transition-all hover:border-rose-300 hover:text-rose-600 disabled:cursor-not-allowed disabled:border-slate-100 disabled:text-slate-300"
+                    className="ui-link-shift inline-flex h-11 w-11 items-center justify-center rounded-[14px] border border-slate-200 bg-white text-slate-500 transition-all hover:border-rose-300 hover:text-rose-600 disabled:cursor-not-allowed disabled:border-slate-100 disabled:text-slate-300"
                     aria-label="Previous page"
                   >
                     <ChevronLeft className="h-4 w-4" />
@@ -1018,7 +1056,7 @@ export default function BrowsePage() {
                         key={item}
                         type="button"
                         onClick={() => setPage(item)}
-                        className={`inline-flex h-11 min-w-[2.75rem] items-center justify-center rounded-[14px] border px-3 text-sm font-semibold transition-all ${
+                        className={`ui-link-shift inline-flex h-11 min-w-[2.75rem] items-center justify-center rounded-[14px] border px-3 text-sm font-semibold transition-all ${
                           item === page
                             ? "border-rose-300 bg-rose-50 text-rose-600 shadow-[0_12px_24px_rgba(244,63,94,0.12)]"
                             : "border-slate-200 bg-white text-slate-700 hover:border-rose-300 hover:text-rose-600"
@@ -1042,7 +1080,7 @@ export default function BrowsePage() {
                       setPage((currentPage) => Math.min(totalPages, currentPage + 1))
                     }
                     disabled={!hasNextPage}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-[14px] border border-slate-200 bg-white text-slate-500 transition-all hover:border-rose-300 hover:text-rose-600 disabled:cursor-not-allowed disabled:border-slate-100 disabled:text-slate-300"
+                    className="ui-link-shift inline-flex h-11 w-11 items-center justify-center rounded-[14px] border border-slate-200 bg-white text-slate-500 transition-all hover:border-rose-300 hover:text-rose-600 disabled:cursor-not-allowed disabled:border-slate-100 disabled:text-slate-300"
                     aria-label="Next page"
                   >
                     <ChevronRight className="h-4 w-4" />

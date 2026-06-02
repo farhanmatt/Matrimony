@@ -367,105 +367,119 @@ export default async function AdminUsersPage({
     ) : null;
 
     return (
-    <div className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col gap-6 overflow-hidden sm:h-[calc(100dvh-6.5rem)] lg:h-[calc(100dvh-3rem)]">
-      <div className="shrink-0">
-        <h1 className="text-2xl font-display font-bold text-gray-900">Manage Users</h1>
-        <p className="mt-1 text-sm text-gray-500">{total} total users</p>
-      </div>
+      <div className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col gap-6 overflow-x-hidden overflow-y-auto sm:h-[calc(100dvh-6.5rem)] lg:h-[calc(100dvh-3rem)]">
+        <div className="ui-enter-left shrink-0" style={{ animationDelay: "40ms" }}>
+          <h1 className="text-2xl font-display font-bold text-gray-900">Manage Users</h1>
+          <p className="mt-1 text-sm text-gray-500">{total} total users</p>
+        </div>
 
-      <div className="shrink-0 border-t border-gray-200" />
+        <div className="ui-enter-up shrink-0 border-t border-gray-200" style={{ animationDelay: "90ms" }} />
 
-      <AdminListCard
-        className="flex-1 min-h-0"
-        bodyClassName="flex min-h-0 flex-col overflow-hidden"
-        toolbar={
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-            <AdminSearchInput placeholder="Search by name or email..." />
+        <div className="ui-enter-scale flex-1 min-h-0" style={{ animationDelay: "140ms" }}>
+          <AdminListCard
+            className="flex-1 min-h-0"
+            bodyClassName="flex min-h-0 flex-col overflow-hidden"
+            toolbar={
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+                <AdminSearchInput
+                  placeholder="Search by name or email..."
+                  className="ui-link-shift flex w-full max-w-[760px] overflow-hidden rounded-xl border border-rose-100 bg-white shadow-[0_10px_24px_rgba(244,63,94,0.06)] transition-all duration-300 hover:border-rose-200 hover:shadow-[0_16px_34px_rgba(244,63,94,0.1)] focus-within:-translate-y-0.5 focus-within:border-rose-200 focus-within:shadow-[0_16px_34px_rgba(244,63,94,0.1)]"
+                />
 
-            <div className="flex items-center gap-3 xl:ml-auto">
-              <AdminUserFilters />
-              <AdminUserFieldSelector selectedColumns={selectedColumns} />
-            </div>
-          </div>
-        }
-      >
-        {!hasCustomColumns ? (
-          <AdminUsersTable
-            users={users.map((user) => {
-              const row = user as unknown as UserRow;
-              return {
-                id: row.id,
-                name: row.name,
-                email: row.email,
-                createdAt: row.createdAt,
-                profile: row.profile
-                  ? {
-                      id: row.profile.id,
-                      fullName: row.profile.fullName,
-                      gender: row.profile.gender,
-                      dateOfBirth: row.profile.dateOfBirth,
-                      maritalStatus: row.profile.maritalStatus,
-                      phone: row.profile.phone,
-                      status: row.profile.status,
-                      religion: row.profile.religion,
-                      caste: row.profile.caste,
-                      location: row.profile.location,
-                      city: row.profile.city,
-                      state: row.profile.state,
-                      profileImage: row.profile.profileImage,
-                    }
-                  : null,
-              };
-            })}
-            listFooter={paginationFooter}
-          />
-        ) : (
-          <div className="flex min-h-0 flex-1 flex-col">
-            <div className="min-h-0 flex-1 overflow-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            <table className="w-full min-w-max table-auto text-sm">
-              <thead className="sticky top-0 z-10">
-                <tr className="border-b border-slate-100 bg-slate-50/90">
-                  {visibleColumns.map((column) => (
-                    <th
-                      key={column.key}
-                      className="whitespace-nowrap bg-slate-50/95 px-6 py-4 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700 backdrop-blur"
-                    >
-                      {column.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {users.map((user) => {
-                  const row = user as unknown as UserRow;
-
-                  return (
-                    <tr key={row.id} className="transition-colors hover:bg-slate-50/80">
-                      {visibleColumns.map((column) => (
-                        <td key={`${row.id}-${column.key}`} className="px-6 py-4 align-middle">
-                          {column.render(row)}
-                        </td>
-                      ))}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-
-            {paginationFooter ? (
-              <div className="border-t border-rose-100 bg-rose-50/30 px-4 py-3">
-                {paginationFooter}
+                <div className="flex items-center gap-3 xl:ml-auto">
+                  <AdminUserFilters />
+                  <AdminUserFieldSelector selectedColumns={selectedColumns} />
+                </div>
               </div>
-            ) : null}
-            </div>
+            }
+          >
+            {!hasCustomColumns ? (
+              <AdminUsersTable
+                users={users.map((user) => {
+                  const row = user as unknown as UserRow;
+                  return {
+                    id: row.id,
+                    name: row.name,
+                    email: row.email,
+                    createdAt: row.createdAt,
+                    profile: row.profile
+                      ? {
+                          id: row.profile.id,
+                          fullName: row.profile.fullName,
+                          gender: row.profile.gender,
+                          dateOfBirth: row.profile.dateOfBirth,
+                          maritalStatus: row.profile.maritalStatus,
+                          phone: row.profile.phone,
+                          status: row.profile.status,
+                          religion: row.profile.religion,
+                          caste: row.profile.caste,
+                          location: row.profile.location,
+                          city: row.profile.city,
+                          state: row.profile.state,
+                          profileImage: row.profile.profileImage,
+                        }
+                      : null,
+                  };
+                })}
+                listFooter={paginationFooter}
+              />
+            ) : (
+              <div className="flex h-full min-h-0 flex-1 flex-col">
+                <div className="min-h-0 flex-1 overflow-auto px-4 pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                  <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                    <table className="w-full min-w-max table-auto text-sm">
+                      <thead className="sticky top-0 z-10">
+                        <tr className="border-b border-slate-100 bg-slate-50/90">
+                          {visibleColumns.map((column) => (
+                            <th
+                              key={column.key}
+                              className="whitespace-nowrap bg-slate-50/95 px-6 py-4 text-left text-[13px] font-semibold uppercase tracking-[0.16em] text-slate-700 backdrop-blur"
+                            >
+                              {column.label}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {users.map((user, index) => {
+                          const row = user as unknown as UserRow;
 
-            {users.length === 0 ? (
-              <div className="py-12 text-center text-gray-400">No users found.</div>
-            ) : null}
-          </div>
-        )}
-      </AdminListCard>
-    </div>
+                          return (
+                            <tr
+                              key={row.id}
+                              className="ui-enter-up transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-50/80"
+                              style={{ animationDelay: `${180 + Math.min(index, 8) * 40}ms` }}
+                            >
+                              {visibleColumns.map((column) => (
+                                <td
+                                  key={`${row.id}-${column.key}`}
+                                  className="px-6 py-4 align-middle"
+                                >
+                                  {column.render(row)}
+                                </td>
+                              ))}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {paginationFooter ? (
+                    <div className="mt-4 border-t border-rose-100 bg-rose-50/30 px-4 py-3">
+                      {paginationFooter}
+                    </div>
+                  ) : null}
+
+                  {users.length === 0 ? (
+                    <div className="py-12 text-center text-gray-400">No users found.</div>
+                  ) : null}
+                </div>
+              </div>
+            )}
+          </AdminListCard>
+        </div>
+      </div>
     );
   } catch {
     return (

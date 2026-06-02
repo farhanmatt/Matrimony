@@ -51,7 +51,12 @@ export default function Navbar() {
     >
       <nav className="mx-auto flex h-full max-w-10xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link href="/" className="inline-flex shrink-0 items-center" aria-label="Go to home page">
+        <Link
+          href="/"
+          className="ui-enter-left ui-link-shift inline-flex shrink-0 items-center"
+          aria-label="Go to home page"
+          style={{ animationDelay: "40ms" }}
+        >
           <SiteLogo
             src={brandLogoSrc}
             alt="Site logo"
@@ -60,12 +65,12 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="ui-enter-up hidden items-center gap-8 md:flex" style={{ animationDelay: "110ms" }}>
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-gray-700 hover:text-rose-600 font-medium transition-colors text-sm"
+              className="ui-link-shift text-sm font-medium text-gray-700 transition-colors hover:text-rose-600"
             >
               {link.label}
             </Link>
@@ -73,19 +78,19 @@ export default function Navbar() {
         </div>
 
         {/* Desktop CTA */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="ui-enter-right hidden items-center gap-3 md:flex" style={{ animationDelay: "170ms" }}>
           {session ? (
             <>
               <button
                 type="button"
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="text-gray-700 hover:text-rose-600 font-medium text-sm transition-colors"
+                className="ui-link-shift text-sm font-medium text-gray-700 transition-colors hover:text-rose-600"
               >
                 Logout
               </button>
               <Link
                 href={session.user.role === "ADMIN" ? "/admin" : "/dashboard"}
-                className="btn-primary text-sm py-2 px-5"
+                className="btn-primary ui-link-shift px-5 py-2 text-sm"
               >
                 Go to Dashboard
               </Link>
@@ -94,11 +99,11 @@ export default function Navbar() {
             <>
               <Link
                 href="/login"
-                className="text-gray-700 hover:text-rose-600 font-medium text-sm transition-colors"
+                className="ui-link-shift text-sm font-medium text-gray-700 transition-colors hover:text-rose-600"
               >
                 Login
               </Link>
-              <Link href="/register" className="btn-primary text-sm py-2 px-5">
+              <Link href="/register" className="btn-primary ui-link-shift px-5 py-2 text-sm">
                 Register Free
               </Link>
             </>
@@ -107,7 +112,7 @@ export default function Navbar() {
 
         {/* Mobile toggle */}
         <button
-          className="md:hidden p-2 text-gray-700 hover:text-rose-600 transition-colors"
+          className="ui-link-shift p-2 text-gray-700 transition-colors hover:text-rose-600 md:hidden"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
           aria-label="Toggle menu"
         >
@@ -128,7 +133,7 @@ export default function Navbar() {
               key={link.href}
               href={link.href}
               onClick={() => setIsMobileOpen(false)}
-              className="block py-2 text-gray-700 hover:text-rose-600 font-medium transition-colors"
+              className="ui-link-shift block py-2 font-medium text-gray-700 transition-colors hover:text-rose-600"
             >
               {link.label}
             </Link>

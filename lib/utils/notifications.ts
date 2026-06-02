@@ -43,6 +43,7 @@ export async function getDashboardNotificationsForUser(userId: string): Promise<
   profileId: string | null;
   items: DashboardNotificationItem[];
 }> {
+  const maxItems = 20;
   const profile = await prisma.profile.findUnique({
     where: { userId },
     select: { id: true },
@@ -59,6 +60,7 @@ export async function getDashboardNotificationsForUser(userId: string): Promise<
     prisma.like.findMany({
       where: { toProfileId: profile.id },
       orderBy: { createdAt: "desc" },
+      take: maxItems,
       select: {
         id: true,
         createdAt: true,
@@ -89,6 +91,7 @@ export async function getDashboardNotificationsForUser(userId: string): Promise<
         },
       },
       orderBy: { createdAt: "desc" },
+      take: maxItems,
       select: {
         id: true,
         content: true,
@@ -149,7 +152,7 @@ export async function getDashboardNotificationsForUser(userId: string): Promise<
   ].sort(
     (left, right) =>
       new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
-  );
+  ).slice(0, maxItems);
 
   return {
     profileId: profile.id,

@@ -84,10 +84,13 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-[30px] border border-rose-100/80 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.98)_0%,rgba(255,247,249,0.96)_45%,rgba(255,239,243,0.92)_100%)] px-6 py-7 shadow-[0_24px_70px_rgba(15,23,42,0.05)] sm:px-8 sm:py-8">
+      <section
+        className="ui-enter-up relative overflow-hidden rounded-[30px] border border-rose-100/80 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.98)_0%,rgba(255,247,249,0.96)_45%,rgba(255,239,243,0.92)_100%)] px-6 py-7 shadow-[0_24px_70px_rgba(15,23,42,0.05)] sm:px-8 sm:py-8"
+        style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
+      >
         <div className="absolute -right-10 top-2 hidden h-52 w-52 rounded-full bg-rose-100/60 blur-3xl lg:block" />
         <div className="absolute right-16 top-10 hidden lg:block">
-          <div className="relative flex h-28 w-28 items-center justify-center rounded-[28px] bg-white/70 shadow-[0_18px_42px_rgba(244,63,94,0.12)] backdrop-blur-sm">
+          <div className="ui-soft-float relative flex h-28 w-28 items-center justify-center rounded-[28px] bg-white/70 shadow-[0_18px_42px_rgba(244,63,94,0.12)] backdrop-blur-sm">
             <div className="absolute inset-3 rounded-[24px] bg-gradient-to-br from-rose-50 to-pink-50" />
             <LockKeyhole className="relative z-10 h-10 w-10 text-rose-400" />
           </div>
@@ -127,8 +130,11 @@ export default async function SettingsPage() {
       </section>
 
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="space-y-6">
-          <section className="rounded-[28px] border border-rose-100/80 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)] sm:p-8">
+        <div
+          className="ui-enter-left space-y-6"
+          style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
+        >
+          <section className="ui-card-lift-soft rounded-[28px] border border-rose-100/80 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)] sm:p-8">
             <AccountSettingsForm
               user={{
                 name: displayName,
@@ -141,10 +147,10 @@ export default async function SettingsPage() {
 
           <section
             id="notification-settings"
-            className="rounded-[24px] border border-slate-200 bg-white px-6 py-5 shadow-sm scroll-mt-28"
+            className="ui-card-lift-soft rounded-[24px] border border-slate-200 bg-white px-6 py-5 shadow-sm scroll-mt-28"
           >
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-500">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-500 ui-icon-lift">
                 <BellRing className="h-5 w-5" />
               </div>
               <div>
@@ -166,10 +172,10 @@ export default async function SettingsPage() {
 
           <section
             id="help-support"
-            className="flex flex-col gap-4 rounded-[24px] border border-rose-100 bg-[linear-gradient(135deg,rgba(255,255,255,0.98)_0%,rgba(255,246,249,0.94)_100%)] px-6 py-5 shadow-sm md:flex-row md:items-center md:justify-between"
+            className="ui-card-lift-soft flex flex-col gap-4 rounded-[24px] border border-rose-100 bg-[linear-gradient(135deg,rgba(255,255,255,0.98)_0%,rgba(255,246,249,0.94)_100%)] px-6 py-5 shadow-sm md:flex-row md:items-center md:justify-between"
           >
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 ui-icon-lift">
                 <Headphones className="h-5 w-5" />
               </div>
               <div>
@@ -184,18 +190,21 @@ export default async function SettingsPage() {
 
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center gap-2 rounded-[16px] border border-rose-200 px-5 py-3 text-sm font-semibold text-rose-600 transition-colors hover:border-rose-300 hover:bg-rose-50"
+              className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-[16px] border border-rose-200 px-5 py-3 text-sm font-semibold text-rose-600 transition-colors hover:border-rose-300 hover:bg-rose-50"
             >
-              <Headphones className="h-4.5 w-4.5" />
+              <Headphones className="ui-arrow-shift h-4.5 w-4.5" />
               Contact Support
             </Link>
           </section>
         </div>
 
-        <aside className="space-y-5">
-          <section className="rounded-[24px] border border-rose-100/80 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)]">
+        <aside
+          className="ui-enter-right space-y-5"
+          style={{ animationDelay: "190ms", animationFillMode: "forwards" }}
+        >
+          <section className="ui-card-lift-soft rounded-[24px] border border-rose-100/80 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)]">
             <div className="mb-4 flex items-start gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500 ui-icon-lift">
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
@@ -217,19 +226,20 @@ export default async function SettingsPage() {
             </span>
           </section>
 
-          <section className="rounded-[24px] border border-rose-100/80 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)]">
+          <section className="ui-card-lift-soft rounded-[24px] border border-rose-100/80 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)]">
             <h2 className="font-display text-[1.45rem] font-bold text-slate-900">
               Quick Links
             </h2>
 
             <div className="mt-5 divide-y divide-slate-100">
-              {quickLinks.map((item) => (
+              {quickLinks.map((item, index) => (
                 <Link
                   key={item.title}
                   href={item.href}
-                  className="group flex items-start gap-4 py-5 first:pt-0 last:pb-0"
+                  className="group ui-enter-right ui-link-shift flex items-start gap-4 py-5 first:pt-0 last:pb-0"
+                  style={{ animationDelay: `${250 + index * 55}ms`, animationFillMode: "forwards" }}
                 >
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 transition-colors group-hover:bg-rose-100">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 transition-colors group-hover:bg-rose-100 ui-icon-lift">
                     <item.icon className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -240,7 +250,7 @@ export default async function SettingsPage() {
                       {item.description}
                     </p>
                   </div>
-                  <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-slate-400 transition-transform group-hover:translate-x-0.5 group-hover:text-rose-500" />
+                  <ChevronRight className="ui-arrow-shift mt-1 h-5 w-5 shrink-0 text-slate-400 transition-transform group-hover:text-rose-500" />
                 </Link>
               ))}
             </div>

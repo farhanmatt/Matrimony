@@ -121,12 +121,12 @@ export default async function BlogArticlePage({ params }: PageProps) {
 
       <section className="pt-28 sm:pt-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
-            <Link href="/" className="transition-colors hover:text-rose-500">
+          <div className="ui-enter-up flex flex-wrap items-center gap-2 text-sm text-slate-500" style={{ animationDelay: "40ms" }}>
+            <Link href="/" className="ui-link-shift transition-colors hover:text-rose-500">
               Home
             </Link>
             <ChevronRight className="h-4 w-4" />
-            <Link href="/blog" className="transition-colors hover:text-rose-500">
+            <Link href="/blog" className="ui-link-shift transition-colors hover:text-rose-500">
               Blog
             </Link>
             <ChevronRight className="h-4 w-4" />
@@ -135,7 +135,7 @@ export default async function BlogArticlePage({ params }: PageProps) {
             <span className="line-clamp-1 text-slate-900">{post.title}</span>
           </div>
 
-          <div className="relative mt-6 overflow-hidden rounded-[1rem] border border-rose-100 bg-white shadow-[0_24px_60px_rgba(244,63,94,0.08)]">
+          <div className="ui-enter-scale relative mt-6 overflow-hidden rounded-[1rem] border border-rose-100 bg-white shadow-[0_24px_60px_rgba(244,63,94,0.08)]" style={{ animationDelay: "100ms" }}>
             <div className="absolute inset-x-0 -inset-y-3 sm:-inset-y-4 lg:-inset-y-5">
               <Image
                 src={post.imageSrc}
@@ -149,13 +149,13 @@ export default async function BlogArticlePage({ params }: PageProps) {
 
             <div className="relative min-h-[340px] p-8 sm:min-h-[400px] sm:px-10 sm:py-10 lg:min-h-[460px] lg:px-14 lg:py-12">
               <div className="max-w-3xl lg:max-w-[46%]">
-                <span className="inline-flex rounded-full bg-white/85 px-3 py-1 text-xs font-semibold text-rose-600 shadow-sm">
+                <span className="ui-enter-up inline-flex rounded-full bg-white/85 px-3 py-1 text-xs font-semibold text-rose-600 shadow-sm" style={{ animationDelay: "180ms" }}>
                   {post.category}
                 </span>
-                <h1 className="mt-6 max-w-2xl text-4xl font-bold tracking-tight text-[#931e42] sm:text-5xl lg:text-6xl lg:leading-[0.95]">
+                <h1 className="ui-enter-up mt-6 max-w-2xl text-4xl font-bold tracking-tight text-[#931e42] sm:text-5xl lg:text-6xl lg:leading-[0.95]" style={{ animationDelay: "240ms" }}>
                   {post.title}
                 </h1>
-                <p className="mt-6 max-w-2xl text-base leading-8 text-slate-700 sm:text-lg">
+                <p className="ui-enter-up mt-6 max-w-2xl text-base leading-8 text-slate-700 sm:text-lg" style={{ animationDelay: "300ms" }}>
                   {post.excerpt}
                 </p>
 
@@ -180,7 +180,7 @@ export default async function BlogArticlePage({ params }: PageProps) {
 
           <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
             <article className="space-y-8">
-              <div className="rounded-[1.75rem] border border-rose-100 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)] sm:p-8">
+              <div className="ui-enter-up ui-card-lift rounded-[1.75rem] border border-rose-100 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)] sm:p-8" style={{ animationDelay: "120ms" }}>
                 <p className="text-base leading-8 text-slate-700">{post.introduction}</p>
 
                 <div className="mt-8 space-y-4">
@@ -190,9 +190,9 @@ export default async function BlogArticlePage({ params }: PageProps) {
                     return (
                       <div
                         key={section.title}
-                        className="flex gap-4 rounded-2xl border border-rose-100 bg-white p-4 shadow-sm"
+                        className="ui-card-lift-soft flex gap-4 rounded-2xl border border-rose-100 bg-white p-4 shadow-sm"
                       >
-                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+                        <div className="ui-icon-lift flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
                           <Icon className="h-6 w-6" />
                         </div>
                         <div>
@@ -208,9 +208,9 @@ export default async function BlogArticlePage({ params }: PageProps) {
                   })}
                 </div>
 
-                <div className="mt-8 rounded-[1.5rem] border border-rose-100 bg-gradient-to-r from-rose-50 via-pink-50 to-white p-6">
+                <div className="ui-card-lift-soft mt-8 rounded-[1.5rem] border border-rose-100 bg-gradient-to-r from-rose-50 via-pink-50 to-white p-6">
                   <div className="flex items-center gap-3 text-rose-600">
-                    <Check className="h-5 w-5" />
+                    <Check className="ui-icon-lift h-5 w-5" />
                     <span className="text-sm font-semibold uppercase tracking-[0.2em]">
                       Final Thought
                     </span>
@@ -226,22 +226,23 @@ export default async function BlogArticlePage({ params }: PageProps) {
                   <h2 className="text-2xl font-bold text-slate-900">Related Articles</h2>
                   <Link
                     href="/blog"
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-rose-500 transition-colors hover:text-rose-600"
+                    className="ui-link-shift inline-flex items-center gap-2 text-sm font-semibold text-rose-500 transition-colors hover:text-rose-600"
                   >
                     View All Articles
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="ui-arrow-shift h-4 w-4" />
                   </Link>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                  {relatedPosts.map((relatedPost) => {
+                  {relatedPosts.map((relatedPost, index) => {
                     const relatedCardImage = blogCardImageOverrides[relatedPost.slug];
 
                     return (
                       <Link
                         key={relatedPost.slug}
                         href={`/blog/${relatedPost.slug}`}
-                        className="group overflow-hidden rounded-[1.35rem] border border-rose-100 bg-white shadow-[0_14px_32px_rgba(15,23,42,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_42px_rgba(244,63,94,0.1)]"
+                        className="ui-enter-up ui-card-lift group overflow-hidden rounded-[1.35rem] border border-rose-100 bg-white shadow-[0_14px_32px_rgba(15,23,42,0.05)]"
+                        style={{ animationDelay: `${180 + index * 70}ms` }}
                       >
                         <article>
                           <div className="relative h-36">
@@ -249,7 +250,7 @@ export default async function BlogArticlePage({ params }: PageProps) {
                               src={relatedCardImage?.imageSrc ?? relatedPost.imageSrc}
                               alt={relatedCardImage?.imageAlt ?? relatedPost.imageAlt}
                               fill
-                              className="object-cover"
+                              className="ui-media-zoom object-cover"
                               style={{
                                 objectPosition:
                                   relatedCardImage?.cardObjectPosition ??
@@ -276,7 +277,7 @@ export default async function BlogArticlePage({ params }: PageProps) {
             </article>
 
             <aside className="space-y-6">
-              <div className="rounded-[1.75rem] border border-rose-100 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)]">
+              <div className="ui-enter-right ui-card-lift rounded-[1.75rem] border border-rose-100 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)]" style={{ animationDelay: "140ms" }}>
                 <h2 className="text-2xl font-bold text-slate-900">Categories</h2>
                 <div className="mt-5 space-y-2">
                   {blogCategories.map((category) => {
@@ -298,7 +299,7 @@ export default async function BlogArticlePage({ params }: PageProps) {
                 </div>
               </div>
 
-              <div className="rounded-[1.75rem] border border-rose-100 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)]">
+              <div className="ui-enter-right ui-card-lift rounded-[1.75rem] border border-rose-100 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)]" style={{ animationDelay: "220ms" }}>
                 <h2 className="text-2xl font-bold text-slate-900">Popular Posts</h2>
                 <div className="mt-5 space-y-4">
                   {popularPosts.map((popularPost) => {
@@ -309,14 +310,14 @@ export default async function BlogArticlePage({ params }: PageProps) {
                       <Link
                         key={popularPost.slug}
                         href={`/blog/${popularPost.slug}`}
-                        className="flex gap-3 rounded-2xl p-2 transition-colors hover:bg-rose-50"
+                        className="ui-card-lift-soft flex gap-3 rounded-2xl p-2 transition-colors hover:bg-rose-50"
                       >
                         <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl">
                           <Image
                             src={sidebarImageOverride?.imageSrc ?? popularPost.imageSrc}
                             alt={popularPost.imageAlt}
                             fill
-                            className="object-cover"
+                            className="ui-media-zoom object-cover"
                             style={{
                               objectPosition:
                                 sidebarImageOverride?.objectPosition ??
@@ -339,7 +340,7 @@ export default async function BlogArticlePage({ params }: PageProps) {
                 </div>
               </div>
 
-              <div className="rounded-[1.75rem] border border-rose-100 bg-gradient-to-b from-rose-50 to-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)]">
+              <div className="ui-enter-right ui-card-lift rounded-[1.75rem] border border-rose-100 bg-gradient-to-b from-rose-50 to-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)]" style={{ animationDelay: "300ms" }}>
                 <h2 className="text-2xl font-bold text-slate-900">
                   Subscribe to Our Newsletter
                 </h2>
@@ -353,7 +354,7 @@ export default async function BlogArticlePage({ params }: PageProps) {
                   </div>
                   <Link
                     href="/register"
-                    className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(244,63,94,0.22)]"
+                    className="ui-link-shift inline-flex h-12 w-full items-center justify-center rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(244,63,94,0.22)]"
                   >
                     Subscribe
                   </Link>
@@ -366,10 +367,10 @@ export default async function BlogArticlePage({ params }: PageProps) {
 
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-[2rem] border border-rose-100 bg-gradient-to-r from-rose-50 via-pink-50 to-white p-8 shadow-[0_16px_40px_rgba(244,63,94,0.08)] lg:flex lg:items-center lg:justify-between">
+          <div className="ui-enter-up ui-card-lift rounded-[2rem] border border-rose-100 bg-gradient-to-r from-rose-50 via-pink-50 to-white p-8 shadow-[0_16px_40px_rgba(244,63,94,0.08)] lg:flex lg:items-center lg:justify-between">
             <div>
               <div className="flex items-center gap-2 text-rose-500">
-                <Heart className="h-5 w-5 fill-rose-100" />
+                <Heart className="ui-soft-float h-5 w-5 fill-rose-100" />
                 <span className="text-sm font-semibold uppercase tracking-[0.24em]">
                   Find Your Match
                 </span>
@@ -386,13 +387,13 @@ export default async function BlogArticlePage({ params }: PageProps) {
             <div className="mt-6 flex flex-col gap-3 sm:flex-row lg:mt-0">
               <Link
                 href="/register"
-                className="inline-flex h-12 items-center justify-center rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-6 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(244,63,94,0.22)]"
+                className="ui-link-shift inline-flex h-12 items-center justify-center rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-6 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(244,63,94,0.22)]"
               >
                 Register Free
               </Link>
               <Link
                 href="/#find-match"
-                className="inline-flex h-12 items-center justify-center rounded-xl border border-rose-200 bg-white px-6 text-sm font-semibold text-rose-500 transition-colors hover:bg-rose-50"
+                className="ui-link-shift inline-flex h-12 items-center justify-center rounded-xl border border-rose-200 bg-white px-6 text-sm font-semibold text-rose-500 transition-colors hover:bg-rose-50"
               >
                 Search Now
               </Link>

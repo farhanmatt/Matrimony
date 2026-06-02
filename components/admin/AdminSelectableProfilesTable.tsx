@@ -97,11 +97,14 @@ export default function AdminSelectableProfilesTable({
                 </tr>
               </thead>
               <tbody className="divide-y divide-rose-100 bg-white">
-                {visibleRows.map((row) => {
+                {visibleRows.map((row, index) => {
                   return (
                     <tr
                       key={row.id}
-                      className={cn("cursor-pointer transition-colors hover:bg-rose-50/80")}
+                      className={cn(
+                        "group/row ui-enter-up cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-rose-50/80"
+                      )}
+                      style={{ animationDelay: `${180 + Math.min(index, 8) * 38}ms` }}
                       onClick={(event) => handleRowClick(event, row.href)}
                       role="link"
                       tabIndex={0}
@@ -115,7 +118,7 @@ export default function AdminSelectableProfilesTable({
                       {row.cells.map((cell, index) => (
                         <td
                           key={`${row.id}-${columns[index]?.key ?? index}`}
-                          className="px-4 py-4 align-middle"
+                          className="px-4 py-4 align-middle transition-colors duration-300"
                         >
                           {cell}
                         </td>

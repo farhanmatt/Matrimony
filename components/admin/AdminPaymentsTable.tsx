@@ -42,7 +42,7 @@ function SelectableCheckbox({
         event.stopPropagation();
         onChange();
       }}
-      className="inline-flex h-5 w-5 items-center justify-center rounded-sm border border-rose-300 bg-white text-rose-700 transition-colors hover:border-rose-500"
+      className="inline-flex h-5 w-5 items-center justify-center rounded-sm border border-rose-300 bg-white text-rose-700 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105 hover:border-rose-500"
       aria-label={ariaLabel}
     >
       {checked ? <Check className="h-3.5 w-3.5" /> : null}
@@ -207,18 +207,22 @@ export default function AdminPaymentsTable({ payments }: AdminPaymentsTableProps
               </tr>
             </thead>
             <tbody className="divide-y divide-rose-100">
-              {visiblePayments.map((payment) => {
+              {visiblePayments.map((payment, index) => {
                 const checked = selectedSet.has(payment.id);
                 const detailHref = payment.href;
+                const revealStyle = {
+                  animationDelay: `${180 + Math.min(index, 8) * 38}ms`,
+                };
 
                 return (
                   <tr
                     key={payment.id}
                     className={cn(
-                      "transition-colors",
+                      "group/row ui-enter-up transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                       detailHref ? "cursor-pointer hover:bg-rose-50/80" : "",
                       checked && "bg-rose-50/50",
                     )}
+                    style={revealStyle}
                     onClick={detailHref ? () => router.push(detailHref) : undefined}
                     role={detailHref ? "link" : undefined}
                     tabIndex={detailHref ? 0 : undefined}
@@ -233,36 +237,36 @@ export default function AdminPaymentsTable({ payments }: AdminPaymentsTableProps
                         : undefined
                     }
                   >
-                    <td className="px-4 py-4 align-middle">
+                    <td className="px-4 py-4 align-middle transition-colors duration-300">
                       <SelectableCheckbox
                         checked={checked}
                         onChange={() => toggleSelected(payment.id)}
                         ariaLabel={`Select payment ${payment.razorpayOrderId}`}
                       />
                     </td>
-                    <td className="px-4 py-4 align-middle">
+                    <td className="px-4 py-4 align-middle transition-colors duration-300">
                       <div>
                         <div className="font-semibold text-slate-900">{payment.user.name ?? payment.user.email}</div>
                         <div className="text-sm text-slate-500">{payment.user.email}</div>
                       </div>
                     </td>
-                    <td className="px-4 py-4 align-middle">
+                    <td className="px-4 py-4 align-middle transition-colors duration-300">
                       <span className="text-sm font-medium text-slate-900">{formatCurrency(payment.amount / 100)}</span>
                     </td>
-                    <td className="px-4 py-4 align-middle">
+                    <td className="px-4 py-4 align-middle transition-colors duration-300">
                       <div className="text-sm text-slate-600">
                         <div>Base: {formatCurrency(payment.baseAmount)}</div>
                         <div>Profile: {formatCurrency(payment.profileAmount)}</div>
                         <div>Chat: {formatCurrency(payment.perProfileChatAmount)}</div>
                       </div>
                     </td>
-                    <td className="px-4 py-4 align-middle">
+                    <td className="px-4 py-4 align-middle transition-colors duration-300">
                       <StatusBadge status={payment.status} />
                     </td>
-                    <td className="px-4 py-4 align-middle">
+                    <td className="px-4 py-4 align-middle transition-colors duration-300">
                       <div className="truncate text-sm text-slate-500">{payment.razorpayOrderId}</div>
                     </td>
-                    <td className="px-4 py-4 align-middle">
+                    <td className="px-4 py-4 align-middle transition-colors duration-300">
                       <div className="whitespace-nowrap text-sm text-slate-500">{formatDate(payment.createdAt)}</div>
                     </td>
                   </tr>
@@ -294,7 +298,7 @@ export default function AdminPaymentsTable({ payments }: AdminPaymentsTableProps
             ref={bulkTriggerRef}
             type="button"
             onClick={() => setBulkOpen((value) => !value)}
-            className="inline-flex h-11 items-center gap-2 rounded-xl border border-rose-100 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-rose-200 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="ui-link-shift inline-flex h-11 items-center gap-2 rounded-xl border border-rose-100 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all duration-300 hover:border-rose-200 hover:bg-rose-50 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
             disabled={selectedCount === 0 || bulkLoading}
           >
             Bulk Actions
@@ -304,7 +308,7 @@ export default function AdminPaymentsTable({ payments }: AdminPaymentsTableProps
             ? createPortal(
                 <div
                   ref={bulkPanelRef}
-                  className="fixed z-[9999] w-56 overflow-hidden rounded-2xl border border-rose-100 bg-white shadow-xl"
+                  className="ui-modal-pop fixed z-[9999] w-56 overflow-hidden rounded-2xl border border-rose-100 bg-white shadow-xl"
                   style={{
                     top: `${bulkMenuPosition.top}px`,
                     left: `${bulkMenuPosition.left}px`,

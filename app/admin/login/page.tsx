@@ -127,35 +127,39 @@ function AdminLoginForm() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 overflow-hidden"
       >
-        <div className="absolute -left-24 bottom-[-8rem] h-[28rem] w-[28rem] rounded-full bg-rose-200/45 blur-3xl" />
-        <div className="absolute -right-24 top-[18rem] h-[24rem] w-[24rem] rounded-full bg-pink-100/70 blur-3xl" />
-        <div className="absolute inset-x-0 bottom-0 h-72 bg-[radial-gradient(circle_at_center,rgba(255,137,173,0.12),transparent_70%)]" />
+        <div className="ui-soft-float absolute -left-24 bottom-[-8rem] h-[28rem] w-[28rem] rounded-full bg-rose-200/45 blur-3xl" />
+        <div className="ui-soft-float absolute -right-24 top-[18rem] h-[24rem] w-[24rem] rounded-full bg-pink-100/70 blur-3xl" style={{ animationDelay: "1.2s" }} />
+        <div className="ui-soft-float absolute inset-x-0 bottom-0 h-72 bg-[radial-gradient(circle_at_center,rgba(255,137,173,0.12),transparent_70%)]" style={{ animationDelay: "0.7s" }} />
         <div className="absolute left-[-8rem] bottom-10 h-[24rem] w-[32rem] rounded-[50%] border border-rose-100/70" />
         <div className="absolute left-[-5rem] bottom-[-3rem] h-[20rem] w-[28rem] rounded-[50%] border border-rose-100/60" />
         <div className="absolute right-[-7rem] bottom-14 h-[18rem] w-[18rem] rounded-full border border-rose-100/60" />
-        <DotPattern className="left-10 bottom-16" />
-        <DotPattern className="right-12 top-10 hidden sm:grid" />
-        <div className="absolute bottom-10 right-6 text-rose-100/90 sm:right-14">
+        <DotPattern className="ui-soft-float left-10 bottom-16" />
+        <DotPattern className="ui-soft-float right-12 top-10 hidden sm:grid" />
+        <div className="ui-soft-float absolute bottom-10 right-6 text-rose-100/90 sm:right-14" style={{ animationDelay: "1.5s" }}>
           <ShieldCheck className="h-28 w-28 sm:h-40 sm:w-40" strokeWidth={1.2} />
         </div>
       </div>
 
       <Link
         href="/"
-        className="group absolute left-4 top-4 z-20 inline-flex items-center gap-2 text-sm font-medium text-rose-500 transition-colors hover:text-rose-600 sm:left-7 sm:top-6"
+        className="group ui-enter-left ui-link-shift absolute left-4 top-4 z-20 inline-flex items-center gap-2 text-sm font-medium text-rose-500 transition-colors hover:text-rose-600 sm:left-7 sm:top-6"
+        style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
       >
-        <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+        <ArrowLeft className="ui-arrow-shift h-4 w-4 transition-transform group-hover:-translate-x-1" />
         <span>Back to website</span>
       </Link>
 
       <div className="relative z-10 mx-auto flex h-full w-full max-w-4xl items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto flex w-full max-w-[560px] flex-col items-center justify-center">
-          <div className="text-center">
+          <div
+            className="ui-enter-up text-center"
+            style={{ animationDelay: "90ms", animationFillMode: "forwards" }}
+          >
             <div className="flex justify-center">
               <SiteLogo
                 src={logoImageUrl}
                 alt="Vivah Bandhan logo"
-                className="h-14 max-w-[320px] sm:h-16 sm:max-w-[420px]"
+                className="ui-soft-float h-14 max-w-[320px] sm:h-16 sm:max-w-[420px]"
               />
             </div>
             <p className="mt-1.5 text-xs font-semibold tracking-[0.34em] text-slate-700 sm:text-sm">
@@ -166,17 +170,23 @@ function AdminLoginForm() {
             </p>
           </div>
 
-          <div className="mt-5 w-full rounded-[1.65rem] border border-white/80 bg-white/85 p-4 shadow-[0_24px_70px_rgba(251,113,133,0.14)] backdrop-blur-xl sm:p-6">
+          <div
+            className="ui-enter-scale mt-5 w-full rounded-[1.65rem] border border-white/80 bg-white/85 p-4 shadow-[0_24px_70px_rgba(251,113,133,0.14)] backdrop-blur-xl sm:p-6"
+            style={{ animationDelay: "160ms", animationFillMode: "forwards" }}
+          >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-[18px]">
-              <div className="mx-auto w-full max-w-[440px]">
+              <div
+                className="ui-enter-up mx-auto w-full max-w-[440px]"
+                style={{ animationDelay: "220ms", animationFillMode: "forwards" }}
+              >
                 <label
                   className="mb-1.5 block text-sm font-semibold text-slate-900"
                   htmlFor="admin-email"
                 >
                   Email or Username
                 </label>
-                <div className="group flex items-center rounded-2xl border border-rose-100 bg-white/90 px-4 shadow-sm transition-all focus-within:border-rose-300 focus-within:shadow-[0_0_0_4px_rgba(251,113,133,0.12)]">
-                  <User className="h-[18px] w-[18px] text-rose-400" />
+                <div className="group ui-card-lift-soft flex items-center rounded-2xl border border-rose-100 bg-white/90 px-4 shadow-sm transition-all focus-within:border-rose-300 focus-within:shadow-[0_0_0_4px_rgba(251,113,133,0.12)]">
+                  <User className="ui-icon-lift h-[18px] w-[18px] text-rose-400" />
                   <input
                     id="admin-email"
                     type="text"
@@ -194,15 +204,18 @@ function AdminLoginForm() {
                 ) : null}
               </div>
 
-              <div className="mx-auto w-full max-w-[440px]">
+              <div
+                className="ui-enter-up mx-auto w-full max-w-[440px]"
+                style={{ animationDelay: "280ms", animationFillMode: "forwards" }}
+              >
                 <label
                   className="mb-1.5 block text-sm font-semibold text-slate-900"
                   htmlFor="admin-password"
                 >
                   Password
                 </label>
-                <div className="group flex items-center rounded-2xl border border-rose-100 bg-white/90 px-4 shadow-sm transition-all focus-within:border-rose-300 focus-within:shadow-[0_0_0_4px_rgba(251,113,133,0.12)]">
-                  <Lock className="h-[18px] w-[18px] text-rose-400" />
+                <div className="group ui-card-lift-soft flex items-center rounded-2xl border border-rose-100 bg-white/90 px-4 shadow-sm transition-all focus-within:border-rose-300 focus-within:shadow-[0_0_0_4px_rgba(251,113,133,0.12)]">
+                  <Lock className="ui-icon-lift h-[18px] w-[18px] text-rose-400" />
                   <input
                     id="admin-password"
                     type={showPassword ? "text" : "password"}
@@ -217,12 +230,12 @@ function AdminLoginForm() {
                     onClick={() => setShowPassword(!showPassword)}
                     suppressHydrationWarning
                     aria-label={showPassword ? "Hide password" : "Show password"}
-                    className="text-slate-400 transition-colors hover:text-slate-600"
+                    className="ui-link-shift text-slate-400 transition-colors hover:text-slate-600"
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
+                      <EyeOff className="ui-icon-lift h-5 w-5" />
                     ) : (
-                      <Eye className="h-5 w-5" />
+                      <Eye className="ui-icon-lift h-5 w-5" />
                     )}
                   </button>
                 </div>
@@ -237,7 +250,8 @@ function AdminLoginForm() {
                 type="submit"
                 disabled={isSubmitting}
                 suppressHydrationWarning
-                className="mx-auto flex w-full max-w-[440px] items-center justify-center gap-3 rounded-2xl bg-[#f44b5e] px-6 py-3 text-base font-semibold text-white shadow-[0_16px_30px_rgba(244,75,94,0.22)] transition-all hover:-translate-y-0.5 hover:bg-[#eb4155] hover:shadow-[0_20px_36px_rgba(244,75,94,0.28)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70"
+                className="ui-enter-up ui-link-shift mx-auto flex w-full max-w-[440px] items-center justify-center gap-3 rounded-2xl bg-[#f44b5e] px-6 py-3 text-base font-semibold text-white shadow-[0_16px_30px_rgba(244,75,94,0.22)] transition-all hover:-translate-y-0.5 hover:bg-[#eb4155] hover:shadow-[0_20px_36px_rgba(244,75,94,0.28)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70"
+                style={{ animationDelay: "340ms", animationFillMode: "forwards" }}
               >
                 {isSubmitting ? (
                   <>
@@ -247,13 +261,16 @@ function AdminLoginForm() {
                 ) : (
                   <>
                     Sign In to Dashboard
-                    <ArrowRight className="h-5 w-5" />
+                    <ArrowRight className="ui-arrow-shift h-5 w-5" />
                   </>
                 )}
               </button>
             </form>
 
-            <div className="my-5 flex items-center gap-4">
+            <div
+              className="ui-enter-up my-5 flex items-center gap-4"
+              style={{ animationDelay: "390ms", animationFillMode: "forwards" }}
+            >
               <div className="h-px flex-1 bg-slate-200" />
               <span className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">
                 Or
@@ -261,9 +278,12 @@ function AdminLoginForm() {
               <div className="h-px flex-1 bg-slate-200" />
             </div>
 
-            <div className="grid gap-2.5 rounded-2xl border border-rose-100/70 bg-gradient-to-r from-rose-50 via-white to-rose-50 p-3 sm:grid-cols-3">
-              <div className="flex items-start gap-3 sm:border-r sm:border-rose-100 sm:pr-3">
-                <ShieldCheck className="mt-0.5 h-[18px] w-[18px] flex-none text-rose-500" />
+            <div
+              className="ui-enter-up grid gap-2.5 rounded-2xl border border-rose-100/70 bg-gradient-to-r from-rose-50 via-white to-rose-50 p-3 sm:grid-cols-3"
+              style={{ animationDelay: "440ms", animationFillMode: "forwards" }}
+            >
+              <div className="ui-card-lift-soft flex items-start gap-3 rounded-xl sm:border-r sm:border-rose-100 sm:pr-3">
+                <ShieldCheck className="ui-icon-lift mt-0.5 h-[18px] w-[18px] flex-none text-rose-500" />
                 <div>
                   <p className="text-[13px] font-semibold text-slate-900 sm:text-sm">
                     Secure Access
@@ -274,8 +294,8 @@ function AdminLoginForm() {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 sm:border-r sm:border-rose-100 sm:px-3">
-                <BarChart3 className="mt-0.5 h-[18px] w-[18px] flex-none text-rose-500" />
+              <div className="ui-card-lift-soft flex items-start gap-3 rounded-xl sm:border-r sm:border-rose-100 sm:px-3">
+                <BarChart3 className="ui-icon-lift mt-0.5 h-[18px] w-[18px] flex-none text-rose-500" />
                 <div>
                   <p className="text-[13px] font-semibold text-slate-900 sm:text-sm">
                     Powerful Analytics
@@ -286,8 +306,8 @@ function AdminLoginForm() {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 sm:pl-3">
-                <Users className="mt-0.5 h-[18px] w-[18px] flex-none text-rose-500" />
+              <div className="ui-card-lift-soft flex items-start gap-3 rounded-xl sm:pl-3">
+                <Users className="ui-icon-lift mt-0.5 h-[18px] w-[18px] flex-none text-rose-500" />
                 <div>
                   <p className="text-[13px] font-semibold text-slate-900 sm:text-sm">
                     User Management
@@ -303,7 +323,10 @@ function AdminLoginForm() {
         </div>
       </div>
 
-      <p className="absolute inset-x-0 bottom-3 z-20 text-center text-[11px] text-slate-500 sm:bottom-4 sm:text-xs">
+      <p
+        className="ui-enter-up absolute inset-x-0 bottom-3 z-20 text-center text-[11px] text-slate-500 sm:bottom-4 sm:text-xs"
+        style={{ animationDelay: "500ms", animationFillMode: "forwards" }}
+      >
         &copy; <span suppressHydrationWarning>{new Date().getFullYear()}</span>{" "}
         Vivah Bandhan Administration System. All rights reserved.
       </p>

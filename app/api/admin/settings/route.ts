@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
@@ -128,6 +129,8 @@ export async function PUT(req: NextRequest) {
         ...updateData,
       },
     });
+
+    revalidateTag("admin-settings", "max");
 
     return NextResponse.json({ settings });
   } catch (error) {

@@ -73,9 +73,9 @@ export default function DashboardWelcomeIntro({
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/55 px-4 py-8 backdrop-blur-sm">
-      <div className="w-full max-w-xl rounded-[32px] border border-rose-100 bg-white p-8 shadow-[0_28px_100px_rgba(15,23,42,0.22)] sm:p-10">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-rose-500 to-pink-500 text-white shadow-lg">
+    <div className="ui-overlay-fade fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/55 px-4 py-8 backdrop-blur-sm">
+      <div className="ui-modal-pop w-full max-w-xl rounded-[32px] border border-rose-100 bg-white p-8 shadow-[0_28px_100px_rgba(15,23,42,0.22)] sm:p-10">
+        <div className="ui-soft-float mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-rose-500 to-pink-500 text-white shadow-lg">
           <Sparkles className="h-7 w-7" />
         </div>
 
@@ -104,7 +104,7 @@ export default function DashboardWelcomeIntro({
           type="button"
           onClick={handleNext}
           disabled={isPending}
-          className="mt-10 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-70"
+          className="ui-link-shift mt-10 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isPending ? "Saving..." : currentIntroStep.actionLabel}
         </button>

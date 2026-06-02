@@ -175,32 +175,40 @@ export default function MatchesPageClient({
 
   if (matches.length === 0) {
     return (
-      <EmptyState
-        icon="heart"
-        title={
-          unlockedMatchesCount > 0
-            ? "No pending mutual interests to unlock"
-            : "No mutual interests yet"
-        }
-        description={
-          unlockedMatchesCount > 0
-            ? "Profiles you unlocked have been moved to Unlocked Profiles."
-            : "Start liking profiles that interest you. When they like you back, you'll see a mutual interest here!"
-        }
-        action={{
-          label: unlockedMatchesCount > 0 ? "View Unlocked Profiles" : "Browse Profiles",
-          href: unlockedMatchesCount > 0 ? "/dashboard/unlocked" : "/dashboard/browse",
-        }}
-      />
+      <div
+        className="ui-enter-scale"
+        style={{ animationDelay: "80ms", animationFillMode: "forwards" }}
+      >
+        <EmptyState
+          icon="heart"
+          title={
+            unlockedMatchesCount > 0
+              ? "No pending mutual interests to unlock"
+              : "No mutual interests yet"
+          }
+          description={
+            unlockedMatchesCount > 0
+              ? "Profiles you unlocked have been moved to Unlocked Profiles."
+              : "Start liking profiles that interest you. When they like you back, you'll see a mutual interest here!"
+          }
+          action={{
+            label: unlockedMatchesCount > 0 ? "View Unlocked Profiles" : "Browse Profiles",
+            href: unlockedMatchesCount > 0 ? "/dashboard/unlocked" : "/dashboard/browse",
+          }}
+        />
+      </div>
     );
   }
 
   return (
     <div className="space-y-8">
       <section className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-        <div className="space-y-3">
+        <div
+          className="ui-enter-up space-y-3"
+          style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
+        >
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 text-rose-500 shadow-sm">
+            <div className="ui-soft-float flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 text-rose-500 shadow-sm">
               <HeartHandshake className="h-5 w-5" />
             </div>
             <h1 className="font-display text-[1.75rem] font-bold tracking-tight text-slate-900">
@@ -212,8 +220,11 @@ export default function MatchesPageClient({
           </p>
         </div>
 
-        <div className="flex w-full flex-col gap-3 sm:flex-row xl:max-w-[520px]">
-          <label className="relative block flex-1">
+        <div
+          className="ui-enter-right flex w-full flex-col gap-3 sm:flex-row xl:max-w-[520px]"
+          style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
+        >
+          <label className="ui-card-lift-soft relative block flex-1 rounded-[18px]">
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
@@ -228,14 +239,14 @@ export default function MatchesPageClient({
             <button
               type="button"
               onClick={() => setShowFilterMenu((current) => !current)}
-              className="inline-flex h-12 w-12 items-center justify-center rounded-[14px] border border-rose-100 bg-white text-slate-700 shadow-sm transition-colors hover:border-rose-200 hover:text-rose-600"
+              className="ui-link-shift inline-flex h-12 w-12 items-center justify-center rounded-[14px] border border-rose-100 bg-white text-slate-700 shadow-sm transition-colors hover:border-rose-200 hover:text-rose-600"
               aria-label="Open filters"
             >
               <SlidersHorizontal className="h-4.5 w-4.5" />
             </button>
 
             {showFilterMenu ? (
-              <div className="absolute right-0 top-14 z-20 min-w-[180px] overflow-hidden rounded-2xl border border-rose-100 bg-white py-2 shadow-[0_16px_40px_rgba(15,23,42,0.12)]">
+              <div className="ui-enter-up absolute right-0 top-14 z-20 min-w-[180px] overflow-hidden rounded-2xl border border-rose-100 bg-white py-2 shadow-[0_16px_40px_rgba(15,23,42,0.12)]">
                 {[
                   { key: "all", label: "All Mutual Interests" },
                   { key: "recent", label: "Recent Mutual Interests" },
@@ -247,7 +258,7 @@ export default function MatchesPageClient({
                       setActiveFilter(option.key as FilterKey);
                       setShowFilterMenu(false);
                     }}
-                    className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-sm font-medium transition-colors ${
+                    className={`ui-link-shift flex w-full items-center justify-between px-4 py-2.5 text-left text-sm font-medium transition-colors ${
                       activeFilter === option.key
                         ? "bg-rose-50 text-rose-600"
                         : "text-slate-700 hover:bg-rose-50 hover:text-rose-600"
@@ -266,7 +277,10 @@ export default function MatchesPageClient({
       </section>
 
       {filteredMatches.length === 0 ? (
-        <section className="rounded-[28px] border border-rose-100 bg-white px-6 py-10 text-center shadow-sm">
+        <section
+          className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 bg-white px-6 py-10 text-center shadow-sm"
+          style={{ animationDelay: "160ms", animationFillMode: "forwards" }}
+        >
           <h2 className="font-display text-[1.55rem] font-bold text-slate-900">
             No mutual interests found
           </h2>
@@ -277,28 +291,39 @@ export default function MatchesPageClient({
       ) : (
         <>
           <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {visibleMatches.map((match) => (
-              <MatchProfileCard
+            {visibleMatches.map((match, index) => (
+              <div
                 key={match.id}
-                matchId={match.id}
-                profile={match.otherProfile}
-                isUnlocked={match.isUnlocked}
-                baseAmount={pricing.baseAmount}
-                profileAmount={pricing.profileAmount}
-                perProfileChatAmount={pricing.perProfileChatAmount}
-                onUnlock={(id) => setUnlockMatchId(id)}
-              />
+                className="ui-enter-scale"
+                style={{
+                  animationDelay: `${140 + (index % 8) * 55}ms`,
+                  animationFillMode: "forwards",
+                }}
+              >
+                <MatchProfileCard
+                  matchId={match.id}
+                  profile={match.otherProfile}
+                  isUnlocked={match.isUnlocked}
+                  baseAmount={pricing.baseAmount}
+                  profileAmount={pricing.profileAmount}
+                  perProfileChatAmount={pricing.perProfileChatAmount}
+                  onUnlock={(id) => setUnlockMatchId(id)}
+                />
+              </div>
             ))}
           </section>
 
           {canLoadMore ? (
-            <div className="flex justify-center">
+            <div
+              className="ui-enter-up flex justify-center"
+              style={{ animationDelay: "200ms", animationFillMode: "forwards" }}
+            >
               <button
                 type="button"
                 onClick={() =>
                   setVisibleCount((current) => current + LOAD_MORE_COUNT)
                 }
-                className="inline-flex items-center justify-center gap-2 rounded-[16px] border border-rose-100 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:border-rose-200 hover:text-rose-600"
+                className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-[16px] border border-rose-100 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:border-rose-200 hover:text-rose-600"
               >
                 Load More
                 <RefreshCw className="h-4.5 w-4.5" />
@@ -308,9 +333,12 @@ export default function MatchesPageClient({
         </>
       )}
 
-      <section className="flex flex-col gap-5 rounded-[28px] border border-rose-100/80 bg-white px-6 py-5 shadow-sm md:flex-row md:items-center md:justify-between">
+      <section
+        className="ui-enter-up ui-card-lift-soft flex flex-col gap-5 rounded-[28px] border border-rose-100/80 bg-white px-6 py-5 shadow-sm md:flex-row md:items-center md:justify-between"
+        style={{ animationDelay: "240ms", animationFillMode: "forwards" }}
+      >
         <div className="flex items-start gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+          <div className="ui-icon-lift flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
             <ShieldCheck className="h-6 w-6" />
           </div>
           <div>
@@ -326,10 +354,10 @@ export default function MatchesPageClient({
 
         <Link
           href="/privacy"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-rose-500 transition-colors hover:text-rose-600"
+          className="ui-link-shift inline-flex items-center gap-2 text-sm font-semibold text-rose-500 transition-colors hover:text-rose-600"
         >
           Know more about safety
-          <ChevronDown className="h-4 w-4 -rotate-90" />
+          <ChevronDown className="ui-arrow-shift h-4 w-4 -rotate-90" />
         </Link>
       </section>
 

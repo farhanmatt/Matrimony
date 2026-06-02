@@ -29,14 +29,14 @@ export default function ProfileDetailGallery({
 
   return (
     <div>
-      <div className="overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_16px_38px_rgba(15,23,42,0.08)]">
+      <div className="ui-card-lift-soft overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_16px_38px_rgba(15,23,42,0.08)]">
         <div className="relative aspect-[11/10] w-full bg-[linear-gradient(180deg,#fff7f9_0%,#fff1f5_100%)]">
           {activePhoto ? (
             <Image
               src={activePhoto}
               alt={`${name} profile photo`}
               fill
-              className="object-cover"
+              className="ui-media-zoom object-cover"
               style={{ objectPosition: "center 12%" }}
               sizes="(max-width: 1024px) 100vw, 360px"
               priority
@@ -57,7 +57,7 @@ export default function ProfileDetailGallery({
             </div>
           ) : null}
 
-          <div className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-rose-500 shadow-[0_12px_26px_rgba(15,23,42,0.16)]">
+          <div className="ui-icon-lift absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-rose-500 shadow-[0_12px_26px_rgba(15,23,42,0.16)]">
             <Heart className="h-5 w-5" />
           </div>
 
@@ -82,7 +82,7 @@ export default function ProfileDetailGallery({
                       key={`${photoUrl}-${index}`}
                       type="button"
                       onClick={() => setActivePhoto(photoUrl)}
-                      className={`group relative aspect-[4/5] overflow-hidden rounded-[10px] border bg-white transition-all ${
+                      className={`ui-card-lift-soft group relative aspect-[4/5] overflow-hidden rounded-[10px] border bg-white transition-all ${
                         isActive
                           ? "border-rose-300 ring-2 ring-rose-100"
                           : "border-gray-200 hover:border-rose-200"
@@ -93,7 +93,7 @@ export default function ProfileDetailGallery({
                         src={photoUrl}
                         alt={`${name} thumbnail ${index + 1}`}
                         fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                        className="ui-media-zoom object-cover"
                         style={{ objectPosition: "center 12%" }}
                         sizes="96px"
                         unoptimized
@@ -107,14 +107,14 @@ export default function ProfileDetailGallery({
                 <button
                   type="button"
                   onClick={() => setActivePhoto(photoUrls[4])}
-                  className="group relative aspect-[4/5] overflow-hidden rounded-[10px] border border-gray-200 bg-white"
+                  className="ui-card-lift-soft group relative aspect-[4/5] overflow-hidden rounded-[10px] border border-gray-200 bg-white"
                   aria-label={`View ${extraPhotoCount} more photos`}
                 >
                   <Image
                     src={photoUrls[4]}
                     alt={`${name} more photos`}
                     fill
-                    className="object-cover"
+                    className="ui-media-zoom object-cover"
                     style={{ objectPosition: "center 12%" }}
                     sizes="96px"
                     unoptimized
@@ -129,8 +129,8 @@ export default function ProfileDetailGallery({
             </div>
           </div>
         ) : (
-          <div className="border-t border-dashed border-rose-200 bg-white/90 px-4 py-5 text-center text-sm text-gray-500">
-            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-rose-50 text-rose-400">
+          <div className="ui-card-lift-soft border-t border-dashed border-rose-200 bg-white/90 px-4 py-5 text-center text-sm text-gray-500">
+            <div className="ui-icon-lift mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-rose-50 text-rose-400">
               <ImageIcon className="h-4.5 w-4.5" />
             </div>
             More photos will appear here when available.

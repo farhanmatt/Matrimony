@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "./providers";
-import { prisma } from "@/lib/prisma";
-import { unstable_noStore as noStore } from "next/cache";
+import { getCachedSiteBranding } from "@/lib/server/site-content";
 import { resolveAllowedImageSrc } from "@/lib/utils/image";
-
-export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -63,15 +60,13 @@ export const metadata: Metadata = {
 };
 
 async function getLogoImageUrl() {
-  noStore();
-
   try {
-    const settings = await prisma.adminSettings.findUnique({
-      where: { id: "singleton" },
-      select: { logoImageUrl: true },
-    });
+    const settings = await getCachedSiteBranding();
 
-    return resolveAllowedImageSrc(settings?.logoImageUrl ?? "", "/default-logo.svg") ?? "/default-logo.svg";
+    return (
+      resolveAllowedImageSrc(settings.logoImageUrl, "/default-logo.svg") ??
+      "/default-logo.svg"
+    );
   } catch {
     return "/default-logo.svg";
   }

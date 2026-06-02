@@ -4,11 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bell, Heart, MapPin, MessageCircle } from "lucide-react";
+import { useAutoRefresh } from "@/lib/hooks/useAutoRefresh";
 import { getInitials } from "@/lib/utils/helpers";
 import type { DashboardNotificationItem } from "@/lib/utils/notifications";
 
 const NOTIFICATIONS_SEEN_STORAGE_KEY = "vivah-dashboard-notifications-seen-at";
 const NOTIFICATIONS_SEEN_EVENT = "vivah-dashboard-notifications-seen-updated";
+const NOTIFICATION_PANEL_EXIT_MS = 240;
+const NOTIFICATION_REFRESH_INTERVAL_MS = 30_000;
 
 function formatNotificationDate(value: string) {
   return new Intl.DateTimeFormat("en-IN", {
@@ -95,6 +98,7 @@ export default function NotificationBell({
   compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [panelVisible, setPanelVisible] = useState(false);
   const [notifications, setNotifications] = useState(initialNotifications);
   const [profileId, setProfileId] = useState<string | null>(initialProfileId);
   const [seenAt, setSeenAt] = useState<string | null>(null);
@@ -192,22 +196,9 @@ export default function NotificationBell({
     void refreshNotifications();
   }, [refreshNotifications]);
 
-  useEffect(() => {
-    const eventSource = new EventSource("/api/notifications/stream");
-
-    const handleNotification = () => {
-      void refreshNotifications();
-    };
-
-    eventSource.addEventListener("notification", handleNotification);
-    eventSource.addEventListener("ready", handleNotification);
-
-    return () => {
-      eventSource.removeEventListener("notification", handleNotification);
-      eventSource.removeEventListener("ready", handleNotification);
-      eventSource.close();
-    };
-  }, [refreshNotifications]);
+  useAutoRefresh(refreshNotifications, {
+    intervalMs: NOTIFICATION_REFRESH_INTERVAL_MS,
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -243,6 +234,23 @@ export default function NotificationBell({
     markNotificationsSeen(notifications);
   }, [markNotificationsSeen, notifications, open]);
 
+  useEffect(() => {
+    if (open) {
+      setPanelVisible(true);
+      return;
+    }
+
+    if (!panelVisible) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setPanelVisible(false);
+    }, NOTIFICATION_PANEL_EXIT_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [open, panelVisible]);
+
   const notificationCount = useMemo(() => {
     if (!seenAt) {
       return notifications.length;
@@ -268,7 +276,7 @@ export default function NotificationBell({
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className={`group inline-flex items-center text-sm font-semibold text-gray-700 transition-all hover:text-rose-600 ${
+        className={`group inline-flex items-center text-sm font-semibold text-gray-700 transition-all ui-link-shift hover:text-rose-600 ${
           compact
             ? "relative h-10 w-10 justify-center rounded-full border border-transparent bg-transparent p-0 text-gray-500 hover:bg-rose-50"
             : "gap-3 rounded-2xl border border-white/80 bg-white px-4 py-3 shadow-sm hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md"
@@ -278,13 +286,13 @@ export default function NotificationBell({
         aria-label="Open notifications"
       >
         <div
-          className={`relative flex items-center justify-center text-rose-500 ${
+          className={`relative flex items-center justify-center text-rose-500 ui-icon-lift ${
             compact
               ? "h-5 w-5 rounded-none bg-transparent group-hover:bg-transparent"
               : "h-11 w-11 rounded-2xl bg-rose-50 transition-colors group-hover:bg-rose-100"
           }`}
         >
-          <Bell className="h-5 w-5" />
+          <Bell className="h-5 w-5 transition-transform duration-300 group-hover:scale-105" />
           {notificationCount > 0 ? (
             <span
               className={`absolute inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white ${
@@ -307,15 +315,25 @@ export default function NotificationBell({
         ) : null}
       </button>
 
-      {open ? (
+      {panelVisible ? (
         <div
           role="dialog"
           aria-label="Your notifications"
-          className="absolute right-0 top-[calc(100%+12px)] z-30 w-[min(92vw,400px)] overflow-hidden rounded-[28px] border border-rose-100 bg-white shadow-2xl shadow-rose-100/60"
+          aria-hidden={!open}
+          className={`absolute right-0 top-[calc(100%+12px)] z-30 w-[min(92vw,400px)] origin-top-right overflow-hidden rounded-[28px] border border-rose-100 bg-white shadow-2xl shadow-rose-100/60 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            open
+              ? "translate-y-0 scale-100 opacity-100"
+              : "pointer-events-none -translate-y-2 scale-95 opacity-0"
+          }`}
         >
-          <div className="border-b border-rose-100 bg-gradient-to-r from-rose-50 to-pink-50 px-5 py-4">
+          <div
+            className={`border-b border-rose-100 bg-gradient-to-r from-rose-50 to-pink-50 px-5 py-4 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              open ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
+            }`}
+            style={{ transitionDelay: open ? "60ms" : "0ms" }}
+          >
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-rose-500 shadow-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-rose-500 shadow-sm ui-icon-lift">
                 <Bell className="h-4.5 w-4.5" />
               </div>
               <div>
@@ -330,8 +348,13 @@ export default function NotificationBell({
           </div>
 
           {visibleNotifications.length === 0 ? (
-            <div className="px-6 py-10 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-300">
+            <div
+              className={`px-6 py-10 text-center transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                open ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
+              }`}
+              style={{ transitionDelay: open ? "90ms" : "0ms" }}
+            >
+              <div className="ui-soft-float mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-300">
                 <Bell className="h-7 w-7" />
               </div>
               <p className="font-semibold text-gray-900">No new notifications</p>
@@ -340,8 +363,13 @@ export default function NotificationBell({
               </p>
             </div>
           ) : (
-            <div className="max-h-[28rem] overflow-y-auto p-2 custom-scrollbar">
-              {visibleNotifications.map((item) => {
+            <div
+              className={`max-h-[28rem] overflow-y-auto p-2 custom-scrollbar transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                open ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
+              }`}
+              style={{ transitionDelay: open ? "80ms" : "0ms" }}
+            >
+              {visibleNotifications.map((item, index) => {
                 const accent = getNotificationAccent(item.kind);
                 const AccentIcon = accent.icon;
 
@@ -350,20 +378,26 @@ export default function NotificationBell({
                     key={item.id}
                     href={item.href}
                     onClick={() => setOpen(false)}
-                    className="flex items-start gap-3 rounded-2xl px-3 py-3 transition-colors hover:bg-rose-50/70"
+                    tabIndex={open ? 0 : -1}
+                    className={`group ui-card-lift-soft flex items-start gap-3 rounded-2xl px-3 py-3 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-rose-50/70 ${
+                      open ? "translate-x-0 opacity-100" : "translate-x-3 opacity-0"
+                    }`}
+                    style={{
+                      transitionDelay: open ? `${110 + index * 35}ms` : "0ms",
+                    }}
                   >
                     {item.actorImageUrl ? (
-                      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-rose-100">
+                      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-rose-100 ui-icon-lift">
                         <Image
                           src={item.actorImageUrl}
                           alt={item.actorName}
                           fill
-                          className="object-cover"
+                          className="object-cover ui-media-zoom"
                           sizes="48px"
                         />
                       </div>
                     ) : (
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-400 to-pink-500 text-sm font-bold text-white">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-400 to-pink-500 text-sm font-bold text-white ui-icon-lift">
                         {getInitials(item.actorName)}
                       </div>
                     )}

@@ -348,22 +348,28 @@ function ProfileInfoCard({
   title,
   rows,
   footer,
+  delayMs = 0,
 }: {
   id?: string;
   icon: ReactNode;
   title: string;
   rows: { label: string; value?: ReactNode }[];
   footer?: ReactNode;
+  delayMs?: number;
 }) {
   const visibleRows = rows.filter((row) => hasValue(row.value));
 
   return (
     <section
       id={id}
-      className="scroll-mt-28 h-full overflow-hidden rounded-[20px] border border-rose-100/70 bg-white shadow-[0_14px_34px_rgba(15,23,42,0.05)]"
+      className="ui-enter-up ui-card-lift-soft scroll-mt-28 h-full overflow-hidden rounded-[20px] border border-rose-100/70 bg-white shadow-[0_14px_34px_rgba(15,23,42,0.05)]"
+      style={{
+        animationDelay: `${delayMs}ms`,
+        animationFillMode: "forwards",
+      }}
     >
       <div className="flex items-center gap-3 px-5 pt-5">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+        <div className="ui-icon-lift flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
           {icon}
         </div>
         <h2 className="font-display text-[1.18rem] font-bold text-gray-900">
@@ -605,9 +611,9 @@ export default async function ProfileDetailsPage({
 
   if (dbUnavailable) {
     return (
-      <div className="rounded-3xl border border-amber-200 bg-white p-6 shadow-sm sm:p-8">
+      <div className="ui-enter-scale ui-card-lift-soft rounded-3xl border border-amber-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 shrink-0">
+          <div className="ui-soft-float flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
             <DatabaseZap className="h-7 w-7" />
           </div>
           <div className="flex-1">
@@ -623,14 +629,14 @@ export default async function ProfileDetailsPage({
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
                 href={`/dashboard/profile/${id}`}
-                className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-600"
+                className="ui-link-shift inline-flex items-center gap-2 rounded-full bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-600"
               >
                 <RefreshCw className="h-4 w-4" />
                 Retry
               </Link>
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-rose-300 hover:text-rose-600"
+                className="ui-link-shift inline-flex items-center gap-2 rounded-full border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-rose-300 hover:text-rose-600"
               >
                 Back to dashboard
               </Link>
@@ -718,10 +724,13 @@ export default async function ProfileDetailsPage({
 
   return (
     <div className="mx-auto max-w-[1500px] space-y-6">
-      <div className="flex items-center">
+      <div
+        className="ui-enter-up flex items-center"
+        style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
+      >
         <Link
           href={backHref}
-          className="inline-flex items-center gap-2 text-[15px] font-medium text-slate-600 transition-colors hover:text-rose-600"
+          className="ui-link-shift inline-flex items-center gap-2 text-[15px] font-medium text-slate-600 transition-colors hover:text-rose-600"
         >
           <ArrowLeft className="h-4 w-4" />
           {backLabel}
@@ -730,15 +739,23 @@ export default async function ProfileDetailsPage({
 
       <div className="grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
         <div className="space-y-5 self-start xl:sticky xl:top-[92px]">
-          <ProfileDetailGallery
-            name={profile.fullName}
-            photoUrls={photoUrls}
-            isNew={showNewBadge}
-            isOnline={showOnlineBadge}
-            extraPhotoCount={extraPhotoCount}
-          />
+          <div
+            className="ui-enter-left"
+            style={{ animationDelay: "90ms", animationFillMode: "forwards" }}
+          >
+            <ProfileDetailGallery
+              name={profile.fullName}
+              photoUrls={photoUrls}
+              isNew={showNewBadge}
+              isOnline={showOnlineBadge}
+              extraPhotoCount={extraPhotoCount}
+            />
+          </div>
 
-          <section className="rounded-[20px] border border-rose-100 bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.05)]">
+          <section
+            className="ui-enter-left ui-card-lift-soft rounded-[20px] border border-rose-100 bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.05)]"
+            style={{ animationDelay: "150ms", animationFillMode: "forwards" }}
+          >
             <div className="text-[1.06rem] font-semibold text-slate-900">
               <span className="font-bold text-rose-600">
                 {profileCompletionScore}%
@@ -748,7 +765,7 @@ export default async function ProfileDetailsPage({
 
             <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-rose-100">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-rose-500 to-pink-500"
+                className="h-full rounded-full bg-gradient-to-r from-rose-500 to-pink-500 transition-all duration-700"
                 style={{ width: `${profileCompletionScore}%` }}
               />
             </div>
@@ -771,7 +788,10 @@ export default async function ProfileDetailsPage({
         </div>
 
         <div className="space-y-5">
-          <section className="relative z-10 overflow-visible rounded-[10px] border border-rose-100/70 bg-white shadow-[0_14px_36px_rgba(15,23,42,0.05)]">
+          <section
+            className="ui-enter-up ui-card-lift-soft relative z-10 overflow-visible rounded-[10px] border border-rose-100/70 bg-white shadow-[0_14px_36px_rgba(15,23,42,0.05)]"
+            style={{ animationDelay: "110ms", animationFillMode: "forwards" }}
+          >
             <div className="p-6 sm:p-7">
               <div className="flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1fr)_336px] xl:items-end">
                 <div className="min-w-0 flex-1">
@@ -779,7 +799,7 @@ export default async function ProfileDetailsPage({
                     <h1 className="font-display text-[2.2rem] font-bold leading-[0.95] tracking-[-0.03em] text-slate-900 sm:text-[2.75rem]">
                       {profile.fullName}, {age}
                     </h1>
-                    <BadgeCheck className="h-5 w-5 text-emerald-500" />
+                    <BadgeCheck className="ui-icon-lift h-5 w-5 text-emerald-500" />
                     {heroBadgeLabel ? (
                       <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600">
                         {heroBadgeLabel}
@@ -834,13 +854,16 @@ export default async function ProfileDetailsPage({
             </div>
           </section>
 
-          <section className="overflow-hidden rounded-[20px] border border-rose-100/70 bg-white shadow-[0_14px_36px_rgba(15,23,42,0.05)]">
+          <section
+            className="ui-enter-up ui-card-lift-soft overflow-hidden rounded-[20px] border border-rose-100/70 bg-white shadow-[0_14px_36px_rgba(15,23,42,0.05)]"
+            style={{ animationDelay: "180ms", animationFillMode: "forwards" }}
+          >
             <div className="flex flex-wrap items-center gap-8 border-b border-gray-100 px-5 sm:px-6">
               {sectionLinks.map((section, index) => (
                 <a
                   key={section.id}
                   href={`#${section.id}`}
-                  className={`-mb-px border-b-2 pb-4 pt-5 text-[15px] font-medium transition-colors ${
+                  className={`ui-link-shift -mb-px border-b-2 pb-4 pt-5 text-[15px] font-medium transition-colors ${
                     index === 0
                       ? "border-rose-500 text-rose-600"
                       : "border-transparent text-slate-500 hover:text-rose-600"
@@ -857,6 +880,7 @@ export default async function ProfileDetailsPage({
                   id="about"
                   icon={<Info className="h-5 w-5" />}
                   title="Basic Information"
+                  delayMs={220}
                   rows={[
                     { label: "Gender", value: GENDER_LABELS[profile.gender] },
                     { label: "Age", value: `${age} years` },
@@ -899,6 +923,7 @@ export default async function ProfileDetailsPage({
                   id="family"
                   icon={<Users className="h-5 w-5" />}
                   title="Family Details"
+                  delayMs={280}
                   rows={[
                     { label: "Father's Name", value: profile.fatherName },
                     { label: "Mother's Name", value: profile.motherName },
@@ -926,6 +951,7 @@ export default async function ProfileDetailsPage({
                   id="education"
                   icon={<Briefcase className="h-5 w-5" />}
                   title="Education & Career"
+                  delayMs={340}
                   rows={[
                     { label: "Education", value: profile.education },
                     { label: "Course", value: profile.course },
@@ -939,6 +965,7 @@ export default async function ProfileDetailsPage({
                   id="lifestyle"
                   icon={<Leaf className="h-5 w-5" />}
                   title="Lifestyle"
+                  delayMs={400}
                   rows={[
                     { label: "Diet", value: profile.diet },
                     { label: "Smoking", value: profile.smoking },
@@ -959,6 +986,7 @@ export default async function ProfileDetailsPage({
                   id="culture"
                   icon={<Globe2 className="h-5 w-5" />}
                   title="Religious & Cultural Background"
+                  delayMs={460}
                   rows={[
                     { label: "Religion", value: profile.religion },
                     { label: "Caste", value: profile.caste },
@@ -974,6 +1002,7 @@ export default async function ProfileDetailsPage({
                     id="horoscope"
                     icon={<Sparkles className="h-5 w-5" />}
                     title="Horoscope Details"
+                    delayMs={520}
                     footer={
                       profile.horoscopeImage ? (
                         <a

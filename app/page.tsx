@@ -1,14 +1,9 @@
 import type { Metadata } from "next";
 import FullLandingPage from "@/components/landing/FullLandingPage";
-import { prisma } from "@/lib/prisma";
-import { unstable_noStore as noStore } from "next/cache";
 import {
-  isDatabaseConnectionError,
-  isPrismaMissingTableError,
-} from "@/lib/utils/errors";
-import { calculateAge } from "@/lib/utils/helpers";
-
-export const dynamic = "force-dynamic";
+  getCachedFeaturedProfiles,
+  getCachedSiteBranding,
+} from "@/lib/server/site-content";
 export const runtime = "nodejs";
 
 export const metadata: Metadata = {
@@ -36,104 +31,15 @@ export const metadata: Metadata = {
   },
 };
 
-function maskFirstName(fullName: string) {
-  const firstName = fullName.trim().split(/\s+/)[0] ?? "";
-
-  if (firstName.length <= 1) {
-    return firstName;
-  }
-
-  if (firstName.length === 2) {
-    return `${firstName[0]}*`;
-  }
-
-  return `${firstName[0]}${"*".repeat(Math.max(2, firstName.length - 2))}${firstName[firstName.length - 1]}`;
-}
-
-function formatProfileLocation(profile: {
-  city: string | null;
-  state: string | null;
-  location: string | null;
-}) {
-  const place = [profile.city, profile.state].filter(Boolean).join(", ");
-  return place || profile.location || "India";
-}
-
-async function getFeaturedProfiles() {
-  try {
-    const profiles = await prisma.profile.findMany({
-      where: { status: "ACTIVE" },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-      select: {
-        id: true,
-        fullName: true,
-        dateOfBirth: true,
-        location: true,
-        city: true,
-        state: true,
-        profileImage: true,
-        photos: {
-          where: { isPrimary: true },
-          take: 1,
-          select: { url: true, isPrimary: true },
-        },
-      },
-    });
-
-    return {
-      featuredProfiles: profiles.map((profile) => ({
-        id: profile.id,
-        displayName: maskFirstName(profile.fullName),
-        age: calculateAge(profile.dateOfBirth),
-        location: formatProfileLocation(profile),
-        imageUrl: profile.profileImage ?? profile.photos[0]?.url ?? null,
-      })),
-      featuredProfilesUnavailable: false,
-    };
-  } catch (error) {
-    if (isDatabaseConnectionError(error) || isPrismaMissingTableError(error)) {
-      console.warn(
-        "Featured profiles are temporarily unavailable because the database is not ready.",
-        error
-      );
-
-      return {
-        featuredProfiles: [],
-        featuredProfilesUnavailable: true,
-      };
-    }
-
-    throw error;
-  }
-}
-
-async function getLandingHeroImage() {
-  noStore();
-
-  try {
-    const settings = await prisma.adminSettings.findUnique({
-      where: { id: "singleton" },
-      select: { heroImageUrl: true },
-    });
-
-    return settings?.heroImageUrl?.trim() || "/main.jpeg";
-  } catch {
-    return "/main.jpeg";
-  }
-}
-
 export default async function HomePage() {
-  noStore();
-
-  const [{ featuredProfiles, featuredProfilesUnavailable }, heroImageUrl] =
-    await Promise.all([getFeaturedProfiles(), getLandingHeroImage()]);
+  const [{ featuredProfiles, featuredProfilesUnavailable }, branding] =
+    await Promise.all([getCachedFeaturedProfiles(), getCachedSiteBranding()]);
 
   return (
     <FullLandingPage
       featuredProfiles={featuredProfiles}
       featuredProfilesUnavailable={featuredProfilesUnavailable}
-      heroImageUrl={heroImageUrl}
+      heroImageUrl={branding.heroImageUrl}
     />
   );
 }

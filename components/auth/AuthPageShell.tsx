@@ -44,23 +44,23 @@ export default function AuthPageShell({
   }, []);
 
   return (
-    <div className="min-h-screen hero-gradient flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center justify-center">
+    <div className="hero-gradient flex min-h-screen items-center justify-center px-4 py-12">
+      <div className="ui-enter-scale w-full max-w-md">
+        <div className="mb-8 text-center">
+          <Link href="/" className="ui-link-shift inline-flex items-center justify-center">
             <SiteLogo
               src={logoImageUrl}
               alt="Vivah Bandhan logo"
-              className="h-14 max-w-[260px] sm:h-16 sm:max-w-[320px]"
+              className="ui-soft-float h-14 max-w-[260px] sm:h-16 sm:max-w-[320px]"
             />
           </Link>
-          <h1 className="mt-5 mb-1 text-2xl font-display font-bold text-gray-900">
+          <h1 className="ui-enter-up mb-1 mt-5 text-2xl font-display font-bold text-gray-900" style={{ animationDelay: "120ms" }}>
             {title}
           </h1>
-          <p className="text-sm text-gray-500">{description}</p>
+          <p className="ui-enter-up text-sm text-gray-500" style={{ animationDelay: "180ms" }}>{description}</p>
         </div>
 
-        <div className="rounded-2xl bg-white p-8 shadow-xl">
+        <div className="ui-enter-up ui-card-lift rounded-2xl bg-white p-8 shadow-xl" style={{ animationDelay: "220ms" }}>
           {children}
           {footer ? <div className="mt-6">{footer}</div> : null}
         </div>

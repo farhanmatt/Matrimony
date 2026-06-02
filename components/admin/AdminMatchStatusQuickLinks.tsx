@@ -90,7 +90,7 @@ export default function AdminMatchStatusQuickLinks({
         ref={triggerRef}
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-10 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
+        className="ui-link-shift inline-flex h-10 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm transition-all duration-300 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Match status shortcuts"
@@ -102,7 +102,7 @@ export default function AdminMatchStatusQuickLinks({
         ? createPortal(
         <div
           ref={panelRef}
-          className="fixed z-[9999] w-56 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl"
+          className="ui-modal-pop fixed z-[9999] w-56 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl"
           style={{
             top: `${menuPosition.top}px`,
             left: `${menuPosition.left}px`,

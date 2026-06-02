@@ -6,6 +6,10 @@ import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import {
+  normalizeEmailIdentifier,
+  normalizeNameLookup,
+} from "@/lib/utils/user-identity";
+import {
   isDefaultAdminIdentifier,
   upsertAdminUser,
 } from "@/prisma/admin-user";
@@ -39,35 +43,100 @@ function getCredentialValue(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function normalizeEmailIdentifier(identifier: string) {
-  return identifier.includes("@") ? identifier.toLowerCase() : identifier;
+const credentialUserSelect = {
+  id: true,
+  name: true,
+  email: true,
+  image: true,
+  role: true,
+  password: true,
+  nameLookup: true,
+} satisfies Prisma.UserSelect;
+
+type CredentialUserCandidate = Prisma.UserGetPayload<{
+  select: typeof credentialUserSelect;
+}>;
+
+async function backfillLegacyNameLookup(
+  candidates: CredentialUserCandidate[]
+) {
+  const legacyCandidates = candidates
+    .filter((candidate) => candidate.name && !candidate.nameLookup)
+    .map((candidate) => ({
+      id: candidate.id,
+      nameLookup: normalizeNameLookup(candidate.name!),
+    }));
+
+  if (legacyCandidates.length === 0) {
+    return;
+  }
+
+  await Promise.allSettled(
+    legacyCandidates.map((candidate) =>
+      prisma.user.update({
+        where: { id: candidate.id },
+        data: { nameLookup: candidate.nameLookup },
+      })
+    )
+  );
 }
 
 async function getCredentialUsers(identifier: string) {
   const normalizedIdentifier = identifier.trim();
 
   if (normalizedIdentifier.includes("@")) {
-    const user = await prisma.user.findFirst({
-      where: {
-        email: {
-          equals: normalizeEmailIdentifier(normalizedIdentifier),
-          mode: "insensitive",
+    const normalizedEmail = normalizeEmailIdentifier(normalizedIdentifier);
+    const user =
+      (await prisma.user.findUnique({
+        where: { email: normalizedEmail },
+        select: credentialUserSelect,
+      })) ??
+      (await prisma.user.findFirst({
+        where: {
+          email: {
+            equals: normalizedEmail,
+            mode: "insensitive",
+          },
         },
-      },
-    });
+        select: credentialUserSelect,
+      }));
 
     return user ? [user] : [];
   }
 
-  return prisma.user.findMany({
-    where: {
-      name: {
-        equals: normalizedIdentifier,
-        mode: "insensitive",
+  const normalizedName = normalizeNameLookup(normalizedIdentifier);
+  const [indexedUsers, legacyUsers] = await Promise.all([
+    prisma.user.findMany({
+      where: { nameLookup: normalizedName },
+      orderBy: { createdAt: "asc" },
+      select: credentialUserSelect,
+    }),
+    prisma.user.findMany({
+      where: {
+        nameLookup: null,
+        name: {
+          equals: normalizedIdentifier,
+          mode: "insensitive",
+        },
       },
-    },
-    orderBy: { createdAt: "asc" },
-  });
+      orderBy: { createdAt: "asc" },
+      select: credentialUserSelect,
+    }),
+  ]);
+
+  if (legacyUsers.length > 0) {
+    void backfillLegacyNameLookup(legacyUsers).catch((error) => {
+      console.error("Failed to backfill legacy name lookup:", error);
+    });
+  }
+
+  const usersById = new Map<string, CredentialUserCandidate>();
+
+  for (const user of [...indexedUsers, ...legacyUsers]) {
+    usersById.set(user.id, user);
+  }
+
+  return Array.from(usersById.values());
 }
 
 async function getMatchingUserFromCandidates(

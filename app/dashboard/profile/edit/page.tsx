@@ -83,13 +83,22 @@ export default async function EditProfilePage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-display font-bold text-gray-900 mb-2">
+      <h1
+        className="ui-enter-up mb-2 text-2xl font-display font-bold text-gray-900"
+        style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
+      >
         Edit Profile
       </h1>
-      <p className="text-gray-500 text-sm mb-8">
+      <p
+        className="ui-enter-up mb-8 text-sm text-gray-500"
+        style={{ animationDelay: "110ms", animationFillMode: "forwards" }}
+      >
         Keep your profile updated to improve match accuracy.
       </p>
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+      <div
+        className="ui-enter-scale ui-card-lift-soft rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8"
+        style={{ animationDelay: "180ms", animationFillMode: "forwards" }}
+      >
         <ProfileForm defaultValues={defaultValues} isEdit />
       </div>
     </div>

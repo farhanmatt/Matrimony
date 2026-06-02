@@ -285,7 +285,7 @@ export default async function AdminMatchesPage({
       if (column === "match") {
         return (
           <div key={column} className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/row:-translate-y-0.5 group-hover/row:shadow-sm">
               <HeartHandshake className="h-4.5 w-4.5" />
             </div>
             <div>
@@ -303,7 +303,7 @@ export default async function AdminMatchesPage({
       if (column === "details") {
         return (
           <div key={column} className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/row:-translate-y-0.5 group-hover/row:shadow-sm">
               <HeartHandshake className="h-4.5 w-4.5" />
             </div>
             <div>
@@ -335,9 +335,9 @@ export default async function AdminMatchesPage({
 
       if (column === "action") {
         return (
-          <span key={column} className="inline-flex items-center gap-2 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">
+          <span key={column} className="inline-flex items-center gap-2 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/row:-translate-y-0.5 group-hover/row:border-rose-200 group-hover/row:bg-white">
             View match details
-            <ChevronRight className="h-3.5 w-3.5" />
+            <ChevronRight className="h-3.5 w-3.5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/row:translate-x-1" />
           </span>
         );
       }
@@ -366,11 +366,11 @@ export default async function AdminMatchesPage({
 
     return (
       <div className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col gap-6 overflow-hidden sm:h-[calc(100dvh-6.5rem)] lg:h-[calc(100dvh-3rem)]">
-        <div className="shrink-0">
+        <div className="ui-enter-left shrink-0" style={{ animationDelay: "40ms" }}>
           {showBackToMatches ? (
             <Link
               href="/admin/matches"
-              className="mb-4 inline-flex h-11 items-center gap-2 rounded-full border border-gray-200 bg-white px-5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
+              className="ui-link-shift mb-4 inline-flex h-11 items-center gap-2 rounded-full border border-gray-200 bg-white px-5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-300 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md"
             >
               <ChevronLeft className="h-4 w-4" />
               Back to Matches
@@ -382,32 +382,37 @@ export default async function AdminMatchesPage({
           </p>
         </div>
 
-        <div className="shrink-0 border-t border-gray-200" />
+        <div className="ui-enter-up shrink-0 border-t border-gray-200" style={{ animationDelay: "90ms" }} />
 
-        <AdminListCard
-          className="flex-1 min-h-0"
-          bodyClassName="flex min-h-0 flex-col overflow-hidden"
-          toolbar={
-            <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-              <AdminSearchInput placeholder="Search by name or location..." />
+        <div className="ui-enter-scale flex-1 min-h-0" style={{ animationDelay: "140ms" }}>
+          <AdminListCard
+            className="flex-1 min-h-0"
+            bodyClassName="flex min-h-0 flex-col overflow-hidden"
+            toolbar={
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+                <AdminSearchInput
+                  placeholder="Search by name or location..."
+                  className="ui-link-shift flex w-full max-w-[760px] overflow-hidden rounded-xl border border-rose-100 bg-white shadow-[0_10px_24px_rgba(244,63,94,0.06)] transition-all duration-300 hover:border-rose-200 hover:shadow-[0_16px_34px_rgba(244,63,94,0.1)] focus-within:-translate-y-0.5 focus-within:border-rose-200 focus-within:shadow-[0_16px_34px_rgba(244,63,94,0.1)]"
+                />
 
-              <div className="flex items-center gap-3 xl:ml-auto">
-                <AdminMatchFilters />
-                <AdminMatchColumnSelector selectedColumns={visibleColumns} />
+                <div className="flex items-center gap-3 xl:ml-auto">
+                  <AdminMatchFilters />
+                  <AdminMatchColumnSelector selectedColumns={visibleColumns} />
+                </div>
               </div>
-            </div>
-          }
-        >
-          <AdminMatchesTable
-            columns={visibleColumns.map((column) => ({
-              key: column,
-              label: columnLabels[column],
-              width: columnWidths[column],
-            }))}
-            rows={rows}
-            listFooter={paginationFooter}
-          />
-        </AdminListCard>
+            }
+          >
+            <AdminMatchesTable
+              columns={visibleColumns.map((column) => ({
+                key: column,
+                label: columnLabels[column],
+                width: columnWidths[column],
+              }))}
+              rows={rows}
+              listFooter={paginationFooter}
+            />
+          </AdminListCard>
+        </div>
       </div>
     );
   } catch {

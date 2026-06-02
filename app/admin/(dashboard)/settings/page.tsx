@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, Info, Loader2, Save, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils/helpers";
 
 type PricingSettingsResponse = {
   settings?: {
@@ -46,12 +47,12 @@ function PriceField({
   helperText: string;
 }) {
   return (
-    <div>
+    <div className="group">
       <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor={id}>
         {label}
       </label>
-      <div className="relative">
-        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-medium text-slate-400">
+      <div className="relative transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-focus-within:-translate-y-0.5">
+        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-medium text-slate-400 transition-colors duration-300 group-hover:text-rose-400 group-focus-within:text-rose-400">
           ₹
         </span>
         <input
@@ -64,10 +65,10 @@ function PriceField({
             const nextValue = event.target.value.replace(/[^\d]/g, "");
             onChange(nextValue === "" ? 0 : Number(nextValue));
           }}
-          className="w-full rounded-[18px] border border-slate-200 bg-white py-3 pl-9 pr-4 text-sm text-slate-800 outline-none transition-colors placeholder:text-slate-400 focus:border-rose-300 focus:ring-2 focus:ring-rose-200"
+          className="w-full rounded-[18px] border border-slate-200 bg-white py-3 pl-9 pr-4 text-sm text-slate-800 outline-none shadow-[0_12px_28px_rgba(15,23,42,0.03)] transition-all duration-300 placeholder:text-slate-400 hover:border-rose-200 focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
         />
       </div>
-      <p className="mt-1.5 text-xs text-slate-400">{helperText}</p>
+      <p className="mt-1.5 text-xs text-slate-400 transition-colors duration-300 group-hover:text-slate-500">{helperText}</p>
     </div>
   );
 }
@@ -78,6 +79,7 @@ export default function AdminSettingsPage() {
   const [perProfileChatAmount, setPerProfileChatAmount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [previewPulse, setPreviewPulse] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -117,6 +119,26 @@ export default function AdminSettingsPage() {
     };
   }, []);
 
+  const chatPrice = calculateChatPrice(baseAmount, profileAmount, perProfileChatAmount);
+
+  useEffect(() => {
+    if (loading) return;
+
+    setPreviewPulse(false);
+
+    const frameId = window.requestAnimationFrame(() => {
+      setPreviewPulse(true);
+    });
+    const timeoutId = window.setTimeout(() => {
+      setPreviewPulse(false);
+    }, 380);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [baseAmount, profileAmount, perProfileChatAmount, loading]);
+
   const handleSave = async () => {
     setSaving(true);
 
@@ -149,16 +171,17 @@ export default function AdminSettingsPage() {
     );
   }
 
-  const chatPrice = calculateChatPrice(baseAmount, profileAmount, perProfileChatAmount);
-
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
       <section className="space-y-3">
-        <div className="inline-flex items-center gap-2 rounded-full border border-rose-100 bg-white px-4 py-2 text-sm font-medium text-rose-700 shadow-sm">
+        <div
+          className="ui-enter-up inline-flex items-center gap-2 rounded-full border border-rose-100 bg-white px-4 py-2 text-sm font-medium text-rose-700 shadow-sm"
+          style={{ animationDelay: "30ms" }}
+        >
           <ShieldCheck className="h-4 w-4" />
           Profile unlock payment style pricing editor
         </div>
-        <div>
+        <div className="ui-enter-left" style={{ animationDelay: "80ms" }}>
           <h1 className="font-display text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             Chat Pricing Settings
           </h1>
@@ -170,10 +193,13 @@ export default function AdminSettingsPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-        <div className="overflow-hidden rounded-[28px] border border-rose-100 bg-white shadow-sm">
+        <div
+          className="ui-enter-scale ui-card-lift-soft overflow-hidden rounded-[28px] border border-rose-100 bg-white shadow-sm"
+          style={{ animationDelay: "140ms" }}
+        >
           <div className="border-b border-rose-100 bg-gradient-to-r from-rose-600 to-pink-500 px-6 py-5 text-white">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15">
+              <div className="ui-icon-lift flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15">
                 <Info className="h-5 w-5" />
               </div>
               <div>
@@ -188,6 +214,7 @@ export default function AdminSettingsPage() {
 
           <div className="space-y-6 p-6 sm:p-8">
             <div className="grid gap-6">
+              <div className="ui-enter-up" style={{ animationDelay: "180ms" }}>
               <PriceField
                 id="base-amount"
                 label="Base Price (₹)"
@@ -195,7 +222,9 @@ export default function AdminSettingsPage() {
                 onChange={setBaseAmount}
                 helperText="Fixed base fee applied to every chat request"
               />
+              </div>
 
+              <div className="ui-enter-up" style={{ animationDelay: "220ms" }}>
               <PriceField
                 id="profile-amount"
                 label="Per Shortlisted Profile Price (₹)"
@@ -203,7 +232,9 @@ export default function AdminSettingsPage() {
                 onChange={setProfileAmount}
                 helperText="Added for each shortlisted profile in the chat flow"
               />
+              </div>
 
+              <div className="ui-enter-up" style={{ animationDelay: "260ms" }}>
               <PriceField
                 id="per-profile-chat-amount"
                 label="Per Profile Chat Price (₹)"
@@ -211,12 +242,14 @@ export default function AdminSettingsPage() {
                 onChange={setPerProfileChatAmount}
                 helperText="Extra chat charge added for each profile chat"
               />
+              </div>
             </div>
 
             <button
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(244,63,94,0.22)] transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+              className="ui-enter-up ui-link-shift inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(244,63,94,0.22)] transition-all duration-300 hover:shadow-[0_18px_38px_rgba(244,63,94,0.28)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+              style={{ animationDelay: "300ms" }}
             >
               {saving ? (
                 <>
@@ -234,7 +267,10 @@ export default function AdminSettingsPage() {
         </div>
 
         <div className="space-y-6">
-          <div className="overflow-hidden rounded-[28px] border border-rose-100 bg-white shadow-sm">
+          <div
+            className="ui-enter-scale ui-card-lift-soft overflow-hidden rounded-[28px] border border-rose-100 bg-white shadow-sm"
+            style={{ animationDelay: "180ms" }}
+          >
             <div className="border-b border-rose-100 px-6 py-5">
               <h2 className="font-display text-xl font-bold text-slate-900">
                 Live Preview
@@ -245,10 +281,22 @@ export default function AdminSettingsPage() {
             </div>
 
             <div className="p-6">
-              <div className="rounded-[24px] border border-rose-100 bg-[linear-gradient(180deg,rgba(255,250,251,0.9)_0%,rgba(255,244,246,0.98)_100%)] p-5">
+              <div
+                className={cn(
+                  "rounded-[24px] border bg-[linear-gradient(180deg,rgba(255,250,251,0.9)_0%,rgba(255,244,246,0.98)_100%)] p-5 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  previewPulse
+                    ? "border-rose-200 shadow-[0_18px_40px_rgba(244,63,94,0.12)]"
+                    : "border-rose-100 shadow-none"
+                )}
+              >
                 <div className="mb-4 flex items-center justify-between">
                   <span className="text-sm font-medium text-slate-600">Chat Price</span>
-                  <span className="text-3xl font-bold tracking-tight text-rose-600">
+                  <span
+                    className={cn(
+                      "text-3xl font-bold tracking-tight text-rose-600 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                      previewPulse ? "scale-105 text-rose-500" : "scale-100"
+                    )}
+                  >
                     ₹{chatPrice}
                   </span>
                 </div>
@@ -278,9 +326,12 @@ export default function AdminSettingsPage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-emerald-100 bg-emerald-50 px-6 py-5 text-emerald-800 shadow-sm">
+          <div
+            className="ui-enter-up ui-card-lift-soft rounded-[28px] border border-emerald-100 bg-emerald-50 px-6 py-5 text-emerald-800 shadow-sm"
+            style={{ animationDelay: "240ms" }}
+          >
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
+              <CheckCircle2 className="ui-icon-lift mt-0.5 h-5 w-5 shrink-0" />
               <div>
                 <h3 className="font-semibold">Working flow</h3>
                 <p className="mt-1 text-sm leading-6 text-emerald-700">

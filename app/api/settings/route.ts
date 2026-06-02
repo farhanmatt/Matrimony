@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { normalizeNameLookup } from "@/lib/utils/user-identity";
 import {
   accountSettingsSchema,
   deleteAccountSchema,
@@ -41,8 +42,10 @@ export async function PUT(req: NextRequest) {
 
     const currentPassword = emptyToNull(validated.data.currentPassword);
     const newPassword = emptyToNull(validated.data.newPassword);
-    const updateData: { name: string; password?: string } = {
-      name: validated.data.name.trim(),
+    const normalizedName = validated.data.name.trim();
+    const updateData: { name: string; nameLookup: string; password?: string } = {
+      name: normalizedName,
+      nameLookup: normalizeNameLookup(normalizedName),
     };
 
     if (newPassword) {
