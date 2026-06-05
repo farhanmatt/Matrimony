@@ -3,6 +3,10 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { subYears } from "date-fns";
 import { Gender, Prisma } from "@prisma/client";
+import {
+  createFeaturedProfilePreviewToken,
+  getFeaturedProfilePreviewSource,
+} from "@/lib/server/featured-profile-preview";
 
 const DEFAULT_PROFILE_PAGE_SIZE = 12;
 const MAX_PROFILE_PAGE_SIZE = 24;
@@ -156,16 +160,67 @@ export async function GET(req: NextRequest) {
       where,
       skip: (page - 1) * limit,
       take: limit,
-      include: {
-        photos: { where: { isPrimary: true }, take: 1 },
+      select: {
+        id: true,
+        fullName: true,
+        gender: true,
+        dateOfBirth: true,
+        height: true,
+        maritalStatus: true,
+        education: true,
+        course: true,
+        profession: true,
+        location: true,
+        city: true,
+        state: true,
+        religion: true,
+        profileImage: true,
+        photos: {
+          where: { isPrimary: true },
+          take: 1,
+          select: {
+            url: true,
+            publicId: true,
+          },
+        },
       },
       orderBy,
     }),
     prisma.profile.count({ where }),
   ]);
 
+  const data = profiles.map((profile) => {
+    const previewSource = getFeaturedProfilePreviewSource(profile);
+    const previewToken =
+      previewSource.previewUrl && previewSource.fingerprint
+        ? createFeaturedProfilePreviewToken({
+            profileId: profile.id,
+            fingerprint: previewSource.fingerprint,
+          })
+        : null;
+
+    return {
+      id: profile.id,
+      fullName: profile.fullName,
+      gender: profile.gender,
+      dateOfBirth: profile.dateOfBirth,
+      height: profile.height,
+      maritalStatus: profile.maritalStatus,
+      education: profile.education,
+      course: profile.course,
+      profession: profile.profession,
+      location: profile.location,
+      city: profile.city,
+      state: profile.state,
+      religion: profile.religion,
+      previewImageUrl: previewToken
+        ? `/api/profiles/preview/${encodeURIComponent(previewToken)}`
+        : null,
+    };
+  });
+
   return NextResponse.json({
-    data: profiles,
+    data,
     total,
     page,
     limit,

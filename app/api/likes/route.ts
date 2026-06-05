@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { sendProfileLikedEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
+import {
+  likedProfileCardSelect,
+  serializeLikedProfileCard,
+} from "@/lib/server/liked-profile-preview";
 import { likeProfile, unlikeProfile } from "@/lib/utils/matching";
 
 // POST /api/likes - like a profile
@@ -85,15 +89,13 @@ export async function GET() {
 
   const likes = await prisma.like.findMany({
     where: { fromProfileId: ownProfile.id },
-    include: {
-      toProfile: {
-        include: { photos: { where: { isPrimary: true }, take: 1 } },
-      },
-    },
+    select: likedProfileCardSelect,
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json({ data: likes });
+  return NextResponse.json({
+    data: likes.map(serializeLikedProfileCard),
+  });
 }
 
 // DELETE /api/likes - unlike a profile

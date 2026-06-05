@@ -7,6 +7,7 @@ import {
 } from "@/lib/utils/notifications";
 import { redirect } from "next/navigation";
 import DashboardAutoRefresh from "@/components/dashboard/DashboardAutoRefresh";
+import DashboardRealtimeEvents from "@/components/dashboard/DashboardRealtimeEvents";
 import DashboardWelcomeIntro from "@/components/dashboard/DashboardWelcomeIntro";
 import DashboardSidebar from "@/components/layout/DashboardSidebar";
 import { getDashboardProfileSummary } from "@/lib/server/dashboard-page-data";
@@ -49,11 +50,13 @@ export default async function DashboardLayout({
   return (
     <div className="min-h-screen bg-gray-50">
       <DashboardAutoRefresh />
+      <DashboardRealtimeEvents />
       <DashboardWelcomeIntro
         initialOpen={!introStatus?.hasSeenDashboardIntro}
       />
       <DashboardSidebar
         initialUser={{
+          id: session.user.id,
           name: session.user.name ?? null,
           email: session.user.email ?? null,
           image: session.user.image ?? null,

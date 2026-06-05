@@ -38,8 +38,7 @@ interface ReceivedLikePreviewCardProps {
       city: string | null;
       state: string | null;
       religion: string | null;
-      profileImage?: string | null;
-      photos: { url: string; isPrimary: boolean }[];
+      previewImageUrl: string | null;
     };
   };
   onLikeBackSuccess?: (profileId: string, matched: boolean) => void;
@@ -53,11 +52,7 @@ export default function ReceivedLikePreviewCard({
   const [likedBack, setLikedBack] = useState(item.isLikedBack);
   const [loading, setLoading] = useState(false);
 
-  const primaryPhoto =
-    item.profile.profileImage ??
-    item.profile.photos.find((photo) => photo.isPrimary)?.url ??
-    item.profile.photos[0]?.url ??
-    null;
+  const primaryPhoto = item.profile.previewImageUrl ?? null;
   const age = calculateAge(item.profile.dateOfBirth);
   const location =
     [item.profile.city, item.profile.state].filter(Boolean).join(", ") ||
@@ -108,12 +103,15 @@ export default function ReceivedLikePreviewCard({
         {primaryPhoto ? (
           <Image
             src={primaryPhoto}
-            alt={`${item.profile.fullName} received like`}
+            alt="Protected matrimony profile preview"
             fill
             className="ui-media-zoom scale-[1.04] object-cover blur-[4px]"
             style={{ objectPosition: "center 12%" }}
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
             quality={75}
+            unoptimized
+            draggable={false}
+            onContextMenu={(event) => event.preventDefault()}
           />
         ) : (
           <div className="flex h-full items-center justify-center">

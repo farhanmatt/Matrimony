@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -11,10 +12,13 @@ import {
   ArrowLeft,
   ArrowRight,
   Briefcase,
+  Check,
+  ChevronDown,
   Globe2,
   ImagePlus,
   Leaf,
   Loader2,
+  Search,
   Save,
   Sparkles,
   User,
@@ -25,12 +29,25 @@ import { NAKSHATRA_OPTIONS, RASI_OPTIONS } from "@/lib/constants/astrology";
 import { MOTHER_TONGUE_OPTIONS } from "@/lib/constants/languages";
 import {
   STATE_OPTIONS,
+  findMatchingCityForState,
+  findMatchingStateOption,
   getCitiesForState,
   getPincodeForCity,
 } from "@/lib/constants/cityData";
-import { profileSchema, type ProfileInput } from "@/lib/validations/profile";
+import {
+  getProfileAgeValidationMessage,
+  profileFormSchema,
+  type PreferenceInput,
+  type ProfileFormInput,
+  type ProfileInput,
+} from "@/lib/validations/profile";
 import ImageUpload from "@/components/common/ImageUpload";
 import MultiImageUpload from "@/components/common/MultiImageUpload";
+import {
+  mapPreferenceSourceToBrowseFilters,
+  writeStoredBrowseFilters,
+} from "@/lib/utils/browse-filters";
+import { MARITAL_STATUS_LABELS } from "@/lib/utils/helpers";
 
 const genderOptions = ["MALE", "FEMALE", "OTHER"] as const;
 const maritalOptions = [
@@ -85,6 +102,16 @@ const religions = [
   "Hindu",
   "Muslim",
   "Christian",
+];
+const partnerPreferenceReligionOptions = [
+  "Hindu",
+  "Muslim",
+  "Christian",
+  "Sikh",
+  "Jain",
+  "Buddhist",
+  "Parsi",
+  "Other",
 ];
 const casteSuggestions = ["No Caste"];
 const higherEducationOptions = [
@@ -315,16 +342,58 @@ const createProfileSteps: CreateStep[] = [
 ];
 
 interface ProfileFormProps {
-  defaultValues?: Partial<ProfileInput>;
+  defaultValues?: Partial<ProfileFormInput>;
   isEdit?: boolean;
 }
 
 type CreateProfileDraft = {
   currentStep: number;
-  values: Partial<ProfileInput>;
+  values: Partial<ProfileFormInput>;
+};
+
+type PincodeLookupState = {
+  pincode: string;
+  status: "idle" | "loading" | "success" | "invalid" | "error";
+  message?: string;
+  state?: string;
+  city?: string;
+};
+
+const emptyPreference: PreferenceInput = {
+  ageMin: null,
+  ageMax: null,
+  heightMin: null,
+  heightMax: null,
+  religion: null,
+  caste: null,
+  education: null,
+  profession: null,
+  location: null,
+  maritalStatus: null,
+  language: null,
 };
 
 const CREATE_PROFILE_DRAFT_STORAGE_KEY = "vivah-bandhan-create-profile-draft";
+
+type SearchableOptionItem = {
+  kind: "custom" | "option";
+  value: string;
+  label: string;
+};
+
+type SearchableDropdownInputProps = {
+  id: string;
+  value: string;
+  options: readonly string[];
+  selectedOption?: string | null;
+  placeholder: string;
+  emptyMessage: string;
+  suggestionLabel: string;
+  inputClassName: string;
+  disabled?: boolean;
+  onValueChange: (value: string) => void;
+  onCommit: (value: string) => void;
+};
 
 function toNullableNumber(value: unknown) {
   if (value === "" || value === null || value === undefined) {
@@ -341,6 +410,491 @@ function toNullableValue(value: unknown) {
   }
 
   return value === "" ? null : value;
+}
+
+function normalizePhoneDigits(value: unknown) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.replace(/\D/g, "").slice(0, 10);
+}
+
+function normalizePincodeDigits(value: unknown) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.replace(/\D/g, "").slice(0, 6);
+}
+
+function normalizeTextInputValue(value: unknown) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.trim();
+}
+
+function filterAutocompleteOptions(
+  options: readonly string[],
+  query?: string | null
+) {
+  const normalizedQuery = normalizeTextInputValue(query).toLowerCase();
+
+  if (!normalizedQuery) {
+    return options;
+  }
+
+  const startsWithMatches: string[] = [];
+  const includesMatches: string[] = [];
+
+  for (const option of options) {
+    const normalizedOption = option.toLowerCase();
+
+    if (normalizedOption.startsWith(normalizedQuery)) {
+      startsWithMatches.push(option);
+      continue;
+    }
+
+    if (normalizedOption.includes(normalizedQuery)) {
+      includesMatches.push(option);
+    }
+  }
+
+  return [...startsWithMatches, ...includesMatches];
+}
+
+function SearchableDropdownInput({
+  id,
+  value,
+  options,
+  selectedOption,
+  placeholder,
+  emptyMessage,
+  suggestionLabel,
+  inputClassName,
+  disabled = false,
+  onValueChange,
+  onCommit,
+}: SearchableDropdownInputProps) {
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const [menuPosition, setMenuPosition] = useState<{
+    left: number;
+    width: number;
+    top?: number;
+    bottom?: number;
+    maxHeight: number;
+  } | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const normalizedValue = normalizeTextInputValue(value);
+  const exactOptionMatch =
+    options.find(
+      (option) => option.toLowerCase() === normalizedValue.toLowerCase()
+    ) ?? null;
+  const resolvedSelectedOption = selectedOption ?? exactOptionMatch;
+  const shouldShowCustomValue =
+    normalizedValue.length > 0 &&
+    (!resolvedSelectedOption ||
+      resolvedSelectedOption.toLowerCase() !== normalizedValue.toLowerCase());
+  const dropdownItems = useMemo<SearchableOptionItem[]>(() => {
+    const items: SearchableOptionItem[] = [];
+
+    if (shouldShowCustomValue) {
+      items.push({
+        kind: "custom",
+        value: normalizedValue,
+        label: `Use "${normalizedValue}"`,
+      });
+    }
+
+    for (const option of options) {
+      items.push({
+        kind: "option",
+        value: option,
+        label: option,
+      });
+    }
+
+    return items;
+  }, [normalizedValue, options, shouldShowCustomValue]);
+
+  const commitCurrentValue = useCallback(() => {
+    onCommit(normalizedValue);
+  }, [normalizedValue, onCommit]);
+
+  const updateMenuPosition = useCallback(() => {
+    const input = inputRef.current;
+    if (!input || typeof window === "undefined") {
+      return;
+    }
+
+    const rect = input.getBoundingClientRect();
+    const viewportPadding = 12;
+    const dropdownGap = 8;
+    const spaceBelow = window.innerHeight - rect.bottom - viewportPadding;
+    const spaceAbove = rect.top - viewportPadding;
+    const openUpward = spaceBelow < 280 && spaceAbove > spaceBelow;
+    const availableHeight = Math.max(
+      140,
+      (openUpward ? spaceAbove : spaceBelow) - dropdownGap
+    );
+    const maxHeight = Math.min(320, availableHeight);
+    const width = Math.min(
+      Math.max(rect.width, 260),
+      window.innerWidth - viewportPadding * 2
+    );
+    const left = Math.min(
+      Math.max(viewportPadding, rect.left),
+      window.innerWidth - width - viewportPadding
+    );
+
+    setMenuPosition({
+      left,
+      width,
+      maxHeight,
+      top: openUpward ? undefined : rect.bottom + dropdownGap,
+      bottom: openUpward ? window.innerHeight - rect.top + dropdownGap : undefined,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!open || disabled) {
+      setMenuPosition(null);
+      return;
+    }
+
+    updateMenuPosition();
+    window.addEventListener("resize", updateMenuPosition);
+    window.addEventListener("scroll", updateMenuPosition, true);
+
+    return () => {
+      window.removeEventListener("resize", updateMenuPosition);
+      window.removeEventListener("scroll", updateMenuPosition, true);
+    };
+  }, [disabled, open, updateMenuPosition]);
+
+  useEffect(() => {
+    if (!open) {
+      setActiveIndex(-1);
+      return;
+    }
+
+    const selectedIndex = dropdownItems.findIndex((item) => {
+      if (resolvedSelectedOption) {
+        return item.value.toLowerCase() === resolvedSelectedOption.toLowerCase();
+      }
+
+      return item.kind === "custom";
+    });
+
+    setActiveIndex(selectedIndex >= 0 ? selectedIndex : dropdownItems.length ? 0 : -1);
+  }, [dropdownItems, open, resolvedSelectedOption]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+
+      if (
+        containerRef.current?.contains(target) ||
+        panelRef.current?.contains(target)
+      ) {
+        return;
+      }
+
+      commitCurrentValue();
+      setOpen(false);
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+    };
+  }, [commitCurrentValue, open]);
+
+  useEffect(() => {
+    if (!open || activeIndex < 0) {
+      return;
+    }
+
+    const activeElement = panelRef.current?.querySelector<HTMLElement>(
+      `[data-option-index="${activeIndex}"]`
+    );
+
+    activeElement?.scrollIntoView({
+      block: "nearest",
+    });
+  }, [activeIndex, open]);
+
+  const handleSelect = useCallback(
+    (nextValue: string) => {
+      onValueChange(nextValue);
+      onCommit(nextValue);
+      setOpen(false);
+      setActiveIndex(-1);
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
+    },
+    [onCommit, onValueChange]
+  );
+
+  const handleBlur = useCallback(() => {
+    window.setTimeout(() => {
+      const activeElement = document.activeElement;
+
+      if (
+        activeElement instanceof Node &&
+        (containerRef.current?.contains(activeElement) ||
+          panelRef.current?.contains(activeElement))
+      ) {
+        return;
+      }
+
+      commitCurrentValue();
+      setOpen(false);
+    }, 0);
+  }, [commitCurrentValue]);
+
+  return (
+    <div ref={containerRef} className="relative">
+      <div className="relative">
+        <input
+          ref={inputRef}
+          id={id}
+          type="text"
+          value={value}
+          autoComplete="off"
+          disabled={disabled}
+          onFocus={() => {
+            if (!disabled) {
+              setOpen(true);
+            }
+          }}
+          onBlur={handleBlur}
+          onChange={(event) => {
+            onValueChange(event.target.value);
+            if (!open && !disabled) {
+              setOpen(true);
+            }
+          }}
+          onKeyDown={(event) => {
+            if (disabled) {
+              return;
+            }
+
+            if (event.key === "ArrowDown") {
+              event.preventDefault();
+              setOpen(true);
+              setActiveIndex((currentIndex) => {
+                if (!dropdownItems.length) {
+                  return -1;
+                }
+
+                return currentIndex < dropdownItems.length - 1 ? currentIndex + 1 : 0;
+              });
+              return;
+            }
+
+            if (event.key === "ArrowUp") {
+              event.preventDefault();
+              setOpen(true);
+              setActiveIndex((currentIndex) => {
+                if (!dropdownItems.length) {
+                  return -1;
+                }
+
+                return currentIndex > 0 ? currentIndex - 1 : dropdownItems.length - 1;
+              });
+              return;
+            }
+
+            if (event.key === "Enter") {
+              if (open && activeIndex >= 0 && dropdownItems[activeIndex]) {
+                event.preventDefault();
+                handleSelect(dropdownItems[activeIndex].value);
+                return;
+              }
+
+              commitCurrentValue();
+              setOpen(false);
+              return;
+            }
+
+            if (event.key === "Escape") {
+              if (open) {
+                event.preventDefault();
+                setOpen(false);
+              }
+              return;
+            }
+
+            if (event.key === "Tab") {
+              commitCurrentValue();
+              setOpen(false);
+            }
+          }}
+          className={`${inputClassName} pr-12`}
+          placeholder={placeholder}
+          role="combobox"
+          aria-expanded={open}
+          aria-haspopup="listbox"
+          aria-controls={`${id}-dropdown`}
+          aria-autocomplete="list"
+        />
+
+        <button
+          type="button"
+          tabIndex={-1}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => {
+            if (disabled) {
+              return;
+            }
+
+            if (!open) {
+              inputRef.current?.focus();
+              setOpen(true);
+              return;
+            }
+
+            commitCurrentValue();
+            setOpen(false);
+          }}
+          className={`absolute inset-y-0 right-0 flex items-center px-4 transition-colors ${
+            disabled
+              ? "cursor-not-allowed text-gray-300"
+              : open
+                ? "text-rose-500"
+                : "text-gray-400 hover:text-rose-500"
+          }`}
+          aria-label={open ? "Close suggestions" : "Open suggestions"}
+        >
+          <ChevronDown
+            className={`h-4 w-4 transition-transform duration-200 ${
+              open ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+      </div>
+
+      {open && menuPosition && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              ref={panelRef}
+              id={`${id}-dropdown`}
+              role="listbox"
+              className="ui-modal-pop fixed z-[9999] overflow-hidden rounded-2xl border border-rose-100/80 bg-white shadow-[0_28px_70px_rgba(15,23,42,0.16)]"
+              style={{
+                left: `${menuPosition.left}px`,
+                width: `${menuPosition.width}px`,
+                maxHeight: `${menuPosition.maxHeight}px`,
+                top:
+                  typeof menuPosition.top === "number"
+                    ? `${menuPosition.top}px`
+                    : undefined,
+                bottom:
+                  typeof menuPosition.bottom === "number"
+                    ? `${menuPosition.bottom}px`
+                    : undefined,
+              }}
+            >
+              <div className="border-b border-rose-100 bg-[linear-gradient(135deg,rgba(255,244,247,0.98)_0%,rgba(255,255,255,0.98)_100%)] px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-500">
+                    <Search className="h-3.5 w-3.5" />
+                    {suggestionLabel}
+                  </span>
+                  <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-gray-500 shadow-sm">
+                    {dropdownItems.length} option{dropdownItems.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+              </div>
+
+              <div
+                className="max-h-[inherit] overflow-y-auto py-2"
+                style={{ maxHeight: `${Math.max(84, menuPosition.maxHeight - 57)}px` }}
+              >
+                {dropdownItems.length ? (
+                  dropdownItems.map((item, index) => {
+                    const isSelected = resolvedSelectedOption
+                      ? item.value.toLowerCase() ===
+                        resolvedSelectedOption.toLowerCase()
+                      : item.kind === "custom" &&
+                        item.value.toLowerCase() === normalizedValue.toLowerCase();
+                    const isActive = index === activeIndex;
+
+                    return (
+                      <button
+                        key={`${item.kind}-${item.value}`}
+                        type="button"
+                        tabIndex={-1}
+                        data-option-index={index}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => handleSelect(item.value)}
+                        className={`mx-2 flex w-[calc(100%-1rem)] items-center gap-3 rounded-xl px-3.5 py-3 text-left transition-all duration-150 ${
+                          isActive
+                            ? "bg-rose-50 text-rose-700"
+                            : isSelected
+                              ? "bg-rose-50/70 text-gray-900"
+                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        }`}
+                      >
+                        <span
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-semibold transition-colors ${
+                            isSelected || isActive
+                              ? "border-rose-200 bg-white text-rose-600"
+                              : "border-gray-200 bg-gray-50 text-gray-400"
+                          }`}
+                        >
+                          {isSelected ? (
+                            <Check className="h-4 w-4" />
+                          ) : item.kind === "custom" ? (
+                            "Aa"
+                          ) : (
+                            index + 1
+                          )}
+                        </span>
+
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-medium">
+                            {item.label}
+                          </span>
+                          <span className="mt-0.5 block text-xs text-gray-400">
+                            {item.kind === "custom"
+                              ? "Use your typed value"
+                              : "Choose from suggested options"}
+                          </span>
+                        </span>
+
+                        {isSelected ? (
+                          <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-600 shadow-sm">
+                            Selected
+                          </span>
+                        ) : null}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="px-5 py-6 text-sm text-gray-500">
+                    {emptyMessage}
+                  </div>
+                )}
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
+    </div>
+  );
 }
 
 function getAnnualIncomeSelectValue(value: string | null | undefined) {
@@ -459,6 +1013,18 @@ function clearCreateProfileDraft() {
   }
 
   window.localStorage.removeItem(CREATE_PROFILE_DRAFT_STORAGE_KEY);
+}
+
+function getProfileFormDefaults(defaultValues?: Partial<ProfileFormInput>) {
+  return {
+    country: "India",
+    ...defaultValues,
+    maritalStatus: defaultValues?.maritalStatus ?? "NEVER_MARRIED",
+    additionalPhotoUrls: defaultValues?.additionalPhotoUrls ?? [],
+    preference: defaultValues?.preference
+      ? { ...emptyPreference, ...defaultValues.preference }
+      : undefined,
+  };
 }
 
 function SectionBlock({
@@ -582,9 +1148,21 @@ export default function ProfileForm({
   const router = useRouter();
   const { update } = useSession();
   const [currentStep, setCurrentStep] = useState(0);
+  const isCreateDraftHydratedRef = useRef(isEdit);
+  const pincodeLookupAbortRef = useRef<AbortController | null>(null);
+  const pendingPincodeAutofillRef = useRef<{
+    pincode: string;
+    state: string;
+    city: string;
+  } | null>(null);
   const [incomeSelectValue, setIncomeSelectValue] = useState(() =>
     getAnnualIncomeSelectValue(defaultValues?.income)
   );
+  const [pincodeLookupState, setPincodeLookupState] =
+    useState<PincodeLookupState>({
+      pincode: "",
+      status: "idle",
+    });
 
   const {
     register,
@@ -595,48 +1173,65 @@ export default function ProfileForm({
     watch,
     setValue,
     trigger,
+    clearErrors,
+    setError,
     formState: { errors, isSubmitting, dirtyFields },
-  } = useForm<ProfileInput>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
-      country: "India",
-      ...defaultValues,
-      maritalStatus: defaultValues?.maritalStatus ?? "NEVER_MARRIED",
-      additionalPhotoUrls: defaultValues?.additionalPhotoUrls ?? [],
-    },
+  } = useForm<ProfileFormInput>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: getProfileFormDefaults(defaultValues),
   });
 
   useEffect(() => {
     setIncomeSelectValue(getAnnualIncomeSelectValue(defaultValues?.income));
-
-    reset({
-      country: "India",
-      ...defaultValues,
-      maritalStatus: defaultValues?.maritalStatus ?? "NEVER_MARRIED",
-      additionalPhotoUrls: defaultValues?.additionalPhotoUrls ?? [],
-    });
+    reset(getProfileFormDefaults(defaultValues));
   }, [defaultValues, reset]);
 
   useEffect(() => {
     if (isEdit) {
+      isCreateDraftHydratedRef.current = true;
       return;
     }
 
     const savedDraft = loadCreateProfileDraft();
-    if (!savedDraft) {
+    if (savedDraft) {
+      setIncomeSelectValue(getAnnualIncomeSelectValue(savedDraft.values.income));
+      reset(getProfileFormDefaults(savedDraft.values));
+      setCurrentStep(Math.max(savedDraft.currentStep, 0));
+    }
+    isCreateDraftHydratedRef.current = true;
+  }, [isEdit, reset]);
+
+  useEffect(() => {
+    if (isEdit || !isCreateDraftHydratedRef.current) {
       return;
     }
 
-    setIncomeSelectValue(getAnnualIncomeSelectValue(savedDraft.values.income));
-
-    reset({
-      country: "India",
-      ...savedDraft.values,
-      maritalStatus: savedDraft.values.maritalStatus ?? "NEVER_MARRIED",
-      additionalPhotoUrls: savedDraft.values.additionalPhotoUrls ?? [],
+    saveCreateProfileDraft({
+      currentStep,
+      values: getValues(),
     });
-    setCurrentStep(Math.max(savedDraft.currentStep, 0));
-  }, [isEdit, reset]);
+  }, [currentStep, getValues, isEdit]);
+
+  useEffect(() => {
+    if (isEdit || !isCreateDraftHydratedRef.current) {
+      return;
+    }
+
+    const subscription = watch((values) => {
+      if (!isCreateDraftHydratedRef.current) {
+        return;
+      }
+
+      saveCreateProfileDraft({
+        currentStep,
+        values: values as Partial<ProfileFormInput>,
+      });
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [currentStep, isEdit, watch]);
 
   const inputClass = isEdit
     ? "w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
@@ -658,16 +1253,31 @@ export default function ProfileForm({
   const selectedRasi = watch("rasi");
   const selectedReligion = watch("religion");
   const selectedLanguage = watch("language");
+  const selectedPreferenceLanguage = watch("preference.language");
   const selectedState = watch("state");
   const selectedCity = watch("city");
+  const selectedPincode = watch("pincode");
   const selectedDiet = watch("diet");
   const selectedSmoking = watch("smoking");
   const selectedDrinking = watch("drinking");
   const selectedHobbies = watch("hobbies");
   const selectedPhysicalActivity = watch("physicalActivity");
   const selectedPersonalityType = watch("personalityType");
-  const cityOptions = getCitiesForState(selectedState);
-  const cityWasChanged = Boolean(dirtyFields.city);
+  const matchedStateOption = findMatchingStateOption(selectedState);
+  const matchedCityOption = matchedStateOption
+    ? findMatchingCityForState(matchedStateOption, [selectedCity])
+    : null;
+  const resolvedSelectedState =
+    matchedStateOption ?? normalizeTextInputValue(selectedState);
+  const resolvedSelectedCity =
+    matchedCityOption ?? normalizeTextInputValue(selectedCity);
+  const cityOptions = getCitiesForState(matchedStateOption);
+  const filteredStateOptions = filterAutocompleteOptions(
+    STATE_OPTIONS,
+    selectedState
+  );
+  const filteredCityOptions = filterAutocompleteOptions(cityOptions, selectedCity);
+  const normalizedSelectedPincode = normalizePincodeDigits(selectedPincode);
   const hasCustomHeightOption =
     typeof selectedHeight === "number" &&
     !heightOptions.some((option) => option.value === selectedHeight);
@@ -711,31 +1321,263 @@ export default function ProfileForm({
         : step
     );
 
+  const resetPincodeLookup = useCallback(() => {
+    pincodeLookupAbortRef.current?.abort();
+    pincodeLookupAbortRef.current = null;
+    pendingPincodeAutofillRef.current = null;
+    setPincodeLookupState({ pincode: "", status: "idle" });
+  }, []);
+
+  const syncPincodeWithAddress = useCallback(
+    (stateValue: unknown, cityValue: unknown) => {
+      const normalizedState = normalizeTextInputValue(stateValue);
+      const normalizedCity = normalizeTextInputValue(cityValue);
+      const canonicalState = findMatchingStateOption(normalizedState);
+      const canonicalCity = canonicalState
+        ? findMatchingCityForState(canonicalState, [normalizedCity])
+        : null;
+      const nextPincode =
+        canonicalState && canonicalCity
+          ? getPincodeForCity(canonicalState, canonicalCity)
+          : "";
+      const currentPincode = normalizePincodeDigits(getValues("pincode"));
+
+      if (nextPincode) {
+        if (currentPincode !== nextPincode) {
+          setValue("pincode", nextPincode, {
+            shouldValidate: true,
+            shouldDirty: true,
+          });
+        }
+
+        clearErrors("pincode");
+        return;
+      }
+
+      if (currentPincode) {
+        resetPincodeLookup();
+        setValue("pincode", "", {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
+    },
+    [clearErrors, getValues, resetPincodeLookup, setValue]
+  );
+
+  const commitStateValue = useCallback(
+    (stateValue: string) => {
+      const nextState =
+        findMatchingStateOption(stateValue) ?? normalizeTextInputValue(stateValue);
+
+      setValue("state", nextState, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+
+      const currentCity = getValues("city");
+      syncPincodeWithAddress(nextState, currentCity);
+    },
+    [getValues, setValue, syncPincodeWithAddress]
+  );
+
+  const commitCityValue = useCallback(
+    (cityValue: string) => {
+      const currentState = normalizeTextInputValue(getValues("state"));
+      const canonicalState = findMatchingStateOption(currentState);
+      const nextCity =
+        canonicalState && cityValue
+          ? findMatchingCityForState(canonicalState, [cityValue]) ??
+            normalizeTextInputValue(cityValue)
+          : normalizeTextInputValue(cityValue);
+
+      setValue("city", nextCity, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+
+      syncPincodeWithAddress(canonicalState ?? currentState, nextCity);
+    },
+    [getValues, setValue, syncPincodeWithAddress]
+  );
+
+  const lookupPincode = useCallback(
+    async (normalizedPincode: string) => {
+      if (normalizedPincode.length !== 6) {
+        resetPincodeLookup();
+        return;
+      }
+
+      if (
+        pincodeLookupState.pincode === normalizedPincode &&
+        (pincodeLookupState.status === "loading" ||
+          pincodeLookupState.status === "success")
+      ) {
+        return;
+      }
+
+      pincodeLookupAbortRef.current?.abort();
+      const abortController = new AbortController();
+      pincodeLookupAbortRef.current = abortController;
+
+      setPincodeLookupState({
+        pincode: normalizedPincode,
+        status: "loading",
+      });
+
+      try {
+        const response = await fetch(
+          `/api/pincode?pincode=${normalizedPincode}`,
+          {
+            cache: "no-store",
+            signal: abortController.signal,
+          }
+        );
+
+        const result = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          const message =
+            typeof result?.error === "string"
+              ? result.error
+              : "Unable to validate this pincode right now. Please try again.";
+
+          setPincodeLookupState({
+            pincode: normalizedPincode,
+            status:
+              response.status === 400 || response.status === 404
+                ? "invalid"
+                : "error",
+            message,
+          });
+          setError("pincode", {
+            type: "manual",
+            message,
+          });
+          return;
+        }
+
+        const resolvedState =
+          typeof result?.data?.state === "string" ? result.data.state : "";
+        const resolvedCity =
+          typeof result?.data?.city === "string" ? result.data.city : "";
+
+        if (!resolvedState || !resolvedCity) {
+          pendingPincodeAutofillRef.current = null;
+          setPincodeLookupState({
+            pincode: normalizedPincode,
+            status: "invalid",
+            message: "Enter a valid pincode",
+          });
+          setError("pincode", {
+            type: "manual",
+            message: "Enter a valid pincode",
+          });
+          return;
+        }
+
+        pendingPincodeAutofillRef.current = {
+          pincode: normalizedPincode,
+          state: resolvedState,
+          city: resolvedCity,
+        };
+
+        setValue("state", resolvedState, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+        setValue("city", resolvedCity, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+        clearErrors(["pincode", "state", "city"]);
+        setPincodeLookupState({
+          pincode: normalizedPincode,
+          status: "success",
+          state: resolvedState,
+          city: resolvedCity,
+        });
+      } catch (error) {
+        if (abortController.signal.aborted) {
+          return;
+        }
+
+        pendingPincodeAutofillRef.current = null;
+        setPincodeLookupState({
+          pincode: normalizedPincode,
+          status: "error",
+          message: "Unable to validate this pincode right now. Please try again.",
+        });
+        setError("pincode", {
+          type: "manual",
+          message: "Unable to validate this pincode right now. Please try again.",
+        });
+      }
+    },
+    [
+      clearErrors,
+      pincodeLookupState.pincode,
+      pincodeLookupState.status,
+      resetPincodeLookup,
+      setError,
+      setValue,
+    ]
+  );
+
   useEffect(() => {
-    if (!selectedState) {
-      if (selectedCity) setValue("city", "");
-      return;
-    }
+    const pendingAutofill = pendingPincodeAutofillRef.current;
 
-    if (selectedCity && !cityOptions.includes(selectedCity)) {
-      setValue("city", "");
-      setValue("pincode", "");
+    if (
+      pendingAutofill &&
+      pendingAutofill.pincode === normalizedSelectedPincode &&
+      pendingAutofill.state === resolvedSelectedState &&
+      pendingAutofill.city === resolvedSelectedCity
+    ) {
+      pendingPincodeAutofillRef.current = null;
     }
-  }, [cityOptions, selectedCity, selectedState, setValue]);
+  }, [
+    normalizedSelectedPincode,
+    resolvedSelectedCity,
+    resolvedSelectedState,
+  ]);
 
   useEffect(() => {
-    if (!selectedState || !selectedCity) return;
+    if (!resolvedSelectedState || !resolvedSelectedCity) return;
 
-    const pincode = getPincodeForCity(selectedState, selectedCity);
+    const pincode = getPincodeForCity(
+      resolvedSelectedState,
+      resolvedSelectedCity
+    );
     if (pincode) {
       setValue("pincode", pincode, { shouldValidate: true });
+    }
+  }, [resolvedSelectedCity, resolvedSelectedState, setValue]);
+
+  useEffect(() => {
+    if (normalizedSelectedPincode.length < 6) {
+      if (pincodeLookupState.status !== "idle" || pincodeLookupState.pincode) {
+        resetPincodeLookup();
+      }
+
       return;
     }
 
-    if (cityWasChanged) {
-      setValue("pincode", "");
+    if (
+      !selectedState ||
+      !selectedCity ||
+      pincodeLookupState.pincode !== normalizedSelectedPincode
+    ) {
+      void lookupPincode(normalizedSelectedPincode);
     }
-  }, [cityWasChanged, selectedCity, selectedState, setValue]);
+  }, [
+    lookupPincode,
+    normalizedSelectedPincode,
+    pincodeLookupState.pincode,
+    pincodeLookupState.status,
+    resetPincodeLookup,
+    selectedCity,
+    selectedState,
+  ]);
 
   useEffect(() => {
     if (shouldShowHoroscopeStep) {
@@ -747,7 +1589,14 @@ export default function ProfileForm({
     setValue("timeOfBirth", null);
     setValue("placeOfBirth", "");
     setValue("horoscopeImage", null);
-  }, [setValue, shouldShowHoroscopeStep]);
+    clearErrors([
+      "star",
+      "rasi",
+      "timeOfBirth",
+      "placeOfBirth",
+      "horoscopeImage",
+    ]);
+  }, [clearErrors, setValue, shouldShowHoroscopeStep]);
 
   useEffect(() => {
     if (isEdit) {
@@ -770,8 +1619,55 @@ export default function ProfileForm({
   );
   const CurrentCreateStepIcon = currentCreateStep.icon;
 
+  const syncDateOfBirthAgeError = useCallback(
+    (
+      genderValue: ProfileFormInput["gender"] | "" | null | undefined = getValues("gender"),
+      dateOfBirthValue: string | null | undefined = getValues("dateOfBirth")
+    ) => {
+      const ageValidationMessage = getProfileAgeValidationMessage(
+        genderValue,
+        dateOfBirthValue
+      );
+
+      if (ageValidationMessage) {
+        setError("dateOfBirth", {
+          type: "manual",
+          message: ageValidationMessage,
+        });
+        return false;
+      }
+
+      if (errors.dateOfBirth?.type === "manual") {
+        clearErrors("dateOfBirth");
+      }
+
+      return true;
+    },
+    [clearErrors, errors.dateOfBirth?.type, getValues, setError]
+  );
+
   const handleNextStep = async () => {
     if (isEdit) return;
+
+    if (
+      currentCreateStep.id === "personal" &&
+      normalizedSelectedPincode.length === 6 &&
+      pincodeLookupState.pincode === normalizedSelectedPincode &&
+      pincodeLookupState.status === "loading"
+    ) {
+      toast.error("Please wait while we validate the pincode.");
+      return;
+    }
+
+    if (currentCreateStep.id === "personal" && !syncDateOfBirthAgeError()) {
+      toast.error(
+        getProfileAgeValidationMessage(
+          getValues("gender"),
+          getValues("dateOfBirth")
+        ) ?? "Please enter a valid date of birth."
+      );
+      return;
+    }
 
     const isStepValid = await trigger(currentCreateStep.fields);
     if (!isStepValid) {
@@ -807,7 +1703,21 @@ export default function ProfileForm({
     router.push("/dashboard");
   };
 
-  const onSubmit = async (data: ProfileInput) => {
+  const onSubmit = async (data: ProfileFormInput) => {
+    const ageValidationMessage = getProfileAgeValidationMessage(
+      data.gender,
+      data.dateOfBirth
+    );
+
+    if (ageValidationMessage) {
+      setError("dateOfBirth", {
+        type: "manual",
+        message: ageValidationMessage,
+      });
+      toast.error(ageValidationMessage);
+      return;
+    }
+
     const url = "/api/profile";
     const method = isEdit ? "PUT" : "POST";
     const res = await fetch(url, {
@@ -845,7 +1755,16 @@ export default function ProfileForm({
     }
 
     if (isEdit) {
-      toast.success("Profile updated!");
+      writeStoredBrowseFilters(
+        mapPreferenceSourceToBrowseFilters(data.preference ?? null)
+      );
+    }
+
+    if (isEdit) {
+      toast.success("Profile updated successfully. Redirecting to home...");
+      await new Promise((resolve) => setTimeout(resolve, 900));
+      router.replace("/dashboard");
+      return;
     } else if (json.confirmationEmailSent) {
       toast.success("Profile created successfully. A confirmation email has been sent.");
     } else if (json.confirmationEmailStatus === "skipped") {
@@ -858,11 +1777,6 @@ export default function ProfileForm({
       );
     } else {
       toast.success("Profile created successfully.");
-    }
-
-    if (isEdit) {
-      router.refresh();
-      return;
     }
 
     clearCreateProfileDraft();
@@ -883,6 +1797,121 @@ export default function ProfileForm({
       await handleSubmit(onSubmit)(event);
     }
   };
+
+  const phoneRegistration = register("phone", {
+    setValueAs: normalizePhoneDigits,
+    validate: (value) =>
+      isEdit || normalizePhoneDigits(value).length === 10
+        ? true
+        : "Phone number must be exactly 10 digits",
+    onChange: (event) => {
+      const normalizedPhone = normalizePhoneDigits(event.target.value);
+      event.target.value = normalizedPhone;
+
+      if (errors.phone && normalizedPhone.length === 10) {
+        clearErrors("phone");
+      }
+    },
+  });
+
+  const genderRegistration = register("gender", {
+    onChange: (event) => {
+      const currentDateOfBirth = getValues("dateOfBirth");
+
+      if (currentDateOfBirth || errors.dateOfBirth) {
+        syncDateOfBirthAgeError(
+          event.target.value as ProfileFormInput["gender"],
+          currentDateOfBirth
+        );
+      }
+    },
+  });
+
+  const dateOfBirthRegistration = register("dateOfBirth", {
+    validate: (value) => {
+      const ageValidationMessage = getProfileAgeValidationMessage(
+        getValues("gender"),
+        value
+      );
+
+      return ageValidationMessage ?? true;
+    },
+    onChange: (event) => {
+      const currentDateOfBirth = event.target.value;
+
+      if (currentDateOfBirth || errors.dateOfBirth) {
+        syncDateOfBirthAgeError(getValues("gender"), currentDateOfBirth);
+      }
+    },
+    onBlur: (event) => {
+      const currentDateOfBirth = event.target.value;
+
+      if (currentDateOfBirth || errors.dateOfBirth) {
+        syncDateOfBirthAgeError(getValues("gender"), currentDateOfBirth);
+        void trigger("dateOfBirth");
+      }
+    },
+  });
+
+  const pincodeRegistration = register("pincode", {
+    setValueAs: normalizePincodeDigits,
+    validate: (value) => {
+      const normalizedPincode = normalizePincodeDigits(value);
+
+      if (!normalizedPincode) {
+        return true;
+      }
+
+      if (normalizedPincode.length !== 6) {
+        return "Pincode must be 6 digits";
+      }
+
+      if (pincodeLookupState.pincode !== normalizedPincode) {
+        return true;
+      }
+
+      if (pincodeLookupState.status === "loading") {
+        return "Validating pincode...";
+      }
+
+      if (pincodeLookupState.status === "invalid") {
+        return pincodeLookupState.message ?? "Enter a valid pincode";
+      }
+
+      if (pincodeLookupState.status === "error") {
+        return (
+          pincodeLookupState.message ??
+          "Unable to validate this pincode right now. Please try again."
+        );
+      }
+
+      return true;
+    },
+    onChange: (event) => {
+      const normalizedPincode = normalizePincodeDigits(event.target.value);
+      event.target.value = normalizedPincode;
+
+      if (errors.pincode) {
+        clearErrors("pincode");
+      }
+
+      if (normalizedPincode.length < 6) {
+        resetPincodeLookup();
+        return;
+      }
+
+      if (normalizedPincode.length === 6) {
+        void lookupPincode(normalizedPincode);
+      }
+    },
+    onBlur: (event) => {
+      const normalizedPincode = normalizePincodeDigits(event.target.value);
+
+      if (normalizedPincode.length === 6) {
+        void lookupPincode(normalizedPincode);
+      }
+    },
+  });
 
   const renderPersonalInformation = () => (
     <div className="space-y-7">
@@ -907,7 +1936,7 @@ export default function ProfileForm({
           <label className={labelClass} htmlFor="pf-gender">
             Gender *
           </label>
-          <select id="pf-gender" {...register("gender")} className={selectClass}>
+          <select id="pf-gender" {...genderRegistration} className={selectClass}>
             {!isEdit ? <option value="">Select gender</option> : null}
             {genderOptions.map((gender) => (
               <option key={gender} value={gender}>
@@ -927,7 +1956,7 @@ export default function ProfileForm({
           <input
             id="pf-dob"
             type="date"
-            {...register("dateOfBirth")}
+            {...dateOfBirthRegistration}
             className={inputClass}
           />
           {errors.dateOfBirth ? (
@@ -988,9 +2017,13 @@ export default function ProfileForm({
           <input
             id="pf-phone"
             type="tel"
-            {...register("phone")}
+            {...phoneRegistration}
             className={inputClass}
-            placeholder="+91 98765 43210"
+            inputMode="numeric"
+            autoComplete="tel-national"
+            maxLength={10}
+            pattern="[0-9]{10}"
+            placeholder="9876543210"
           />
           {errors.phone ? (
             <p className={errorClass}>{errors.phone.message}</p>
@@ -1039,14 +2072,27 @@ export default function ProfileForm({
             <label className={labelClass} htmlFor="pf-state">
               State
             </label>
-            <select id="pf-state" {...register("state")} className={selectClass}>
-              <option value="">Select State</option>
-              {STATE_OPTIONS.map((state) => (
-                <option key={state} value={state}>
-                  {state}
-                </option>
-              ))}
-            </select>
+            <Controller
+              name="state"
+              control={control}
+              render={({ field }) => (
+                <SearchableDropdownInput
+                  id="pf-state"
+                  value={typeof field.value === "string" ? field.value : ""}
+                  options={filteredStateOptions}
+                  selectedOption={matchedStateOption}
+                  placeholder="Search or type a state"
+                  emptyMessage="No matching states found. Press Enter to use your typed value."
+                  suggestionLabel="Suggested States"
+                  inputClassName={inputClass}
+                  onValueChange={field.onChange}
+                  onCommit={(nextValue) => {
+                    commitStateValue(nextValue);
+                    field.onBlur();
+                  }}
+                />
+              )}
+            />
             {errors.state ? <p className={errorClass}>{errors.state.message}</p> : null}
           </div>
 
@@ -1054,21 +2100,35 @@ export default function ProfileForm({
             <label className={labelClass} htmlFor="pf-city">
               City
             </label>
-            <select
-              id="pf-city"
-              {...register("city")}
-              className={selectClass}
-              disabled={!selectedState}
-            >
-              <option value="">
-                {selectedState ? "Select City" : "Select a state first"}
-              </option>
-              {cityOptions.map((city) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-            </select>
+            <Controller
+              name="city"
+              control={control}
+              render={({ field }) => (
+                <SearchableDropdownInput
+                  id="pf-city"
+                  value={typeof field.value === "string" ? field.value : ""}
+                  options={filteredCityOptions}
+                  selectedOption={matchedCityOption}
+                  placeholder={
+                    matchedStateOption
+                      ? "Search or type a city"
+                      : "Type a city or enter a full state name for suggestions"
+                  }
+                  emptyMessage={
+                    matchedStateOption
+                      ? "No matching cities found. Press Enter to use your typed value."
+                      : "Enter or choose a state to see city suggestions. You can still type a city manually."
+                  }
+                  suggestionLabel="Suggested Cities"
+                  inputClassName={inputClass}
+                  onValueChange={field.onChange}
+                  onCommit={(nextValue) => {
+                    commitCityValue(nextValue);
+                    field.onBlur();
+                  }}
+                />
+              )}
+            />
             {errors.city ? <p className={errorClass}>{errors.city.message}</p> : null}
           </div>
 
@@ -1081,15 +2141,15 @@ export default function ProfileForm({
               type="text"
               inputMode="numeric"
               maxLength={6}
-              {...register("pincode")}
+              {...pincodeRegistration}
               className={inputClass}
-              placeholder="Auto-filled when available"
+              placeholder="Enter 6-digit pincode"
             />
             {errors.pincode ? (
               <p className={errorClass}>{errors.pincode.message}</p>
             ) : null}
             <p className="text-gray-400 text-xs mt-1.5">
-              Auto-filled when pincode data is available; you can adjust it if needed.
+              Enter a valid pincode to auto-fill the city and state.
             </p>
           </div>
         </div>
@@ -1115,7 +2175,7 @@ export default function ProfileForm({
     <div className="grid sm:grid-cols-2 gap-5">
       <div>
         <label className={labelClass} htmlFor="pf-education">
-          Higher Education
+          Higher Education *
         </label>
         <select
           id="pf-education"
@@ -1140,7 +2200,7 @@ export default function ProfileForm({
 
       <div>
         <label className={labelClass} htmlFor="pf-course">
-          Course
+          Course *
         </label>
         <select
           id="pf-course"
@@ -1164,7 +2224,7 @@ export default function ProfileForm({
 
       <div>
         <label className={labelClass} htmlFor="pf-profession">
-          Occupation
+          Occupation *
         </label>
         <select
           id="pf-profession"
@@ -1189,7 +2249,7 @@ export default function ProfileForm({
 
       <div>
         <label className={labelClass} htmlFor="pf-employedIn">
-          Employed In
+          Employed In *
         </label>
         <select
           id="pf-employedIn"
@@ -1214,7 +2274,7 @@ export default function ProfileForm({
 
       <div className="sm:col-span-2">
         <label className={labelClass} htmlFor="pf-income">
-          Annual Income
+          Annual Income *
         </label>
         <Controller
           name="income"
@@ -1288,7 +2348,7 @@ export default function ProfileForm({
       <div className="grid sm:grid-cols-2 gap-5">
         <div>
           <label className={labelClass} htmlFor="pf-religion">
-            Religion
+            Religion *
           </label>
           <select id="pf-religion" {...register("religion")} className={selectClass}>
             <option value="">Select Religion</option>
@@ -1305,7 +2365,7 @@ export default function ProfileForm({
 
         <div>
           <label className={labelClass} htmlFor="pf-language">
-            Mother Tongue
+            Mother Tongue *
           </label>
           <select id="pf-language" {...register("language")} className={selectClass}>
             <option value="">Select Mother Tongue</option>
@@ -1328,7 +2388,7 @@ export default function ProfileForm({
 
         <div>
           <label className={labelClass} htmlFor="pf-caste">
-            Caste
+            Caste *
           </label>
           <input
             id="pf-caste"
@@ -1372,7 +2432,7 @@ export default function ProfileForm({
       <div className="grid sm:grid-cols-2 gap-5">
         <div>
           <label className={labelClass} htmlFor="pf-father">
-            Father&apos;s Name
+            Father&apos;s Name *
           </label>
           <input
             id="pf-father"
@@ -1387,7 +2447,7 @@ export default function ProfileForm({
 
         <div>
           <label className={labelClass} htmlFor="pf-mother">
-            Mother&apos;s Name
+            Mother&apos;s Name *
           </label>
           <input
             id="pf-mother"
@@ -1402,7 +2462,7 @@ export default function ProfileForm({
 
         <div>
           <label className={labelClass} htmlFor="pf-familyType">
-            Family Type
+            Family Type *
           </label>
           <select
             id="pf-familyType"
@@ -1423,7 +2483,7 @@ export default function ProfileForm({
 
         <div>
           <label className={labelClass} htmlFor="pf-familyStatus">
-            Family Status
+            Family Status *
           </label>
           <select
             id="pf-familyStatus"
@@ -1444,7 +2504,7 @@ export default function ProfileForm({
 
         <div>
           <label className={labelClass} htmlFor="pf-siblings">
-            No. of Siblings
+            No. of Siblings *
           </label>
           <input
             id="pf-siblings"
@@ -1469,7 +2529,7 @@ export default function ProfileForm({
       <div className="grid sm:grid-cols-2 gap-5">
         <div>
           <label className={labelClass} htmlFor="pf-star">
-            Nakshatra
+            Nakshatra *
           </label>
           <select id="pf-star" {...register("star")} className={selectClass}>
             <option value="">Select Nakshatra</option>
@@ -1490,7 +2550,7 @@ export default function ProfileForm({
 
         <div>
           <label className={labelClass} htmlFor="pf-rasi">
-            Rasi / Star Sign
+            Rasi / Star Sign *
           </label>
           <select id="pf-rasi" {...register("rasi")} className={selectClass}>
             <option value="">Select Rasi</option>
@@ -1509,7 +2569,7 @@ export default function ProfileForm({
 
         <div>
           <label className={labelClass} htmlFor="pf-timeOfBirth-hour">
-            Time of Birth
+            Time of Birth *
           </label>
           <Controller
             name="timeOfBirth"
@@ -1530,7 +2590,7 @@ export default function ProfileForm({
 
         <div>
           <label className={labelClass} htmlFor="pf-placeOfBirth">
-            Place of Birth
+            Place of Birth *
           </label>
           <input
             id="pf-placeOfBirth"
@@ -1558,7 +2618,7 @@ export default function ProfileForm({
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
       <div>
         <label className={labelClass} htmlFor="pf-diet">
-          Diet
+          Diet *
         </label>
         <select id="pf-diet" {...register("diet")} className={selectClass}>
           <option value="">Select</option>
@@ -1576,7 +2636,7 @@ export default function ProfileForm({
 
       <div>
         <label className={labelClass} htmlFor="pf-smoking">
-          Smoking
+          Smoking *
         </label>
         <select id="pf-smoking" {...register("smoking")} className={selectClass}>
           <option value="">Select</option>
@@ -1596,7 +2656,7 @@ export default function ProfileForm({
 
       <div>
         <label className={labelClass} htmlFor="pf-drinking">
-          Drinking
+          Drinking *
         </label>
         <select id="pf-drinking" {...register("drinking")} className={selectClass}>
           <option value="">Select</option>
@@ -1688,6 +2748,251 @@ export default function ProfileForm({
     </div>
   );
 
+  const renderPartnerPreferences = () => (
+    <div className="space-y-8">
+      <section>
+        <h3 className="mb-5 border-b border-gray-100 pb-3 text-base font-display font-semibold text-gray-900">
+          Basic Preferences
+        </h3>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label className={labelClass} htmlFor="pf-pref-age-min">
+              Minimum Age
+            </label>
+            <input
+              id="pf-pref-age-min"
+              type="number"
+              min={18}
+              max={100}
+              {...register("preference.ageMin", { setValueAs: toNullableNumber })}
+              className={inputClass}
+              placeholder="24"
+            />
+            {errors.preference?.ageMin ? (
+              <p className={errorClass}>{errors.preference.ageMin.message}</p>
+            ) : null}
+          </div>
+
+          <div>
+            <label className={labelClass} htmlFor="pf-pref-age-max">
+              Maximum Age
+            </label>
+            <input
+              id="pf-pref-age-max"
+              type="number"
+              min={18}
+              max={100}
+              {...register("preference.ageMax", { setValueAs: toNullableNumber })}
+              className={inputClass}
+              placeholder="32"
+            />
+            {errors.preference?.ageMax ? (
+              <p className={errorClass}>{errors.preference.ageMax.message}</p>
+            ) : null}
+          </div>
+
+          <div>
+            <label className={labelClass} htmlFor="pf-pref-height-min">
+              Minimum Height (cm)
+            </label>
+            <input
+              id="pf-pref-height-min"
+              type="number"
+              min={100}
+              max={250}
+              {...register("preference.heightMin", { setValueAs: toNullableNumber })}
+              className={inputClass}
+              placeholder="155"
+            />
+            {errors.preference?.heightMin ? (
+              <p className={errorClass}>{errors.preference.heightMin.message}</p>
+            ) : null}
+          </div>
+
+          <div>
+            <label className={labelClass} htmlFor="pf-pref-height-max">
+              Maximum Height (cm)
+            </label>
+            <input
+              id="pf-pref-height-max"
+              type="number"
+              min={100}
+              max={250}
+              {...register("preference.heightMax", { setValueAs: toNullableNumber })}
+              className={inputClass}
+              placeholder="185"
+            />
+            {errors.preference?.heightMax ? (
+              <p className={errorClass}>{errors.preference.heightMax.message}</p>
+            ) : null}
+          </div>
+
+          <div>
+            <label className={labelClass} htmlFor="pf-pref-marital-status">
+              Marital Status
+            </label>
+            <select
+              id="pf-pref-marital-status"
+              {...register("preference.maritalStatus", {
+                setValueAs: toNullableValue,
+              })}
+              className={selectClass}
+            >
+              <option value="">Any</option>
+              {Object.entries(MARITAL_STATUS_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            {errors.preference?.maritalStatus ? (
+              <p className={errorClass}>
+                {errors.preference.maritalStatus.message}
+              </p>
+            ) : null}
+          </div>
+
+          <div>
+            <label className={labelClass} htmlFor="pf-pref-location">
+              Preferred Location
+            </label>
+            <input
+              id="pf-pref-location"
+              type="text"
+              {...register("preference.location", {
+                setValueAs: toNullableValue,
+              })}
+              className={inputClass}
+              placeholder="City, state, or country"
+            />
+            {errors.preference?.location ? (
+              <p className={errorClass}>{errors.preference.location.message}</p>
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h3 className="mb-5 border-b border-gray-100 pb-3 text-base font-display font-semibold text-gray-900">
+          Community & Lifestyle
+        </h3>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label className={labelClass} htmlFor="pf-pref-religion">
+              Religion
+            </label>
+            <select
+              id="pf-pref-religion"
+              {...register("preference.religion", {
+                setValueAs: toNullableValue,
+              })}
+              className={selectClass}
+            >
+              <option value="">Any</option>
+              {partnerPreferenceReligionOptions.map((religion) => (
+                <option key={religion} value={religion}>
+                  {religion}
+                </option>
+              ))}
+            </select>
+            {errors.preference?.religion ? (
+              <p className={errorClass}>{errors.preference.religion.message}</p>
+            ) : null}
+          </div>
+
+          <div>
+            <label className={labelClass} htmlFor="pf-pref-caste">
+              Caste
+            </label>
+            <input
+              id="pf-pref-caste"
+              type="text"
+              {...register("preference.caste", {
+                setValueAs: toNullableValue,
+              })}
+              className={inputClass}
+              placeholder="Optional"
+            />
+            {errors.preference?.caste ? (
+              <p className={errorClass}>{errors.preference.caste.message}</p>
+            ) : null}
+          </div>
+
+          <div>
+            <label className={labelClass} htmlFor="pf-pref-language">
+              Mother Tongue
+            </label>
+            <select
+              id="pf-pref-language"
+              {...register("preference.language", {
+                setValueAs: toNullableValue,
+              })}
+              className={selectClass}
+            >
+              <option value="">Any</option>
+              {selectedPreferenceLanguage &&
+              !MOTHER_TONGUE_OPTIONS.some(
+                (option) => option.value === selectedPreferenceLanguage
+              ) ? (
+                <option value={selectedPreferenceLanguage}>
+                  {selectedPreferenceLanguage}
+                </option>
+              ) : null}
+              {MOTHER_TONGUE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            {errors.preference?.language ? (
+              <p className={errorClass}>{errors.preference.language.message}</p>
+            ) : null}
+          </div>
+
+          <div>
+            <label className={labelClass} htmlFor="pf-pref-education">
+              Education
+            </label>
+            <input
+              id="pf-pref-education"
+              type="text"
+              {...register("preference.education", {
+                setValueAs: toNullableValue,
+              })}
+              className={inputClass}
+              placeholder="Graduate, MBA, B.Tech..."
+            />
+            {errors.preference?.education ? (
+              <p className={errorClass}>
+                {errors.preference.education.message}
+              </p>
+            ) : null}
+          </div>
+
+          <div>
+            <label className={labelClass} htmlFor="pf-pref-profession">
+              Profession
+            </label>
+            <input
+              id="pf-pref-profession"
+              type="text"
+              {...register("preference.profession", {
+                setValueAs: toNullableValue,
+              })}
+              className={inputClass}
+              placeholder="Doctor, engineer, business..."
+            />
+            {errors.preference?.profession ? (
+              <p className={errorClass}>
+                {errors.preference.profession.message}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+
   const renderPhotoUploads = () => (
     <div className="space-y-5">
       <div
@@ -1701,10 +3006,11 @@ export default function ProfileForm({
             control={control}
             render={({ field }) => (
               <ImageUpload
-                label="Profile Picture"
+                label="Profile Picture *"
                 value={field.value}
                 onChange={field.onChange}
                 onRemove={() => field.onChange(null)}
+                error={errors.profileImage?.message}
               />
             )}
           />
@@ -1730,10 +3036,11 @@ export default function ProfileForm({
             control={control}
             render={({ field }) => (
               <ImageUpload
-                label="Horoscope Image"
+                label="Horoscope Image *"
                 value={field.value}
                 onChange={field.onChange}
                 onRemove={() => field.onChange(null)}
+                error={errors.horoscopeImage?.message}
               />
             )}
           />
@@ -1988,13 +3295,21 @@ export default function ProfileForm({
           </SectionBlock>
 
           <SectionBlock
+            title="Partner Preferences"
+            description="Add the partner details you want to see in your match suggestions."
+            delayMs={460}
+          >
+            {renderPartnerPreferences()}
+          </SectionBlock>
+
+          <SectionBlock
             title="Add Photos"
             description={
               shouldShowHoroscopeStep
                 ? "Manage your profile and horoscope images."
                 : "Manage your profile image."
             }
-            delayMs={460}
+            delayMs={530}
           >
             {renderPhotoUploads()}
           </SectionBlock>
@@ -2004,7 +3319,7 @@ export default function ProfileForm({
       {isEdit ? (
         <div
           className="ui-enter-up flex flex-col gap-3 border-t border-gray-100 pt-2 sm:flex-row sm:justify-start"
-          style={{ animationDelay: "530ms", animationFillMode: "forwards" }}
+          style={{ animationDelay: "600ms", animationFillMode: "forwards" }}
         >
           <div className="flex flex-col gap-3 sm:flex-row">
             <button

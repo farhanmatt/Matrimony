@@ -5,27 +5,109 @@ import { useEffect, useState } from "react";
 import { Heart, ImageIcon, UserCircle2 } from "lucide-react";
 
 interface ProfileDetailGalleryProps {
+  profileId?: string;
   name: string;
   photoUrls: string[];
   isNew?: boolean;
-  isOnline?: boolean;
+  initialIsOnline?: boolean;
   extraPhotoCount?: number;
 }
 
 export default function ProfileDetailGallery({
+  profileId,
   name,
   photoUrls,
   isNew = false,
-  isOnline = true,
+  initialIsOnline = false,
   extraPhotoCount = 0,
 }: ProfileDetailGalleryProps) {
   const [activePhoto, setActivePhoto] = useState<string | null>(
     photoUrls[0] ?? null
   );
+  const [isOnline, setIsOnline] = useState(initialIsOnline);
 
   useEffect(() => {
     setActivePhoto(photoUrls[0] ?? null);
   }, [photoUrls]);
+
+  useEffect(() => {
+    setIsOnline(initialIsOnline);
+  }, [initialIsOnline]);
+
+  useEffect(() => {
+    if (!profileId) {
+      return;
+    }
+
+    let intervalId: number | null = null;
+    let isDisposed = false;
+
+    const loadPresence = async () => {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/presence/${profileId}`, {
+          cache: "no-store",
+          headers: {
+            "x-skip-loading": "1",
+          },
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = await response.json();
+
+        if (!isDisposed) {
+          setIsOnline(Boolean(data.data?.isOnline));
+        }
+      } catch {
+        // Keep the latest visible state if a presence request fails.
+      }
+    };
+
+    const clearPresenceInterval = () => {
+      if (intervalId !== null) {
+        window.clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    const ensurePresenceInterval = () => {
+      clearPresenceInterval();
+      intervalId = window.setInterval(() => {
+        void loadPresence();
+      }, 10_000);
+    };
+
+    const handleVisibleState = () => {
+      if (document.visibilityState === "visible") {
+        void loadPresence();
+        ensurePresenceInterval();
+        return;
+      }
+
+      clearPresenceInterval();
+    };
+
+    const handleFocus = () => {
+      void loadPresence();
+    };
+
+    handleVisibleState();
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibleState);
+
+    return () => {
+      isDisposed = true;
+      clearPresenceInterval();
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibleState);
+    };
+  }, [profileId]);
 
   return (
     <div>

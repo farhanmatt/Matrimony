@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { sendProfileCreatedEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
-import { profileSchema } from "@/lib/validations/profile";
+import { profileFormSchema, type PreferenceInput } from "@/lib/validations/profile";
 
 function compactAddressLocation(city?: string | null, state?: string | null) {
   const parts = [city, state]
@@ -10,6 +10,54 @@ function compactAddressLocation(city?: string | null, state?: string | null) {
     .filter((value): value is string => Boolean(value));
 
   return parts.length > 0 ? parts.join(", ") : null;
+}
+
+function emptyToNull(value: string | null | undefined) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function normalizePreference(data: PreferenceInput) {
+  return {
+    ageMin: data.ageMin ?? null,
+    ageMax: data.ageMax ?? null,
+    heightMin: data.heightMin ?? null,
+    heightMax: data.heightMax ?? null,
+    religion: emptyToNull(data.religion),
+    caste: emptyToNull(data.caste),
+    education: emptyToNull(data.education),
+    profession: emptyToNull(data.profession),
+    location: emptyToNull(data.location),
+    maritalStatus: emptyToNull(data.maritalStatus),
+    language: emptyToNull(data.language),
+  };
+}
+
+function hasPreferenceValue(data: PreferenceInput | undefined) {
+  if (!data) {
+    return false;
+  }
+
+  return [
+    data.ageMin,
+    data.ageMax,
+    data.heightMin,
+    data.heightMax,
+    data.religion,
+    data.caste,
+    data.education,
+    data.profession,
+    data.location,
+    data.maritalStatus,
+    data.language,
+  ].some((value) => {
+    if (typeof value === "string") {
+      return value.trim().length > 0;
+    }
+
+    return value !== null && typeof value !== "undefined";
+  });
 }
 
 function extractCloudinaryPublicId(url: string) {
@@ -113,7 +161,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const validated = profileSchema.safeParse(body);
+    const validated = profileFormSchema.safeParse(body);
     if (!validated.success) {
       return NextResponse.json(
         { error: validated.error.errors[0].message },
@@ -142,7 +190,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
 
-    const { dateOfBirth, additionalPhotoUrls = [], ...rest } = validated.data;
+    const { dateOfBirth, additionalPhotoUrls = [], preference, ...rest } = validated.data;
     const location = compactAddressLocation(rest.city, rest.state);
 
     const profile = await prisma.profile.create({
@@ -154,6 +202,15 @@ export async function POST(req: NextRequest) {
         location,
       },
     });
+
+    if (hasPreferenceValue(preference) && preference) {
+      await prisma.preference.create({
+        data: {
+          profileId: profile.id,
+          ...normalizePreference(preference),
+        },
+      });
+    }
 
     await syncProfilePhotos(profile.id, rest.profileImage, additionalPhotoUrls);
 
@@ -201,7 +258,7 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const validated = profileSchema.safeParse(body);
+    const validated = profileFormSchema.safeParse(body);
     if (!validated.success) {
       return NextResponse.json(
         { error: validated.error.errors[0].message },
@@ -209,7 +266,7 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    const { dateOfBirth, additionalPhotoUrls = [], ...rest } = validated.data;
+    const { dateOfBirth, additionalPhotoUrls = [], preference, ...rest } = validated.data;
     const location = compactAddressLocation(rest.city, rest.state);
 
     const profile = await prisma.profile.update({
@@ -220,6 +277,17 @@ export async function PUT(req: NextRequest) {
         location,
       },
     });
+
+    if (preference) {
+      await prisma.preference.upsert({
+        where: { profileId: profile.id },
+        create: {
+          profileId: profile.id,
+          ...normalizePreference(preference),
+        },
+        update: normalizePreference(preference),
+      });
+    }
 
     await syncProfilePhotos(profile.id, rest.profileImage, additionalPhotoUrls);
 

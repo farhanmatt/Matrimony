@@ -1,4 +1,4 @@
-const CHAT_PRESENCE_WINDOW_MS = 45_000;
+const CHAT_PRESENCE_WINDOW_MS = 20_000;
 const CHAT_PRESENCE_STALE_MS = CHAT_PRESENCE_WINDOW_MS * 6;
 
 const activeChatProfiles = new Map<string, number>();
@@ -36,4 +36,3 @@ export function getChatProfilePresence(profileId: string, now = new Date()) {
       lastActiveAtMs !== null ? new Date(lastActiveAtMs).toISOString() : null,
   };
 }
-

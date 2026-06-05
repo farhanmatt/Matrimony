@@ -8,6 +8,13 @@ import { SkeletonGrid } from "@/components/common/SkeletonCard";
 import EmptyState from "@/components/common/EmptyState";
 import { useAutoRefresh } from "@/lib/hooks/useAutoRefresh";
 import {
+  EMPTY_BROWSE_FILTERS,
+  mapPreferenceSourceToBrowseFilters,
+  readStoredBrowseFilters,
+  type BrowseFilterValues,
+  writeStoredBrowseFilters,
+} from "@/lib/utils/browse-filters";
+import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -49,7 +56,6 @@ const maritalStatusOptions = [
   { value: "NEVER_MARRIED", label: "Never Married" },
   { value: "DIVORCED", label: "Divorced" },
   { value: "WIDOWED", label: "Widowed" },
-  { value: "SEPARATED", label: "Separated" },
   { value: "AWAITING_DIVORCE", label: "Awaiting Divorce" },
 ];
 
@@ -74,82 +80,9 @@ interface Profile {
   city: string | null;
   state: string | null;
   religion: string | null;
-  language?: string | null;
-  profileImage?: string | null;
-  photos: { url: string; isPrimary: boolean }[];
+  previewImageUrl: string | null;
 }
 
-interface SavedPreference {
-  ageMin: number | null;
-  ageMax: number | null;
-  heightMin: number | null;
-  heightMax: number | null;
-  religion: string | null;
-  caste: string | null;
-  education: string | null;
-  profession: string | null;
-  location: string | null;
-  maritalStatus: string | null;
-  language: string | null;
-}
-
-type BrowseFilterValues = {
-  ageMin: string;
-  ageMax: string;
-  religion: string;
-  caste: string;
-  language: string;
-  education: string;
-  profession: string;
-  location: string;
-  heightMin: string;
-  heightMax: string;
-  maritalStatus: string;
-};
-
-const EMPTY_FILTERS: BrowseFilterValues = {
-  ageMin: "",
-  ageMax: "",
-  religion: "",
-  caste: "",
-  language: "",
-  education: "",
-  profession: "",
-  location: "",
-  heightMin: "",
-  heightMax: "",
-  maritalStatus: "",
-};
-
-function toFilterValue(value: string | number | null | undefined) {
-  if (value === null || typeof value === "undefined") {
-    return "";
-  }
-
-  return String(value);
-}
-
-function mapPreferenceToFilters(
-  preference?: SavedPreference | null
-): BrowseFilterValues {
-  if (!preference) {
-    return { ...EMPTY_FILTERS };
-  }
-
-  return {
-    ageMin: toFilterValue(preference.ageMin),
-    ageMax: toFilterValue(preference.ageMax),
-    religion: toFilterValue(preference.religion),
-    caste: toFilterValue(preference.caste),
-    language: toFilterValue(preference.language),
-    education: toFilterValue(preference.education),
-    profession: toFilterValue(preference.profession),
-    location: toFilterValue(preference.location),
-    heightMin: toFilterValue(preference.heightMin),
-    heightMax: toFilterValue(preference.heightMax),
-    maritalStatus: toFilterValue(preference.maritalStatus),
-  };
-}
 
 function getPaginationItems(currentPage: number, pageCount: number) {
   if (pageCount <= 1) return [];
@@ -185,9 +118,20 @@ export default function BrowsePage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [profileRequired, setProfileRequired] = useState(false);
   const [hiddenProfileIds, setHiddenProfileIds] = useState<string[]>([]);
-  const [savedPreferenceFilters, setSavedPreferenceFilters] =
-    useState<BrowseFilterValues>(EMPTY_FILTERS);
   const [preferenceFiltersReady, setPreferenceFiltersReady] = useState(false);
+  const emptyPreferencePayload = {
+    ageMin: null,
+    ageMax: null,
+    heightMin: null,
+    heightMax: null,
+    religion: null,
+    caste: null,
+    education: null,
+    profession: null,
+    location: null,
+    maritalStatus: null,
+    language: null,
+  } as const;
 
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -333,6 +277,15 @@ export default function BrowsePage() {
 
   useEffect(() => {
     let isMounted = true;
+    const storedFilters = readStoredBrowseFilters();
+
+    if (storedFilters) {
+      applyFiltersToState(storedFilters);
+      setPreferenceFiltersReady(true);
+      return () => {
+        isMounted = false;
+      };
+    }
 
     const loadSavedPreferences = async () => {
       try {
@@ -346,13 +299,14 @@ export default function BrowsePage() {
           return;
         }
 
-        const json = (await res.json()) as { preference?: SavedPreference | null };
+        const json = (await res.json()) as {
+          preference?: Record<string, string | number | null> | null;
+        };
         if (!isMounted) {
           return;
         }
 
-        const nextFilters = mapPreferenceToFilters(json.preference);
-        setSavedPreferenceFilters(nextFilters);
+        const nextFilters = mapPreferenceSourceToBrowseFilters(json.preference);
         applyFiltersToState(nextFilters);
       } catch (error) {
         if (isMounted) {
@@ -511,7 +465,7 @@ export default function BrowsePage() {
       return;
     }
 
-    applyFiltersToState({
+    const nextFilters = {
       religion: draftReligion,
       caste: draftCaste,
       language: draftLanguage,
@@ -523,16 +477,65 @@ export default function BrowsePage() {
       profession: draftProfession,
       ageMin: draftAgeMin,
       ageMax: draftAgeMax,
-    });
+    };
+
+    applyFiltersToState(nextFilters);
+    writeStoredBrowseFilters(nextFilters);
     setPage(1);
     setIsFilterOpen(false);
   };
 
   const clearFilters = () => {
-    applyFiltersToDraftState(savedPreferenceFilters);
-    applyFiltersToState(savedPreferenceFilters);
+    const previousFilters: BrowseFilterValues = {
+      religion,
+      caste,
+      language,
+      maritalStatus,
+      location,
+      heightMin,
+      heightMax,
+      education,
+      profession,
+      ageMin,
+      ageMax,
+    };
+    const previousPage = page;
+
+    applyFiltersToDraftState(EMPTY_BROWSE_FILTERS);
+    applyFiltersToState(EMPTY_BROWSE_FILTERS);
+    writeStoredBrowseFilters(EMPTY_BROWSE_FILTERS);
     setPage(1);
     setIsFilterOpen(false);
+
+    void (async () => {
+      try {
+        const response = await fetch("/api/preferences", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(emptyPreferencePayload),
+        });
+        const result = await response.json();
+
+        if (!response.ok) {
+          applyFiltersToDraftState(previousFilters);
+          applyFiltersToState(previousFilters);
+          writeStoredBrowseFilters(previousFilters);
+          setPage(previousPage);
+          toast.error(
+            result.error ??
+              "Could not clear Partner Preferences, so the previous filters were restored."
+          );
+        }
+      } catch {
+        applyFiltersToDraftState(previousFilters);
+        applyFiltersToState(previousFilters);
+        writeStoredBrowseFilters(previousFilters);
+        setPage(previousPage);
+        toast.error(
+          "Could not clear Partner Preferences, so the previous filters were restored."
+        );
+      }
+    })();
   };
 
   const handleSearchSubmit = (event: FormEvent) => {
@@ -578,7 +581,7 @@ export default function BrowsePage() {
             max={100}
             value={draftAgeMin}
             onChange={(event) => setDraftAgeMin(event.target.value)}
-            placeholder="24"
+            placeholder="Eg: 24"
             className={filterControlClass}
           />
         </div>
@@ -591,7 +594,7 @@ export default function BrowsePage() {
             max={100}
             value={draftAgeMax}
             onChange={(event) => setDraftAgeMax(event.target.value)}
-            placeholder="32"
+            placeholder="Eg: 32"
             className={filterControlClass}
           />
         </div>
@@ -606,7 +609,7 @@ export default function BrowsePage() {
             max={250}
             value={draftHeightMin}
             onChange={(event) => setDraftHeightMin(event.target.value)}
-            placeholder="155"
+            placeholder="Eg: 155"
             className={filterControlClass}
           />
         </div>
@@ -619,7 +622,7 @@ export default function BrowsePage() {
             max={250}
             value={draftHeightMax}
             onChange={(event) => setDraftHeightMax(event.target.value)}
-            placeholder="185"
+            placeholder="Eg: 185"
             className={filterControlClass}
           />
         </div>
@@ -646,7 +649,7 @@ export default function BrowsePage() {
         <input
           value={draftCaste}
           onChange={(event) => setDraftCaste(event.target.value)}
-          placeholder="Optional"
+          placeholder="Eg: Nair"
           className={filterControlClass}
         />
       </div>
@@ -672,7 +675,7 @@ export default function BrowsePage() {
         <input
           value={draftEducation}
           onChange={(event) => setDraftEducation(event.target.value)}
-          placeholder="B.Tech, MBA, MBBS"
+          placeholder="Eg: B.Tech"
           className={filterControlClass}
         />
       </div>
@@ -682,7 +685,7 @@ export default function BrowsePage() {
         <input
           value={draftProfession}
           onChange={(event) => setDraftProfession(event.target.value)}
-          placeholder="Engineer, Doctor, Designer"
+          placeholder="Eg: Engineer"
           className={filterControlClass}
         />
       </div>
@@ -692,7 +695,7 @@ export default function BrowsePage() {
         <input
           value={draftLocation}
           onChange={(event) => setDraftLocation(event.target.value)}
-          placeholder="City or state"
+          placeholder="Eg: Chennai"
           className={filterControlClass}
         />
       </div>

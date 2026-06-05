@@ -19,7 +19,9 @@ import LikedProfilePreviewCard from "@/components/profile/LikedProfilePreviewCar
 import { useAutoRefresh } from "@/lib/hooks/useAutoRefresh";
 import {
   readShortlistedProfileIds,
+  readShortlistedProfileMetadata,
   SHORTLIST_UPDATED_EVENT,
+  type ShortlistProfileMetadataMap,
   writeShortlistedProfileIds,
 } from "@/lib/utils/shortlist";
 
@@ -48,10 +50,11 @@ interface LikedProfile {
     city: string | null;
     state: string | null;
     religion: string | null;
-    profileImage?: string | null;
-    photos: { url: string; isPrimary: boolean }[];
+    previewImageUrl: string | null;
   };
 }
+
+type ShortlistProfilePreview = LikedProfile["toProfile"];
 
 interface MatchSummary {
   id: string;
@@ -60,6 +63,11 @@ interface MatchSummary {
     id: string;
   };
 }
+
+type VisibleLikedProfile = LikedProfile & {
+  allowUnlike: boolean;
+  shortlistSource: "interest" | "message";
+};
 
 function areStringArraysEqual(first: string[], second: string[]) {
   return (
@@ -84,6 +92,14 @@ export default function LikedPageClient({
   const [loading, setLoading] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOption>("recent");
   const [shortlistedProfileIds, setShortlistedProfileIds] = useState<string[]>([]);
+  const [shortlistMetadata, setShortlistMetadata] =
+    useState<ShortlistProfileMetadataMap>({});
+  const [shortlistOnlyProfiles, setShortlistOnlyProfiles] = useState<
+    ShortlistProfilePreview[]
+  >([]);
+  const [loadingShortlistOnlyProfiles, setLoadingShortlistOnlyProfiles] =
+    useState(false);
+  const isShortlistView = viewMode === "shortlist";
 
   useEffect(() => {
     setLikes(initialLikes);
@@ -105,7 +121,7 @@ export default function LikedPageClient({
       try {
         const [likesRes, matchesRes] = await Promise.all([
           fetch("/api/likes", { cache: "no-store" }),
-          fetch("/api/matches", { cache: "no-store" }),
+          fetch("/api/matches?summary=1", { cache: "no-store" }),
         ]);
 
         const [likesData, matchesData] = await Promise.all([
@@ -144,11 +160,13 @@ export default function LikedPageClient({
 
   useEffect(() => {
     setShortlistedProfileIds(readShortlistedProfileIds(shortlistUserId));
+    setShortlistMetadata(readShortlistedProfileMetadata(shortlistUserId));
 
     const handleShortlistUpdated = (event: Event) => {
       const shortlistEvent = event as CustomEvent<{
         profileIds?: string[];
         userId?: string;
+        metadata?: ShortlistProfileMetadataMap;
       }>;
 
       if ((shortlistEvent.detail?.userId ?? null) !== shortlistUserId) {
@@ -158,6 +176,10 @@ export default function LikedPageClient({
       setShortlistedProfileIds(
         shortlistEvent.detail?.profileIds ??
           readShortlistedProfileIds(shortlistUserId)
+      );
+      setShortlistMetadata(
+        shortlistEvent.detail?.metadata ??
+          readShortlistedProfileMetadata(shortlistUserId)
       );
     };
 
@@ -184,8 +206,14 @@ export default function LikedPageClient({
     );
 
     const nextShortlistedProfileIds = shortlistedProfileIds.filter(
-      (profileId) =>
-        likedProfileIdSet.has(profileId) && !matchedProfileIdSet.has(profileId)
+      (profileId) => {
+        const shortlistSource = shortlistMetadata[profileId]?.source ?? "interest";
+        return (
+          shortlistSource === "message" ||
+          likedProfileIdSet.has(profileId) ||
+          matchedProfileIdSet.has(profileId)
+        );
+      }
     );
 
     if (areStringArraysEqual(nextShortlistedProfileIds, shortlistedProfileIds)) {
@@ -193,7 +221,99 @@ export default function LikedPageClient({
     }
 
     writeShortlistedProfileIds(nextShortlistedProfileIds, shortlistUserId);
-  }, [likes, matches, shortlistUserId, shortlistedProfileIds]);
+  }, [likes, matches, shortlistMetadata, shortlistUserId, shortlistedProfileIds]);
+
+  useEffect(() => {
+    if (!isShortlistView || !shortlistUserId) {
+      setLoadingShortlistOnlyProfiles(false);
+      setShortlistOnlyProfiles([]);
+      return;
+    }
+
+    const likedProfileIdSet = new Set(likes.map((like) => like.toProfile.id));
+    const matchedProfileIdSet = new Set(
+      matches.map((match) => match.otherProfile.id)
+    );
+    const messageShortlistIds = shortlistedProfileIds.filter((profileId) => {
+      if (likedProfileIdSet.has(profileId) || matchedProfileIdSet.has(profileId)) {
+        return false;
+      }
+
+      return shortlistMetadata[profileId]?.source === "message";
+    });
+
+    if (messageShortlistIds.length === 0) {
+      setLoadingShortlistOnlyProfiles(false);
+      setShortlistOnlyProfiles([]);
+      return;
+    }
+
+    let active = true;
+
+    const loadShortlistOnlyProfiles = async () => {
+      if (active) {
+        setLoadingShortlistOnlyProfiles(true);
+      }
+
+      try {
+        const response = await fetch("/api/shortlist/profiles", {
+          method: "POST",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            profileIds: messageShortlistIds,
+          }),
+        });
+        const result = await response.json();
+
+        if (!response.ok || !Array.isArray(result.data)) {
+          throw new Error(result.error ?? "Failed to load shortlisted profiles");
+        }
+
+        if (!active) {
+          return;
+        }
+
+        const nextProfiles = result.data as ShortlistProfilePreview[];
+        setShortlistOnlyProfiles(nextProfiles);
+
+        const returnedProfileIdSet = new Set(nextProfiles.map((profile) => profile.id));
+        const nextShortlistedProfileIds = shortlistedProfileIds.filter(
+          (profileId) =>
+            shortlistMetadata[profileId]?.source !== "message" ||
+            likedProfileIdSet.has(profileId) ||
+            returnedProfileIdSet.has(profileId)
+        );
+
+        if (!areStringArraysEqual(nextShortlistedProfileIds, shortlistedProfileIds)) {
+          writeShortlistedProfileIds(nextShortlistedProfileIds, shortlistUserId);
+        }
+      } catch {
+        if (active) {
+          setShortlistOnlyProfiles([]);
+        }
+      } finally {
+        if (active) {
+          setLoadingShortlistOnlyProfiles(false);
+        }
+      }
+    };
+
+    void loadShortlistOnlyProfiles();
+
+    return () => {
+      active = false;
+    };
+  }, [
+    isShortlistView,
+    likes,
+    matches,
+    shortlistMetadata,
+    shortlistUserId,
+    shortlistedProfileIds,
+  ]);
 
   const handleUnlike = (profileId: string) => {
     setLikes((currentLikes) =>
@@ -220,17 +340,53 @@ export default function LikedPageClient({
   const matchedProfileIdSet = new Set(
     matches.map((match) => match.otherProfile.id)
   );
-  const availableLikes = sortedLikes.filter(
+  const shortlistedProfileIdSet = new Set(shortlistedProfileIds);
+  const shortlistOnlyItems: VisibleLikedProfile[] = shortlistOnlyProfiles.map(
+    (profile) => ({
+      id: `shortlist:${profile.id}`,
+      createdAt:
+        shortlistMetadata[profile.id]?.savedAt ?? new Date().toISOString(),
+      toProfile: profile,
+      allowUnlike: false,
+      shortlistSource: "message",
+    })
+  );
+  const likedFeedItems: VisibleLikedProfile[] = sortedLikes.map((like) => ({
+    ...like,
+    allowUnlike: true,
+    shortlistSource: shortlistMetadata[like.toProfile.id]?.source ?? "interest",
+  }));
+  const availableLikes = likedFeedItems.filter(
     (like) => !matchedProfileIdSet.has(like.toProfile.id)
   );
-  const shortlistedProfileIdSet = new Set(shortlistedProfileIds);
-  const shortlistedLikes = availableLikes.filter((like) =>
+  const shortlistFeedItems = [
+    ...likedFeedItems.filter((like) =>
+      shortlistedProfileIdSet.has(like.toProfile.id)
+    ),
+    ...shortlistOnlyItems,
+  ].sort(
+    (first, second) => {
+      if (sortOrder === "oldest") {
+        return (
+          new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime()
+        );
+      }
+
+      if (sortOrder === "name") {
+        return first.toProfile.fullName.localeCompare(second.toProfile.fullName);
+      }
+
+      return (
+        new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime()
+      );
+    }
+  );
+  const shortlistedLikes = shortlistFeedItems.filter((like) =>
     shortlistedProfileIdSet.has(like.toProfile.id)
   );
   const activeLikes = availableLikes.filter(
     (like) => !shortlistedProfileIdSet.has(like.toProfile.id)
   );
-  const isShortlistView = viewMode === "shortlist";
   const hasSavedShortlist = shortlistedProfileIds.length > 0;
   const shortlistedCount = shortlistedLikes.length;
   const visibleLikes = isShortlistView ? shortlistedLikes : activeLikes;
@@ -238,7 +394,8 @@ export default function LikedPageClient({
     isShortlistView &&
     hasSavedShortlist &&
     shortlistedCount === 0 &&
-    availableLikes.length === 0;
+    shortlistFeedItems.length === 0 &&
+    !loadingShortlistOnlyProfiles;
 
   if (loading) return <PageLoader />;
 
@@ -264,7 +421,7 @@ export default function LikedPageClient({
       iconClass: "bg-rose-100 text-rose-500",
     },
     {
-      label: "Recently Liked",
+      label: isShortlistView ? "Recently Saved" : "Recently Liked",
       value: recentLikesCount,
       icon: Clock3,
       iconClass: "bg-fuchsia-100 text-fuchsia-500",
@@ -300,7 +457,7 @@ export default function LikedPageClient({
           </div>
           <p className="text-[13px] text-slate-600">
             {isShortlistView
-              ? "Showing the profiles you shortlisted from your interests."
+              ? "Showing the profiles you saved from interests and message notifications."
               : "Profiles you've shown interest in. Shortlist your favorites to keep them handy."}
           </p>
         </div>
@@ -402,7 +559,7 @@ export default function LikedPageClient({
                 Your shortlist is still saved
               </h2>
               <p className="mt-2 text-[15px] text-slate-500">
-                Those shortlisted profiles are not in your current Interests view right now.
+                Those saved profiles are not available in your current shortlist view right now.
                 They may have moved to Mutual Interest or Unlocked Profiles.
               </p>
               <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -420,7 +577,9 @@ export default function LikedPageClient({
                 </Link>
               </div>
             </section>
-          ) : isShortlistView && visibleLikes.length === 0 ? (
+          ) : isShortlistView &&
+            visibleLikes.length === 0 &&
+            !loadingShortlistOnlyProfiles ? (
             <section
               className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 bg-white px-6 py-12 text-center shadow-sm"
               style={{ animationDelay: "160ms", animationFillMode: "forwards" }}
@@ -432,8 +591,8 @@ export default function LikedPageClient({
                 No shortlisted profiles yet
               </h2>
               <p className="mt-2 text-[15px] text-slate-500">
-                Use the three-dot menu on any interest card and tap shortlist to
-                save profiles here.
+                Save profiles from your interests or accept a message notification to
+                keep them here.
               </p>
               <Link
                 href="/dashboard/liked"
@@ -441,6 +600,21 @@ export default function LikedPageClient({
               >
                 Show All Interests
               </Link>
+            </section>
+          ) : isShortlistView &&
+            loadingShortlistOnlyProfiles &&
+            visibleLikes.length === 0 ? (
+            <section
+              className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 bg-white px-6 py-12 text-center shadow-sm"
+              style={{ animationDelay: "160ms", animationFillMode: "forwards" }}
+            >
+              <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-rose-200 border-t-rose-500" />
+              <h2 className="mt-5 font-display text-[1.6rem] font-bold text-slate-900">
+                Loading shortlisted profiles
+              </h2>
+              <p className="mt-2 text-[15px] text-slate-500">
+                Bringing in the profiles you saved from recent message notifications.
+              </p>
             </section>
           ) : !isShortlistView && visibleLikes.length === 0 ? (
             <section
@@ -480,6 +654,7 @@ export default function LikedPageClient({
                       profile={like.toProfile}
                       shortlistUserId={shortlistUserId}
                       showChatAction={isShortlistView}
+                      allowUnlike={like.allowUnlike}
                       onUnlike={handleUnlike}
                     />
                   </div>

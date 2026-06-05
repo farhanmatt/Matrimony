@@ -29,8 +29,7 @@ interface ReceivedLikeProfile {
   city: string | null;
   state: string | null;
   religion: string | null;
-  profileImage?: string | null;
-  photos: { url: string; isPrimary: boolean }[];
+  previewImageUrl: string | null;
 }
 
 interface ReceivedLikeItem {

@@ -7272,9 +7272,107 @@ export const STATE_OPTIONS = Object.keys(STATE_CITY_DATA);
 
 export const CITY_PINCODE_DATA: Record<string, string> = {};
 
+const CITY_LOOKUP_ALIASES: Partial<Record<string, Record<string, string>>> = {
+  "Tamil Nadu": {
+    agastheeswaram: "Nagercoil",
+    edalakudy: "Nagercoil",
+    irulappapuram: "Nagercoil",
+    kottar: "Nagercoil",
+    maravankudiyiruppu: "Nagercoil",
+    kanyakumari: "Nagercoil",
+    kanniyakumari: "Nagercoil",
+  },
+};
+
+function normalizeLocationKey(value: string) {
+  return value
+    .toLowerCase()
+    .replace(
+      /\b(district|division|taluk|tehsil|sub office|head office|branch office|post office|gpo|so|ho|bo)\b/g,
+      " "
+    )
+    .replace(/[^a-z0-9]/g, "");
+}
+
 export function getCitiesForState(state?: string | null): readonly string[] {
   if (!state) return [];
   return STATE_CITY_DATA[state as keyof typeof STATE_CITY_DATA] ?? [];
+}
+
+export function findMatchingStateOption(state?: string | null) {
+  if (!state) return null;
+
+  const normalizedState = normalizeLocationKey(state);
+
+  return (
+    STATE_OPTIONS.find(
+      (option) => normalizeLocationKey(option) === normalizedState
+    ) ?? null
+  );
+}
+
+export function findMatchingCityForState(
+  state?: string | null,
+  candidates: readonly (string | null | undefined)[] = []
+) {
+  if (!state) return null;
+
+  const cities = getCitiesForState(state);
+  if (!cities.length) return null;
+
+  const normalizedCandidates = Array.from(
+    new Set(
+      candidates
+        .map((candidate) =>
+          typeof candidate === "string" ? normalizeLocationKey(candidate) : ""
+        )
+        .filter(Boolean)
+    )
+  );
+
+  if (!normalizedCandidates.length) {
+    return null;
+  }
+
+  const stateAliases = CITY_LOOKUP_ALIASES[state] ?? {};
+  for (const candidate of normalizedCandidates) {
+    const aliasedCity = stateAliases[candidate];
+
+    if (aliasedCity) {
+      return aliasedCity;
+    }
+  }
+
+  const normalizedCities = cities.map((city) => ({
+    city,
+    normalized: normalizeLocationKey(city),
+  }));
+
+  for (const candidate of normalizedCandidates) {
+    const exactMatch = normalizedCities.find(
+      (city) => city.normalized === candidate
+    );
+
+    if (exactMatch) {
+      return exactMatch.city;
+    }
+  }
+
+  for (const candidate of normalizedCandidates) {
+    const fuzzyMatch = normalizedCities.find(({ normalized }) => {
+      if (normalized.length < 4 || candidate.length < 4) {
+        return false;
+      }
+
+      return normalized.includes(candidate) || candidate.includes(normalized);
+    });
+
+    if (fuzzyMatch) {
+      return fuzzyMatch.city;
+    }
+  }
+
+  return null;
 }
 
 export function getPincodeForCity(state?: string | null, city?: string | null) {

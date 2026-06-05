@@ -3,13 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { isDatabaseConnectionError } from "@/lib/utils/errors";
 import { calculateAge } from "@/lib/utils/helpers";
 import { getMatchesForProfile } from "@/lib/utils/matching";
+import { getProfileCompletion } from "@/lib/utils/profileCompletion";
 import DashboardNotificationsCard from "@/components/dashboard/DashboardNotificationsCard";
+import {
+  DashboardProfileCompletionSidebar,
+  DashboardProfileCompletionStatCard,
+} from "@/components/dashboard/DashboardProfileCompletion";
 import Link from "next/link";
 import Image from "next/image";
 import {
   ArrowRight,
   CheckCircle2,
-  Circle,
   Crown,
   DatabaseZap,
   Heart,
@@ -20,7 +24,6 @@ import {
   MessageCircle,
   RefreshCw,
   ShieldCheck,
-  Sparkles,
   Unlock,
   Users,
 } from "lucide-react";
@@ -217,81 +220,6 @@ function getProfileCardImage(
   );
 }
 
-function getProfileCompletion(profile: {
-  fullName?: string | null;
-  gender?: string | null;
-  dateOfBirth?: Date | null;
-  maritalStatus?: string | null;
-  bio?: string | null;
-  profession?: string | null;
-  education?: string | null;
-  religion?: string | null;
-  language?: string | null;
-  familyType?: string | null;
-  profileImage?: string | null;
-  photos?: { url: string; isPrimary: boolean }[];
-  preference?: {
-    id: string;
-    ageMin: number | null;
-    ageMax: number | null;
-    religion: string | null;
-    location: string | null;
-    language: string | null;
-    education: string | null;
-    profession: string | null;
-  } | null;
-} | null) {
-  const hasPreference = Boolean(
-    profile?.preference &&
-      [
-        profile.preference.ageMin,
-        profile.preference.ageMax,
-        profile.preference.religion,
-        profile.preference.location,
-        profile.preference.language,
-        profile.preference.education,
-        profile.preference.profession,
-      ].some(Boolean)
-  );
-
-  const items = [
-    {
-      label: "Basic Information",
-      complete: Boolean(
-        profile?.fullName &&
-          profile.gender &&
-          profile.dateOfBirth &&
-          profile.maritalStatus
-      ),
-    },
-    {
-      label: "About Yourself",
-      complete: Boolean(profile?.bio || profile?.profession || profile?.education),
-    },
-    {
-      label: "Partner Preferences",
-      complete: hasPreference,
-    },
-    {
-      label: "Photos",
-      complete: Boolean(profile?.profileImage || profile?.photos?.length),
-    },
-    {
-      label: "Add More Details",
-      complete: Boolean(profile?.religion || profile?.language || profile?.familyType),
-  },
-];
-
-  const completedCount = items.filter((item) => item.complete).length;
-  const percent = Math.round((completedCount / items.length) * 100);
-
-  return {
-    items,
-    percent,
-    completedCount,
-  };
-}
-
 async function getDashboardHomeData(userId: string) {
   try {
     const profile = await prisma.profile.findUnique({
@@ -303,15 +231,38 @@ async function getDashboardHomeData(userId: string) {
         profileImage: true,
         gender: true,
         dateOfBirth: true,
+        height: true,
         maritalStatus: true,
+        phone: true,
         bio: true,
         profession: true,
         education: true,
+        course: true,
+        employedIn: true,
+        income: true,
         religion: true,
+        caste: true,
+        subCaste: true,
         language: true,
+        fatherName: true,
         familyType: true,
+        familyStatus: true,
+        motherName: true,
+        siblings: true,
+        star: true,
+        rasi: true,
+        timeOfBirth: true,
+        placeOfBirth: true,
+        diet: true,
+        smoking: true,
+        drinking: true,
+        hobbies: true,
+        physicalActivity: true,
+        personalityType: true,
+        horoscopeImage: true,
         city: true,
         state: true,
+        pincode: true,
         photos: {
           where: { isPrimary: true },
           select: { url: true, isPrimary: true },
@@ -322,11 +273,15 @@ async function getDashboardHomeData(userId: string) {
             id: true,
             ageMin: true,
             ageMax: true,
+            heightMin: true,
+            heightMax: true,
             religion: true,
+            caste: true,
             location: true,
             language: true,
             education: true,
             profession: true,
+            maritalStatus: true,
           },
         },
       },
@@ -363,7 +318,7 @@ async function getDashboardHomeData(userId: string) {
       prisma.like.findMany({
         where: { toProfileId: profile.id },
         orderBy: { createdAt: "desc" },
-        take: 4,
+        take: 12,
         select: {
           id: true,
           createdAt: true,
@@ -420,8 +375,16 @@ async function getDashboardHomeData(userId: string) {
       }),
     ]);
 
+    const matchedProfileIds = new Set(
+      activeMatches.map((match) =>
+        match.profileAId === profile.id ? match.profileB.id : match.profileA.id
+      )
+    );
     const recentMatches = activeMatches.slice(0, 3).map((match) =>
       match.profileAId === profile.id ? match.profileB : match.profileA
+    );
+    const visibleRecentLikes = recentLikes.filter(
+      (like) => !matchedProfileIds.has(like.fromProfile.id)
     );
 
     return {
@@ -432,7 +395,7 @@ async function getDashboardHomeData(userId: string) {
         matches: activeMatches.length,
         unlocks,
       },
-      recentLikes: recentLikes.map((like) => ({
+      recentLikes: visibleRecentLikes.map((like) => ({
         id: like.id,
         createdAt: like.createdAt.toISOString(),
         fromProfile: like.fromProfile,
@@ -469,7 +432,9 @@ export default async function DashboardPage() {
   const { profile, stats, recentLikes, recentMatches, recommendedProfiles, dbUnavailable } =
     await getDashboardHomeData(session.user.id);
 
-  const profileCompletion = getProfileCompletion(profile);
+  const profileCompletion = getProfileCompletion(profile, {
+    hasPersistedProfile: Boolean(profile),
+  });
   const recommendedGender = getOppositeGender(profile?.gender);
   const fallbackRecommendedCards = fallbackRecommendedProfiles.filter(
     (candidate) => !recommendedGender || candidate.gender === recommendedGender
@@ -510,48 +475,30 @@ export default async function DashboardPage() {
         ];
 
   const recentInterestItems =
-    recentLikes.length > 0
-      ? recentLikes.slice(0, 3).map((like) => ({
-          id: like.id,
-          name: like.fromProfile.fullName,
-          profession: like.fromProfile.profession ?? "Interest received",
-          location: getLocation(like.fromProfile.city, like.fromProfile.state),
-          avatar:
-            like.fromProfile.profileImage ??
-            like.fromProfile.photos[0]?.url ??
-            sampleProfileImages[0],
-          status: "Received",
-        }))
-      : suggestedFallbackCards.slice(0, 3).map((item, index) => ({
-          id: item.id,
-          name: item.fullName,
-          profession: item.profession,
-          location: item.location,
-          avatar: item.image,
-          status: index === 0 ? "Accepted" : index === 1 ? "Awaiting" : "New",
-        }));
+    recentLikes.slice(0, 3).map((like) => ({
+      id: like.id,
+      name: like.fromProfile.fullName,
+      profession: like.fromProfile.profession ?? "Interest received",
+      location: getLocation(like.fromProfile.city, like.fromProfile.state),
+      avatar:
+        like.fromProfile.profileImage ??
+        like.fromProfile.photos[0]?.url ??
+        sampleProfileImages[0],
+      status: "Received",
+    }));
 
   const matchItems =
-    recentMatches.length > 0
-      ? recentMatches.map((match, index) => ({
-          id: match.id,
-          name: match.fullName,
-          profession: match.profession ?? "Match found",
-          location: getLocation(match.city, match.state),
-          avatar:
-            match.profileImage ??
-            match.photos[0]?.url ??
-            sampleProfileImages[index % sampleProfileImages.length],
-          status: "New Match",
-        }))
-      : suggestedFallbackCards.slice(3, 6).map((item) => ({
-          id: item.id,
-          name: item.fullName,
-          profession: item.profession,
-          location: item.location,
-          avatar: item.image,
-          status: "Suggested",
-        }));
+    recentMatches.map((match, index) => ({
+      id: match.id,
+      name: match.fullName,
+      profession: match.profession ?? "Match found",
+      location: getLocation(match.city, match.state),
+      avatar:
+        match.profileImage ??
+        match.photos[0]?.url ??
+        sampleProfileImages[index % sampleProfileImages.length],
+      status: "New Match",
+    }));
 
   const statCards = [
     {
@@ -585,14 +532,6 @@ export default async function DashboardPage() {
       icon: Unlock,
       iconWrap: "bg-amber-50 text-amber-500",
       helperColor: "text-amber-500",
-    },
-    {
-      label: "Profile Complete",
-      value: `${profileCompletion.percent}%`,
-      helper: `${profileCompletion.completedCount}/5 sections done`,
-      icon: Sparkles,
-      iconWrap: "bg-indigo-50 text-indigo-500",
-      helperColor: "text-indigo-500",
     },
   ] as const;
 
@@ -708,6 +647,11 @@ export default async function DashboardPage() {
                   </div>
                 </div>
               ))}
+              <DashboardProfileCompletionStatCard
+                hasPersistedProfile={Boolean(profile)}
+                initialCompletion={profileCompletion}
+                animationDelayMs={180 + statCards.length * 70}
+              />
             </div>
           </div>
         </section>
@@ -803,35 +747,46 @@ export default async function DashboardPage() {
               </Link>
             </div>
 
-            <div className="space-y-4">
-              {recentInterestItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-3 rounded-2xl transition-transform duration-300 hover:translate-x-1"
-                >
-                  <div className="relative h-12 w-12 overflow-hidden rounded-2xl bg-rose-50">
-                    <Image
-                      src={item.avatar}
-                      alt={item.name}
-                      fill
-                      className="ui-media-zoom object-cover"
-                      sizes="48px"
-                    />
+            {recentInterestItems.length > 0 ? (
+              <div className="space-y-4">
+                {recentInterestItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-3 rounded-2xl transition-transform duration-300 hover:translate-x-1"
+                  >
+                    <div className="relative h-12 w-12 overflow-hidden rounded-2xl bg-rose-50">
+                      <Image
+                        src={item.avatar}
+                        alt={item.name}
+                        fill
+                        className="ui-media-zoom object-cover"
+                        sizes="48px"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-gray-900">
+                        {item.name}
+                      </p>
+                      <p className="truncate text-xs text-gray-500">
+                        {item.location}
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
+                      {item.status}
+                    </span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-gray-900">
-                      {item.name}
-                    </p>
-                    <p className="truncate text-xs text-gray-500">
-                      {item.location}
-                    </p>
-                  </div>
-                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
-                    {item.status}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-gray-200 bg-rose-50/40 px-4 py-6 text-center">
+                <p className="text-sm font-semibold text-gray-900">
+                  No recent interests right now
+                </p>
+                <p className="mt-2 text-xs leading-6 text-gray-500">
+                  New received likes that are not already mutual will appear here.
+                </p>
+              </div>
+            )}
           </div>
 
           <div
@@ -850,35 +805,46 @@ export default async function DashboardPage() {
               </Link>
             </div>
 
-            <div className="space-y-4">
-              {matchItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-3 rounded-2xl transition-transform duration-300 hover:translate-x-1"
-                >
-                  <div className="relative h-12 w-12 overflow-hidden rounded-2xl bg-rose-50">
-                    <Image
-                      src={item.avatar}
-                      alt={item.name}
-                      fill
-                      className="ui-media-zoom object-cover"
-                      sizes="48px"
-                    />
+            {matchItems.length > 0 ? (
+              <div className="space-y-4">
+                {matchItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-3 rounded-2xl transition-transform duration-300 hover:translate-x-1"
+                  >
+                    <div className="relative h-12 w-12 overflow-hidden rounded-2xl bg-rose-50">
+                      <Image
+                        src={item.avatar}
+                        alt={item.name}
+                        fill
+                        className="ui-media-zoom object-cover"
+                        sizes="48px"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-gray-900">
+                        {item.name}
+                      </p>
+                      <p className="truncate text-xs text-gray-500">
+                        {item.location}
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-600">
+                      {item.status}
+                    </span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-gray-900">
-                      {item.name}
-                    </p>
-                    <p className="truncate text-xs text-gray-500">
-                      {item.location}
-                    </p>
-                  </div>
-                  <span className="rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-600">
-                    {item.status}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-gray-200 bg-sky-50/40 px-4 py-6 text-center">
+                <p className="text-sm font-semibold text-gray-900">
+                  No mutual interests yet
+                </p>
+                <p className="mt-2 text-xs leading-6 text-gray-500">
+                  Profiles will appear here only after both of you like each other.
+                </p>
+              </div>
+            )}
           </div>
 
           <div
@@ -972,51 +938,15 @@ export default async function DashboardPage() {
           <DashboardNotificationsCard items={notificationItems} />
         </div>
 
-        <section
-          className="ui-enter-right ui-card-lift-soft rounded-[14px] border border-gray-100 bg-white p-5 shadow-sm"
+        <div
+          className="ui-enter-right"
           style={{ animationDelay: "190ms", animationFillMode: "forwards" }}
         >
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="font-display text-lg font-bold leading-tight text-gray-900">
-              Profile Completeness
-            </h2>
-            <p className="text-xs font-semibold text-gray-500">
-              {profileCompletion.percent}% Complete
-            </p>
-          </div>
-
-          <div className="mt-5 h-2 overflow-hidden rounded-full bg-rose-100">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-rose-500 to-pink-500 transition-all duration-700"
-              style={{ width: `${profileCompletion.percent}%` }}
-            />
-          </div>
-
-          <div className="mt-5 space-y-3">
-            {profileCompletion.items.map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center justify-between gap-3"
-              >
-                <div className="flex items-center gap-2">
-                  {item.complete ? (
-                    <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500" />
-                  ) : (
-                    <Circle className="h-4.5 w-4.5 text-amber-400" />
-                  )}
-                  <span className="text-[13px] text-gray-700">{item.label}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <Link
-            href={profile ? "/dashboard/profile/edit" : "/dashboard/profile/create"}
-            className="ui-link-shift mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-[13px] font-semibold text-white shadow-lg shadow-rose-200 transition-all hover:-translate-y-0.5 hover:shadow-xl"
-          >
-            {profile ? "Complete Your Profile" : "Create Your Profile"}
-          </Link>
-        </section>
+          <DashboardProfileCompletionSidebar
+            hasPersistedProfile={Boolean(profile)}
+            initialCompletion={profileCompletion}
+          />
+        </div>
 
         <section
           className="ui-enter-right ui-card-lift-soft overflow-hidden rounded-[14px] border border-rose-100 bg-gradient-to-br from-white via-rose-50 to-pink-100 p-5 shadow-sm"
@@ -1075,13 +1005,13 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <button
-            type="button"
+          <Link
+            href="/dashboard/support"
             className="ui-link-shift mt-6 inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-200 px-5 py-3 text-[13px] font-semibold text-rose-600 transition-colors hover:bg-rose-50"
           >
             <MessageCircle className="h-4 w-4" />
             Contact Support
-          </button>
+          </Link>
         </section>
       </aside>
     </div>
