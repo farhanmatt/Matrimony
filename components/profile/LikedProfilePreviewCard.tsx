@@ -27,6 +27,7 @@ interface LikedProfilePreviewCardProps {
   likedAt: string;
   shortlistUserId?: string | null;
   showChatAction?: boolean;
+  allowUnlike?: boolean;
   profile: {
     id: string;
     fullName: string;
@@ -41,8 +42,7 @@ interface LikedProfilePreviewCardProps {
     city: string | null;
     state: string | null;
     religion: string | null;
-    profileImage?: string | null;
-    photos: { url: string; isPrimary: boolean }[];
+    previewImageUrl: string | null;
   };
   onUnlike?: (profileId: string) => void;
 }
@@ -51,6 +51,7 @@ export default function LikedProfilePreviewCard({
   likedAt,
   shortlistUserId,
   showChatAction = false,
+  allowUnlike = true,
   profile,
   onUnlike,
 }: LikedProfilePreviewCardProps) {
@@ -92,11 +93,7 @@ export default function LikedProfilePreviewCard({
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, [menuOpen]);
 
-  const primaryPhoto =
-    profile.profileImage ??
-    profile.photos.find((photo) => photo.isPrimary)?.url ??
-    profile.photos[0]?.url ??
-    null;
+  const primaryPhoto = profile.previewImageUrl ?? null;
   const age = calculateAge(profile.dateOfBirth);
   const likedLabel = formatDistanceToNowStrict(new Date(likedAt), {
     addSuffix: true,
@@ -143,7 +140,7 @@ export default function LikedProfilePreviewCard({
 
   const handleUnlikeClick = (event: ReactMouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
-    if (removing) return;
+    if (removing || !allowUnlike) return;
     setMenuOpen(false);
     setConfirmOpen(true);
   };
@@ -184,11 +181,14 @@ export default function LikedProfilePreviewCard({
           {primaryPhoto ? (
             <Image
               src={primaryPhoto}
-              alt={`${profile.fullName} liked profile`}
+              alt="Protected matrimony profile preview"
               fill
               className="ui-media-zoom object-cover object-center blur-[4px]"
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
               quality={75}
+              unoptimized
+              draggable={false}
+              onContextMenu={(event) => event.preventDefault()}
             />
           ) : (
             <div className="flex h-full items-center justify-center">
@@ -230,15 +230,17 @@ export default function LikedProfilePreviewCard({
                   </span>
                   {shortlisted ? <Check className="h-4 w-4 text-emerald-500" /> : null}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleUnlikeClick}
-                  disabled={removing}
-                  className="ui-link-shift flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <X className="h-4 w-4 text-slate-500" />
-                  <span className="flex-1">Remove interest</span>
-                </button>
+                {allowUnlike ? (
+                  <button
+                    type="button"
+                    onClick={handleUnlikeClick}
+                    disabled={removing}
+                    className="ui-link-shift flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <X className="h-4 w-4 text-slate-500" />
+                    <span className="flex-1">Remove interest</span>
+                  </button>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -285,7 +287,7 @@ export default function LikedProfilePreviewCard({
         </div>
       </article>
 
-      {confirmOpen ? (
+      {allowUnlike && confirmOpen ? (
         <div
           className="ui-overlay-fade fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
           onClick={() => setConfirmOpen(false)}

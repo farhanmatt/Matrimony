@@ -1,4 +1,5 @@
 import "server-only";
+import fs from "fs";
 import path from "path";
 import { createRequire } from "module";
 import type { PrismaClient as PrismaClientInstance } from "@prisma/client";
@@ -53,6 +54,25 @@ function getCurrentSchemaSignature(Prisma: PrismaClientModule["Prisma"]) {
   });
 }
 
+function getCurrentClientArtifactSignature() {
+  try {
+    const prismaClientEntryPath = require.resolve("@prisma/client");
+    const generatedClientPath = path.join(
+      path.dirname(prismaClientEntryPath),
+      "..",
+      "..",
+      ".prisma",
+      "client",
+      "index.js"
+    );
+    const generatedClientStat = fs.statSync(generatedClientPath);
+
+    return `${generatedClientStat.size}:${generatedClientStat.mtimeMs}`;
+  } catch {
+    return undefined;
+  }
+}
+
 if (!process.env.DATABASE_URL && process.env.DATABASE_URL_UNPOOLED) {
   // Keep application traffic on DATABASE_URL when it's configured.
   // Fall back to the direct URL only if a pooled runtime URL is missing.
@@ -62,6 +82,7 @@ if (!process.env.DATABASE_URL && process.env.DATABASE_URL_UNPOOLED) {
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClientInstance | undefined;
   prismaSchemaSignature: string | undefined;
+  prismaClientArtifactSignature: string | undefined;
 };
 
 function createPrismaClient(
@@ -103,10 +124,12 @@ export function getPrismaClient(): PrismaClientInstance {
   const prismaClientModule = loadPrismaClientModule();
   const { Prisma, PrismaClient } = prismaClientModule;
   const currentSchemaSignature = getCurrentSchemaSignature(Prisma);
+  const currentClientArtifactSignature = getCurrentClientArtifactSignature();
 
   if (
     cachedClient &&
     globalForPrisma.prismaSchemaSignature === currentSchemaSignature &&
+    globalForPrisma.prismaClientArtifactSignature === currentClientArtifactSignature &&
     matchesGeneratedSchema(cachedClient, Prisma)
   ) {
     return cachedClient;
@@ -121,6 +144,7 @@ export function getPrismaClient(): PrismaClientInstance {
   if (process.env.NODE_ENV !== "production") {
     globalForPrisma.prisma = nextClient;
     globalForPrisma.prismaSchemaSignature = currentSchemaSignature;
+    globalForPrisma.prismaClientArtifactSignature = currentClientArtifactSignature;
   }
 
   return nextClient;

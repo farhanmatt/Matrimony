@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, RotateCcw, Save, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { MOTHER_TONGUE_OPTIONS } from "@/lib/constants/languages";
+import {
+  mapPreferenceSourceToBrowseFilters,
+  writeStoredBrowseFilters,
+} from "@/lib/utils/browse-filters";
 import {
   preferenceSchema,
   type PreferenceInput,
@@ -57,6 +61,8 @@ export default function PreferenceForm({
 }: {
   defaultValues?: Partial<PreferenceInput>;
 }) {
+  const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
   const {
     register,
     handleSubmit,
@@ -72,7 +78,10 @@ export default function PreferenceForm({
     reset({ ...emptyPreference, ...defaultValues });
   }, [defaultValues, reset]);
 
-  const onSubmit = async (data: PreferenceInput) => {
+  const persistPreferences = async (
+    data: PreferenceInput,
+    successMessage: string
+  ) => {
     const res = await fetch("/api/preferences", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -82,11 +91,34 @@ export default function PreferenceForm({
     const json = await res.json();
     if (!res.ok) {
       toast.error(json.error ?? "Failed to save preferences");
-      return;
+      return false;
     }
 
-    toast.success("Preferences saved successfully!");
+    toast.success(successMessage);
+    writeStoredBrowseFilters(mapPreferenceSourceToBrowseFilters(json.preference));
     reset({ ...emptyPreference, ...json.preference });
+    return true;
+  };
+
+  const onSubmit = async (data: PreferenceInput) => {
+    await persistPreferences(data, "Preferences saved successfully!");
+  };
+
+  const handleClearConfirmed = async () => {
+    setIsClearing(true);
+
+    try {
+      const didClear = await persistPreferences(
+        emptyPreference,
+        "Partner preferences cleared successfully!"
+      );
+
+      if (didClear) {
+        setIsClearConfirmOpen(false);
+      }
+    } finally {
+      setIsClearing(false);
+    }
   };
 
   const inputClass =
@@ -94,42 +126,46 @@ export default function PreferenceForm({
   const labelClass = "block text-sm font-medium text-gray-700 mb-1";
   const errorClass = "text-rose-500 text-xs mt-1";
   const selectedLanguage = watch("language");
+  const isBusy = isSubmitting || isClearing;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4 flex gap-3 text-sm text-rose-800">
-        <div className="w-10 h-10 rounded-xl bg-white text-rose-500 flex items-center justify-center shrink-0 shadow-sm">
-          <SlidersHorizontal className="w-5 h-5" />
-        </div>
-        <div>
-          <p className="font-semibold text-gray-900">Improve your match suggestions</p>
-          <p className="mt-1 text-rose-700">
-            Add the partner details that matter most to you. You can keep any
-            field blank if you are open to all options.
-          </p>
-        </div>
-      </div>
-
-      <section>
-        <h2 className="text-base font-display font-semibold text-gray-900 border-b border-gray-100 pb-3 mb-5">
-          Basic Preferences
-        </h2>
-        <div className="grid sm:grid-cols-2 gap-5">
-          <div>
-            <label className={labelClass} htmlFor="pref-age-min">
-              Minimum Age
-            </label>
-            <input
-              id="pref-age-min"
-              type="number"
-              min={18}
-              max={100}
-              {...register("ageMin", { setValueAs: toOptionalNumber })}
-              className={inputClass}
-              placeholder="24"
-            />
-            {errors.ageMin && <p className={errorClass}>{errors.ageMin.message}</p>}
+    <>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4 flex gap-3 text-sm text-rose-800">
+          <div className="w-10 h-10 rounded-xl bg-white text-rose-500 flex items-center justify-center shrink-0 shadow-sm">
+            <SlidersHorizontal className="w-5 h-5" />
           </div>
+          <div>
+            <p className="font-semibold text-gray-900">
+              Improve your match suggestions
+            </p>
+            <p className="mt-1 text-rose-700">
+              Add the partner details that matter most to you. You can keep any
+              field blank if you are open to all options.
+            </p>
+          </div>
+        </div>
+
+        <section>
+          <h2 className="text-base font-display font-semibold text-gray-900 border-b border-gray-100 pb-3 mb-5">
+            Basic Preferences
+          </h2>
+          <div className="grid sm:grid-cols-2 gap-5">
+            <div>
+              <label className={labelClass} htmlFor="pref-age-min">
+                Minimum Age
+              </label>
+              <input
+                id="pref-age-min"
+                type="number"
+                min={18}
+                max={100}
+                {...register("ageMin", { setValueAs: toOptionalNumber })}
+                className={inputClass}
+                placeholder="24"
+              />
+              {errors.ageMin && <p className={errorClass}>{errors.ageMin.message}</p>}
+            </div>
 
           <div>
             <label className={labelClass} htmlFor="pref-age-max">
@@ -209,31 +245,31 @@ export default function PreferenceForm({
               placeholder="City, state, or country"
             />
           </div>
-        </div>
-      </section>
-
-      <section>
-        <h2 className="text-base font-display font-semibold text-gray-900 border-b border-gray-100 pb-3 mb-5">
-          Community & Lifestyle
-        </h2>
-        <div className="grid sm:grid-cols-2 gap-5">
-          <div>
-            <label className={labelClass} htmlFor="pref-religion">
-              Religion
-            </label>
-            <select
-              id="pref-religion"
-              {...register("religion", { setValueAs: emptyToNull })}
-              className={inputClass}
-            >
-              <option value="">Any</option>
-              {religionOptions.map((religion) => (
-                <option key={religion} value={religion}>
-                  {religion}
-                </option>
-              ))}
-            </select>
           </div>
+        </section>
+
+        <section>
+          <h2 className="text-base font-display font-semibold text-gray-900 border-b border-gray-100 pb-3 mb-5">
+            Community & Lifestyle
+          </h2>
+          <div className="grid sm:grid-cols-2 gap-5">
+            <div>
+              <label className={labelClass} htmlFor="pref-religion">
+                Religion
+              </label>
+              <select
+                id="pref-religion"
+                {...register("religion", { setValueAs: emptyToNull })}
+                className={inputClass}
+              >
+                <option value="">Any</option>
+                {religionOptions.map((religion) => (
+                  <option key={religion} value={religion}>
+                    {religion}
+                  </option>
+                ))}
+              </select>
+            </div>
 
           <div>
             <label className={labelClass} htmlFor="pref-caste">
@@ -297,36 +333,89 @@ export default function PreferenceForm({
               placeholder="Doctor, engineer, business..."
             />
           </div>
+          </div>
+        </section>
+
+        <div className="flex flex-wrap gap-3 pt-2">
+          <button
+            type="submit"
+            disabled={isBusy}
+            className="btn-primary flex items-center gap-2 py-3 px-8"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" /> Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-5 h-5" /> Save Preferences
+              </>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsClearConfirmOpen(true)}
+            disabled={isBusy}
+            className="btn-outline flex items-center gap-2 py-3 px-8"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Clear Form
+          </button>
         </div>
-      </section>
+      </form>
 
-      <div className="flex flex-wrap gap-3 pt-2">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="btn-primary flex items-center gap-2 py-3 px-8"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" /> Saving...
-            </>
-          ) : (
-            <>
-              <Save className="w-5 h-5" /> Save Preferences
-            </>
-          )}
-        </button>
+      {isClearConfirmOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="clear-preferences-title"
+            aria-describedby="clear-preferences-description"
+            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+          >
+            <h3
+              id="clear-preferences-title"
+              className="text-lg font-display font-semibold text-gray-900"
+            >
+              Clear partner preferences?
+            </h3>
+            <p
+              id="clear-preferences-description"
+              className="mt-2 text-sm leading-6 text-gray-600"
+            >
+              This will remove your saved partner preferences from this form,
+              Find Match, and Edit Profile.
+            </p>
 
-        <button
-          type="button"
-          onClick={() => reset(emptyPreference)}
-          disabled={isSubmitting}
-          className="btn-outline flex items-center gap-2 py-3 px-8"
-        >
-          <RotateCcw className="w-4 h-4" />
-          Clear Form
-        </button>
-      </div>
-    </form>
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setIsClearConfirmOpen(false)}
+                disabled={isBusy}
+                className="btn-outline px-6 py-2.5"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                onClick={handleClearConfirmed}
+                disabled={isBusy}
+                className="btn-primary flex items-center justify-center gap-2 px-6 py-2.5"
+              >
+                {isClearing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Clearing...
+                  </>
+                ) : (
+                  "Yes, Clear"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

@@ -52,6 +52,10 @@ enum FamilyStatus {
   AFFLUENT
 }
 
+enum ProfileNotificationKind {
+  MESSAGE_REQUEST_REJECTED
+}
+
 // ─── Auth / Users ────────────────────────────────────────────────────────────
 
 model User {
@@ -211,6 +215,8 @@ model Profile {
   chatConversationsAsA ChatConversation[] @relation("ChatConversationProfileA")
   chatConversationsAsB ChatConversation[] @relation("ChatConversationProfileB")
   sentChatMessages ChatMessage[] @relation("ChatMessageSender")
+  receivedNotifications ProfileNotification[] @relation("ProfileNotificationRecipient")
+  authoredNotifications ProfileNotification[] @relation("ProfileNotificationActor")
 
   @@index([gender])
   @@index([religion])
@@ -317,6 +323,20 @@ model ChatMessage {
 
   @@index([conversationId, createdAt])
   @@index([senderProfileId])
+}
+
+model ProfileNotification {
+  id                 String                  @id @default(cuid())
+  recipientProfileId String
+  actorProfileId     String
+  kind               ProfileNotificationKind
+  createdAt          DateTime                @default(now())
+
+  recipientProfile Profile @relation("ProfileNotificationRecipient", fields: [recipientProfileId], references: [id], onDelete: Cascade)
+  actorProfile     Profile @relation("ProfileNotificationActor", fields: [actorProfileId], references: [id], onDelete: Cascade)
+
+  @@index([recipientProfileId, createdAt])
+  @@index([actorProfileId, createdAt])
 }
 
 model DeletedMatch {

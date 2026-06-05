@@ -715,9 +715,6 @@ export default async function ProfileDetailsPage({
   const showNewBadge =
     Date.now() - new Date(profile.createdAt).getTime() <=
     1000 * 60 * 60 * 24 * 14;
-  const showOnlineBadge =
-    Date.now() - new Date(profile.updatedAt).getTime() <=
-    1000 * 60 * 60 * 24;
   const extraPhotoCount = Math.max(photoUrls.length - 5, 0);
   const heroBadgeLabel =
     ownProfile.id !== profile.id ? "Unlocked" : showNewBadge ? "New" : null;
@@ -744,10 +741,11 @@ export default async function ProfileDetailsPage({
             style={{ animationDelay: "90ms", animationFillMode: "forwards" }}
           >
             <ProfileDetailGallery
+              profileId={profile.id}
               name={profile.fullName}
               photoUrls={photoUrls}
               isNew={showNewBadge}
-              isOnline={showOnlineBadge}
+              initialIsOnline={false}
               extraPhotoCount={extraPhotoCount}
             />
           </div>

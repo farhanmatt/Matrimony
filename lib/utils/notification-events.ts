@@ -1,13 +1,7 @@
 import "server-only";
+import type { DashboardRealtimeEvent } from "@/lib/types/dashboard-realtime";
 
-export type UserNotificationEvent = {
-  type: "message";
-  createdAt: string;
-  conversationId: string;
-  messageId: string;
-  fromProfileId: string;
-  toProfileId: string;
-};
+export type UserNotificationEvent = DashboardRealtimeEvent;
 
 type NotificationListener = (event: UserNotificationEvent) => void;
 

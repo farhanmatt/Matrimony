@@ -15,6 +15,7 @@ import {
   HeartHandshake,
   Inbox,
   LayoutDashboard,
+  LifeBuoy,
   LogOut,
   Menu,
   Search,
@@ -56,6 +57,7 @@ export default function DashboardSidebar({
   initialNotifications = [],
 }: {
   initialUser: {
+    id: string;
     name: string | null;
     email: string | null;
     image: string | null;
@@ -203,6 +205,11 @@ export default function DashboardSidebar({
     icon: Settings,
     label: "Settings",
   };
+  const supportNavItem = {
+    href: "/dashboard/support",
+    icon: LifeBuoy,
+    label: "Support",
+  };
 
   const desktopNavItems = baseNavItems.filter(
     (item) =>
@@ -213,6 +220,7 @@ export default function DashboardSidebar({
     baseNavItems[0],
     profileNavItem,
     ...baseNavItems.slice(1),
+    supportNavItem,
   ];
 
   const currentNavItem =
@@ -316,6 +324,7 @@ export default function DashboardSidebar({
                 <NotificationBell
                   initialNotifications={initialNotifications}
                   initialProfileId={initialNotificationProfileId}
+                  shortlistUserId={session?.user?.id ?? initialUser.id}
                   compact
                 />
               </div>
@@ -448,6 +457,7 @@ export default function DashboardSidebar({
                 <NotificationBell
                   initialNotifications={initialNotifications}
                   initialProfileId={initialNotificationProfileId}
+                  shortlistUserId={session?.user?.id ?? initialUser.id}
                 />
               </div>
 

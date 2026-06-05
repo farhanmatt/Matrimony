@@ -1,4 +1,8 @@
 import { prisma } from "@/lib/prisma";
+import {
+  likedProfileCardSelect,
+  serializeLikedProfileCard,
+} from "@/lib/server/liked-profile-preview";
 import { getAdminSettingsSnapshot } from "@/lib/utils/admin-settings";
 import { getMatchesForProfile } from "@/lib/utils/matching";
 
@@ -44,25 +48,14 @@ export async function getLikedPageData(userId: string) {
   const [likes, matches] = await Promise.all([
     prisma.like.findMany({
       where: { fromProfileId: ownProfile.id },
-      include: {
-        toProfile: {
-          include: { photos: { where: { isPrimary: true }, take: 1 } },
-        },
-      },
+      select: likedProfileCardSelect,
       orderBy: { createdAt: "desc" },
     }),
     getMatchesForProfile(ownProfile.id),
   ]);
 
   return {
-    likes: likes.map((like) => ({
-      id: like.id,
-      createdAt: like.createdAt.toISOString(),
-      toProfile: {
-        ...like.toProfile,
-        dateOfBirth: like.toProfile.dateOfBirth.toISOString(),
-      },
-    })),
+    likes: likes.map(serializeLikedProfileCard),
     matches: matches.map((match) => ({
       id: match.id,
       isUnlocked: match.unlocks.some((unlock) => unlock.userId === userId),

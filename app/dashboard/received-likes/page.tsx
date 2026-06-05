@@ -1,9 +1,11 @@
 import Link from "next/link";
+import type { Gender, MaritalStatus } from "@prisma/client";
 import { DatabaseZap, Heart, RefreshCw } from "lucide-react";
 import EmptyState from "@/components/common/EmptyState";
 import ReceivedLikesBoard from "@/components/dashboard/ReceivedLikesBoard";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { profilePreviewCardSelect, serializeProfilePreviewCard } from "@/lib/server/liked-profile-preview";
 import { isDatabaseConnectionError } from "@/lib/utils/errors";
 
 export default async function ReceivedLikesPage() {
@@ -18,10 +20,10 @@ export default async function ReceivedLikesPage() {
     fromProfile: {
       id: string;
       fullName: string;
-      gender: string;
+      gender: Gender;
       dateOfBirth: Date;
       height: number | null;
-      maritalStatus: string;
+      maritalStatus: MaritalStatus;
       education: string | null;
       course: string | null;
       profession: string | null;
@@ -30,7 +32,7 @@ export default async function ReceivedLikesPage() {
       state: string | null;
       religion: string | null;
       profileImage: string | null;
-      photos: { url: string; isPrimary: boolean }[];
+      photos: { url: string; publicId: string; isPrimary: boolean }[];
     };
   }> = [];
   let likedBackRows: Array<{ toProfileId: string }> = [];
@@ -50,27 +52,7 @@ export default async function ReceivedLikesPage() {
             id: true,
             createdAt: true,
             fromProfile: {
-              select: {
-                id: true,
-                fullName: true,
-                gender: true,
-                dateOfBirth: true,
-                height: true,
-                maritalStatus: true,
-                education: true,
-                course: true,
-                profession: true,
-                location: true,
-                city: true,
-                state: true,
-                religion: true,
-                profileImage: true,
-                photos: {
-                  where: { isPrimary: true },
-                  select: { url: true, isPrimary: true },
-                  take: 1,
-                },
-              },
+              select: profilePreviewCardSelect,
             },
           },
         }),
@@ -173,10 +155,7 @@ export default async function ReceivedLikesPage() {
     createdAt: like.createdAt.toISOString(),
     isLikedBack: false,
     isMatched: false,
-    profile: {
-      ...like.fromProfile,
-      dateOfBirth: like.fromProfile.dateOfBirth.toISOString(),
-    },
+    profile: serializeProfilePreviewCard(like.fromProfile),
   }));
 
   if (initialLikes.length === 0) {

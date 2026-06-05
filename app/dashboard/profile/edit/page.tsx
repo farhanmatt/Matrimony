@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import ProfileForm from "@/components/profile/ProfileForm";
 import { normalizeMotherTongue } from "@/lib/constants/languages";
-import type { ProfileInput } from "@/lib/validations/profile";
+import type { ProfileFormInput } from "@/lib/validations/profile";
 import { format } from "date-fns";
 
 export const metadata: Metadata = { title: "Edit Profile" };
@@ -15,7 +15,7 @@ export default async function EditProfilePage() {
 
   const profile = await prisma.profile.findUnique({
     where: { userId: session.user.id },
-    include: { photos: true },
+    include: { photos: true, preference: true },
   });
 
   if (!profile) redirect("/dashboard/profile/create");
@@ -32,12 +32,12 @@ export default async function EditProfilePage() {
   };
 
   // Map Prisma model to form shape
-  const defaultValues: Partial<ProfileInput> = {
+  const defaultValues: Partial<ProfileFormInput> = {
     fullName: profile.fullName,
-    gender: profile.gender as ProfileInput["gender"],
+    gender: profile.gender as ProfileFormInput["gender"],
     dateOfBirth: format(new Date(profile.dateOfBirth), "yyyy-MM-dd"),
     height: profile.height ?? undefined,
-    maritalStatus: profile.maritalStatus as ProfileInput["maritalStatus"],
+    maritalStatus: profile.maritalStatus as ProfileFormInput["maritalStatus"],
     phone: profileData.phone ?? undefined,
     education: profile.education ?? undefined,
     course: profileData.course ?? undefined,
@@ -53,8 +53,8 @@ export default async function EditProfilePage() {
     bio: profile.bio ?? undefined,
     fatherName: profile.fatherName ?? undefined,
     motherName: profile.motherName ?? undefined,
-    familyType: (profile.familyType as ProfileInput["familyType"]) ?? undefined,
-    familyStatus: (profile.familyStatus as ProfileInput["familyStatus"]) ?? undefined,
+    familyType: (profile.familyType as ProfileFormInput["familyType"]) ?? undefined,
+    familyStatus: (profile.familyStatus as ProfileFormInput["familyStatus"]) ?? undefined,
     siblings: profile.siblings ?? undefined,
     religion: profile.religion ?? undefined,
     caste: profile.caste ?? undefined,
@@ -79,6 +79,21 @@ export default async function EditProfilePage() {
       .filter((photo) => !photo.isPrimary)
       .map((photo) => photo.url),
     horoscopeImage: profile.horoscopeImage ?? undefined,
+    preference: profile.preference
+      ? {
+          ageMin: profile.preference.ageMin ?? undefined,
+          ageMax: profile.preference.ageMax ?? undefined,
+          heightMin: profile.preference.heightMin ?? undefined,
+          heightMax: profile.preference.heightMax ?? undefined,
+          religion: profile.preference.religion ?? undefined,
+          caste: profile.preference.caste ?? undefined,
+          education: profile.preference.education ?? undefined,
+          profession: profile.preference.profession ?? undefined,
+          location: profile.preference.location ?? undefined,
+          maritalStatus: profile.preference.maritalStatus ?? undefined,
+          language: normalizeMotherTongue(profile.preference.language),
+        }
+      : undefined,
   };
 
   return (

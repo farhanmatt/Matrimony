@@ -5,6 +5,7 @@ import {
   getChatProfilePresence,
   markChatProfileActive,
 } from "@/lib/server/chat-presence";
+import { publishUserNotification } from "@/lib/utils/notification-events";
 import {
   canStartChatForProfiles,
   findConversationForProfiles,
@@ -14,6 +15,15 @@ import {
 type RouteContext = {
   params: Promise<{ profileId: string }>;
 };
+
+const chatMessageSelect = {
+  id: true,
+  content: true,
+  isRead: true,
+  createdAt: true,
+  updatedAt: true,
+  senderProfileId: true,
+} as const;
 
 function getPrimaryImage(profile: {
   profileImage?: string | null;
@@ -37,6 +47,7 @@ async function resolveChatAccess(targetProfileId: string, userId: string) {
       where: { id: targetProfileId },
       select: {
         id: true,
+        userId: true,
         fullName: true,
         profession: true,
         city: true,
@@ -129,13 +140,7 @@ export async function GET(
     ? await prisma.chatMessage.findMany({
         where: { conversationId: conversation.id },
         orderBy: { createdAt: "asc" },
-        select: {
-          id: true,
-          content: true,
-          isRead: true,
-          createdAt: true,
-          senderProfileId: true,
-        },
+        select: chatMessageSelect,
       })
     : [];
 
@@ -210,13 +215,7 @@ export async function POST(
           senderProfileId: ownProfile.id,
           content: messageContent,
         },
-        select: {
-          id: true,
-          content: true,
-          isRead: true,
-          createdAt: true,
-          senderProfileId: true,
-        },
+        select: chatMessageSelect,
       });
 
       await tx.chatConversation.update({
@@ -225,6 +224,15 @@ export async function POST(
       });
 
       return createdMessage;
+    });
+
+    publishUserNotification(targetProfile.userId, {
+      type: "message_created",
+      createdAt: message.createdAt.toISOString(),
+      conversationId: conversation.id,
+      messageId: message.id,
+      fromProfileId: ownProfile.id,
+      toProfileId: targetProfile.id,
     });
 
     return NextResponse.json({
@@ -237,6 +245,213 @@ export async function POST(
     console.error("Send chat message error:", error);
     return NextResponse.json(
       { error: "Failed to send message" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  req: NextRequest,
+  context: RouteContext
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { profileId } = await context.params;
+  const access = await resolveChatAccess(profileId, session.user.id);
+
+  if ("error" in access) {
+    return access.error;
+  }
+
+  const { ownProfile, targetProfile } = access;
+  markChatProfileActive(ownProfile.id);
+
+  try {
+    const { messageId, content } = await req.json();
+    const normalizedMessageId =
+      typeof messageId === "string" ? messageId.trim() : "";
+    const messageContent = typeof content === "string" ? content.trim() : "";
+
+    if (!normalizedMessageId) {
+      return NextResponse.json(
+        { error: "Message id is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!messageContent) {
+      return NextResponse.json(
+        { error: "Message content is required" },
+        { status: 400 }
+      );
+    }
+
+    if (messageContent.length > 1000) {
+      return NextResponse.json(
+        { error: "Message must be 1000 characters or less" },
+        { status: 400 }
+      );
+    }
+
+    const conversation = await findConversationForProfiles(
+      ownProfile.id,
+      targetProfile.id
+    );
+
+    if (!conversation) {
+      return NextResponse.json(
+        { error: "Conversation not found" },
+        { status: 404 }
+      );
+    }
+
+    const existingMessage = await prisma.chatMessage.findFirst({
+      where: {
+        id: normalizedMessageId,
+        conversationId: conversation.id,
+        senderProfileId: ownProfile.id,
+      },
+      select: { id: true },
+    });
+
+    if (!existingMessage) {
+      return NextResponse.json(
+        { error: "You can only edit your own messages" },
+        { status: 403 }
+      );
+    }
+
+    const message = await prisma.chatMessage.update({
+      where: { id: existingMessage.id },
+      data: { content: messageContent },
+      select: chatMessageSelect,
+    });
+
+    publishUserNotification(targetProfile.userId, {
+      type: "message_updated",
+      createdAt: message.updatedAt.toISOString(),
+      conversationId: conversation.id,
+      messageId: message.id,
+      fromProfileId: ownProfile.id,
+      toProfileId: targetProfile.id,
+    });
+
+    return NextResponse.json({
+      data: {
+        conversationId: conversation.id,
+        message,
+      },
+    });
+  } catch (error) {
+    console.error("Update chat message error:", error);
+    return NextResponse.json(
+      { error: "Failed to update message" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  context: RouteContext
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { profileId } = await context.params;
+  const access = await resolveChatAccess(profileId, session.user.id);
+
+  if ("error" in access) {
+    return access.error;
+  }
+
+  const { ownProfile, targetProfile } = access;
+  markChatProfileActive(ownProfile.id);
+
+  try {
+    const { messageId } = await req.json();
+    const normalizedMessageId =
+      typeof messageId === "string" ? messageId.trim() : "";
+
+    if (!normalizedMessageId) {
+      return NextResponse.json(
+        { error: "Message id is required" },
+        { status: 400 }
+      );
+    }
+
+    const conversation = await findConversationForProfiles(
+      ownProfile.id,
+      targetProfile.id
+    );
+
+    if (!conversation) {
+      return NextResponse.json(
+        { error: "Conversation not found" },
+        { status: 404 }
+      );
+    }
+
+    const existingMessage = await prisma.chatMessage.findFirst({
+      where: {
+        id: normalizedMessageId,
+        conversationId: conversation.id,
+        senderProfileId: ownProfile.id,
+      },
+      select: { id: true },
+    });
+
+    if (!existingMessage) {
+      return NextResponse.json(
+        { error: "You can only delete your own messages" },
+        { status: 403 }
+      );
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.chatMessage.delete({
+        where: { id: existingMessage.id },
+      });
+
+      const latestRemainingMessage = await tx.chatMessage.findFirst({
+        where: { conversationId: conversation.id },
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
+      });
+
+      await tx.chatConversation.update({
+        where: { id: conversation.id },
+        data: {
+          lastMessageAt:
+            latestRemainingMessage?.createdAt ?? conversation.createdAt,
+        },
+      });
+    });
+
+    publishUserNotification(targetProfile.userId, {
+      type: "message_deleted",
+      createdAt: new Date().toISOString(),
+      conversationId: conversation.id,
+      messageId: existingMessage.id,
+      fromProfileId: ownProfile.id,
+      toProfileId: targetProfile.id,
+    });
+
+    return NextResponse.json({
+      data: {
+        conversationId: conversation.id,
+        messageId: existingMessage.id,
+      },
+    });
+  } catch (error) {
+    console.error("Delete chat message error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete message" },
       { status: 500 }
     );
   }

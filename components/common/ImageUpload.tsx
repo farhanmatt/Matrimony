@@ -10,6 +10,7 @@ interface ImageUploadProps {
   onChange: (value: string) => void;
   onRemove: () => void;
   label: string;
+  error?: string;
 }
 
 export default function ImageUpload({
@@ -17,6 +18,7 @@ export default function ImageUpload({
   onChange,
   onRemove,
   label,
+  error,
 }: ImageUploadProps) {
   const pendingUploadUrlRef = useRef<string | null>(null);
 
@@ -68,7 +70,10 @@ export default function ImageUpload({
 
   return (
     <div className="space-y-4 w-full">
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">{label}</label>
+        {error ? <p className="mt-1 text-xs text-rose-500">{error}</p> : null}
+      </div>
       <div className="flex items-center gap-4">
         <CldUploadWidget
           onOpen={handleOpen}

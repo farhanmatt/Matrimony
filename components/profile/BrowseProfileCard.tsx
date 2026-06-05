@@ -34,8 +34,7 @@ interface BrowseProfileCardProps {
     city: string | null;
     state: string | null;
     religion: string | null;
-    profileImage?: string | null;
-    photos: { url: string; isPrimary: boolean }[];
+    previewImageUrl: string | null;
   };
   badge?: "New" | "Premium";
   profileHref: string;
@@ -70,11 +69,7 @@ export default function BrowseProfileCard({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [confirmOpen]);
 
-  const primaryPhoto =
-    profile.photos.find((photo) => photo.isPrimary)?.url ??
-    profile.photos[0]?.url ??
-    profile.profileImage ??
-    null;
+  const primaryPhoto = profile.previewImageUrl ?? null;
   const age = calculateAge(profile.dateOfBirth);
   const location =
     [profile.city, profile.state].filter(Boolean).join(", ") ||
@@ -133,11 +128,12 @@ export default function BrowseProfileCard({
           {primaryPhoto ? (
             <Image
               src={primaryPhoto}
-              alt={`${profile.fullName} matrimony profile`}
+              alt="Protected matrimony profile preview"
               fill
               className="ui-media-zoom scale-[1.04] object-cover object-center blur-[4px]"
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, (max-width: 1536px) 25vw, 20vw"
               quality={75}
+              unoptimized
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.95)_0%,_rgba(255,239,244,0.9)_52%,_rgba(255,231,238,0.82)_100%)]">

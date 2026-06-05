@@ -189,7 +189,7 @@ export default async function SettingsPage() {
             </div>
 
             <Link
-              href="/contact"
+              href="/dashboard/support"
               className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-[16px] border border-rose-200 px-5 py-3 text-sm font-semibold text-rose-600 transition-colors hover:border-rose-300 hover:bg-rose-50"
             >
               <Headphones className="ui-arrow-shift h-4.5 w-4.5" />

@@ -13,20 +13,32 @@ import {
 import { format } from "date-fns";
 import {
   ArrowLeft,
+  Check,
+  Loader2,
   MapPin,
   MessageCircle,
+  PencilLine,
   Send,
   ShieldCheck,
+  SmilePlus,
+  Trash2,
   UserCircle2,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageLoader } from "@/components/common/LoadingSpinner";
+import { cn } from "@/lib/utils/helpers";
+import {
+  DASHBOARD_REALTIME_EVENT_NAME,
+  type DashboardRealtimeEvent,
+} from "@/lib/types/dashboard-realtime";
 
 interface ChatMessage {
   id: string;
   content: string;
   isRead: boolean;
   createdAt: string;
+  updatedAt: string;
   senderProfileId: string;
 }
 
@@ -49,13 +61,40 @@ interface ProfileChatSessionProps {
   profileId: string;
 }
 
-type SendMessageResponse = {
+type UpsertMessageResponse = {
   data?: {
     conversationId: string;
     message: ChatMessage;
   };
   error?: string;
 };
+
+type DeleteMessageResponse = {
+  data?: {
+    conversationId: string;
+    messageId: string;
+  };
+  error?: string;
+};
+
+const QUICK_EMOJIS = [
+  "\u{1F600}",
+  "\u{1F60A}",
+  "\u{1F609}",
+  "\u{1F60D}",
+  "\u{1F970}",
+  "\u{1F618}",
+  "\u{1F917}",
+  "\u{1F64F}",
+  "\u{1F44D}",
+  "\u{1F44F}",
+  "\u{1F64C}",
+  "\u{1F496}",
+  "\u{2764}\u{FE0F}",
+  "\u{2728}",
+  "\u{1F389}",
+  "\u{1F339}",
+];
 
 export default function ProfileChatSession({
   profileId,
@@ -67,12 +106,32 @@ export default function ProfileChatSession({
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState("");
-  const [retryKey, setRetryKey] = useState(0);
-  const [animatedOutgoingMessageId, setAnimatedOutgoingMessageId] = useState<string | null>(
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [pendingMessageActionId, setPendingMessageActionId] = useState<string | null>(
     null
   );
+  const [pendingMessageAction, setPendingMessageAction] = useState<
+    "edit" | "delete" | null
+  >(null);
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
+  const [animatedOutgoingMessageId, setAnimatedOutgoingMessageId] = useState<
+    string | null
+  >(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const hasDraft = draft.trim().length > 0;
+  const composerRef = useRef<HTMLTextAreaElement | null>(null);
+  const emojiPickerRef = useRef<HTMLDivElement | null>(null);
+
+  const editingMessage = editingMessageId
+    ? chat?.messages.find((message) => message.id === editingMessageId) ?? null
+    : null;
+  const trimmedDraft = draft.trim();
+  const hasDraft = trimmedDraft.length > 0;
+  const hasEditedDraft = editingMessage
+    ? trimmedDraft !== editingMessage.content.trim()
+    : true;
+  const canSubmitDraft = hasDraft && hasEditedDraft && !submitting;
 
   const loadChat = useCallback(
     async ({
@@ -96,14 +155,14 @@ export default function ProfileChatSession({
           throw new Error(data.error ?? "Failed to load chat");
         }
 
-      startTransition(() => {
-        setTargetPresence({
-          isOnline: Boolean(data.data?.targetProfile?.isOnline),
-          lastActiveAt: data.data?.targetProfile?.lastActiveAt ?? null,
+        startTransition(() => {
+          setTargetPresence({
+            isOnline: Boolean(data.data?.targetProfile?.isOnline),
+            lastActiveAt: data.data?.targetProfile?.lastActiveAt ?? null,
+          });
+          setChat(data.data);
         });
-        setChat(data.data);
-      });
-    } catch (error) {
+      } catch (error) {
         if (showError) {
           toast.error(
             error instanceof Error ? error.message : "Unable to load chat"
@@ -149,11 +208,44 @@ export default function ProfileChatSession({
   }, [loadChat, retryKey]);
 
   useEffect(() => {
+    if (!chat?.targetProfile.id) {
+      return;
+    }
+
+    const handleRealtimeEvent = (event: Event) => {
+      const realtimeEvent = event as CustomEvent<DashboardRealtimeEvent>;
+      const detail = realtimeEvent.detail;
+
+      if (
+        !detail ||
+        (detail.fromProfileId !== chat.targetProfile.id &&
+          detail.toProfileId !== chat.targetProfile.id)
+      ) {
+        return;
+      }
+
+      void loadChat({ showLoading: false, showError: false });
+      void refreshPresence();
+    };
+
+    window.addEventListener(
+      DASHBOARD_REALTIME_EVENT_NAME,
+      handleRealtimeEvent as EventListener
+    );
+
+    return () =>
+      window.removeEventListener(
+        DASHBOARD_REALTIME_EVENT_NAME,
+        handleRealtimeEvent as EventListener
+      );
+  }, [chat?.targetProfile.id, loadChat, refreshPresence]);
+
+  useEffect(() => {
     void refreshPresence();
 
     const heartbeat = window.setInterval(() => {
       void refreshPresence();
-    }, 20_000);
+    }, 10_000);
 
     const handleFocus = () => {
       void refreshPresence();
@@ -180,6 +272,21 @@ export default function ProfileChatSession({
   }, [chat?.messages.length]);
 
   useEffect(() => {
+    if (!editingMessageId) {
+      return;
+    }
+
+    const stillExists = chat?.messages.some(
+      (message) => message.id === editingMessageId
+    );
+
+    if (!stillExists) {
+      setEditingMessageId(null);
+      setDraft("");
+    }
+  }, [chat?.messages, editingMessageId]);
+
+  useEffect(() => {
     if (!animatedOutgoingMessageId) {
       return;
     }
@@ -193,24 +300,169 @@ export default function ProfileChatSession({
     return () => window.clearTimeout(timeoutId);
   }, [animatedOutgoingMessageId]);
 
+  useEffect(() => {
+    if (!emojiPickerOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target as Node)
+      ) {
+        setEmojiPickerOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setEmojiPickerOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [emojiPickerOpen]);
+
+  const focusComposer = useCallback((cursorPosition?: number) => {
+    window.requestAnimationFrame(() => {
+      if (!composerRef.current) {
+        return;
+      }
+
+      composerRef.current.focus();
+
+      if (typeof cursorPosition === "number") {
+        composerRef.current.setSelectionRange(cursorPosition, cursorPosition);
+      }
+    });
+  }, []);
+
+  const cancelEditingMessage = useCallback(() => {
+    setEditingMessageId(null);
+    setDraft("");
+    setEmojiPickerOpen(false);
+  }, []);
+
+  const beginEditingMessage = useCallback(
+    (message: ChatMessage) => {
+      setEditingMessageId(message.id);
+      setDraft(message.content);
+      setEmojiPickerOpen(false);
+      focusComposer(message.content.length);
+    },
+    [focusComposer]
+  );
+
+  const insertEmoji = useCallback(
+    (emoji: string) => {
+      setDraft((currentDraft) => {
+        const textarea = composerRef.current;
+
+        if (!textarea) {
+          return `${currentDraft}${emoji}`;
+        }
+
+        const selectionStart = textarea.selectionStart ?? currentDraft.length;
+        const selectionEnd = textarea.selectionEnd ?? currentDraft.length;
+        const nextDraft = `${currentDraft.slice(0, selectionStart)}${emoji}${currentDraft.slice(
+          selectionEnd
+        )}`;
+        const nextCursorPosition = selectionStart + emoji.length;
+
+        focusComposer(nextCursorPosition);
+        return nextDraft;
+      });
+    },
+    [focusComposer]
+  );
+
   const sendMessage = async () => {
-    const content = draft.trim();
+    const content = trimmedDraft;
     if (!content || !chat) {
+      return;
+    }
+
+    if (editingMessage) {
+      if (!hasEditedDraft) {
+        cancelEditingMessage();
+        return;
+      }
+
+      setSubmitting(true);
+      setPendingMessageActionId(editingMessage.id);
+      setPendingMessageAction("edit");
+
+      try {
+        const response = await fetch(`/api/chat/${profileId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "x-skip-loading": "1",
+          },
+          body: JSON.stringify({
+            messageId: editingMessage.id,
+            content,
+          }),
+        });
+        const data = (await response.json()) as UpsertMessageResponse;
+
+        if (!response.ok) {
+          throw new Error(data.error ?? "Failed to update message");
+        }
+
+        if (!data.data?.message) {
+          throw new Error("Failed to update message");
+        }
+
+        startTransition(() => {
+          setChat((current) =>
+            current
+              ? {
+                  ...current,
+                  messages: current.messages.map((message) =>
+                    message.id === editingMessage.id ? data.data!.message : message
+                  ),
+                }
+              : current
+          );
+        });
+
+        cancelEditingMessage();
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Unable to update message"
+        );
+      } finally {
+        setSubmitting(false);
+        setPendingMessageActionId(null);
+        setPendingMessageAction(null);
+      }
+
       return;
     }
 
     const optimisticMessageId =
       globalThis.crypto?.randomUUID?.() ??
       `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const optimisticCreatedAt = new Date().toISOString();
     const optimisticMessage: ChatMessage = {
       id: optimisticMessageId,
       content,
       isRead: false,
-      createdAt: new Date().toISOString(),
+      createdAt: optimisticCreatedAt,
+      updatedAt: optimisticCreatedAt,
       senderProfileId: chat.viewerProfileId,
     };
 
+    setSubmitting(true);
     setDraft("");
+    setEmojiPickerOpen(false);
     setAnimatedOutgoingMessageId(optimisticMessageId);
     startTransition(() => {
       setChat((current) =>
@@ -232,7 +484,7 @@ export default function ProfileChatSession({
         },
         body: JSON.stringify({ content }),
       });
-      const data = (await response.json()) as SendMessageResponse;
+      const data = (await response.json()) as UpsertMessageResponse;
 
       if (!response.ok) {
         throw new Error(data.error ?? "Failed to send message");
@@ -279,8 +531,67 @@ export default function ProfileChatSession({
       toast.error(
         error instanceof Error ? error.message : "Unable to send message"
       );
+    } finally {
+      setSubmitting(false);
     }
   };
+
+  const deleteMessage = useCallback(
+    async (message: ChatMessage) => {
+      if (!chat || message.senderProfileId !== chat.viewerProfileId) {
+        return;
+      }
+
+      if (!window.confirm("Delete this message?")) {
+        return;
+      }
+
+      setPendingMessageActionId(message.id);
+      setPendingMessageAction("delete");
+
+      if (editingMessageId === message.id) {
+        cancelEditingMessage();
+      }
+
+      startTransition(() => {
+        setChat((current) =>
+          current
+            ? {
+                ...current,
+                messages: current.messages.filter(
+                  (currentMessage) => currentMessage.id !== message.id
+                ),
+              }
+            : current
+        );
+      });
+
+      try {
+        const response = await fetch(`/api/chat/${profileId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "x-skip-loading": "1",
+          },
+          body: JSON.stringify({ messageId: message.id }),
+        });
+        const data = (await response.json()) as DeleteMessageResponse;
+
+        if (!response.ok) {
+          throw new Error(data.error ?? "Failed to delete message");
+        }
+      } catch (error) {
+        await loadChat({ showLoading: false, showError: false });
+        toast.error(
+          error instanceof Error ? error.message : "Unable to delete message"
+        );
+      } finally {
+        setPendingMessageActionId(null);
+        setPendingMessageAction(null);
+      }
+    },
+    [cancelEditingMessage, chat, editingMessageId, loadChat, profileId]
+  );
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -290,6 +601,12 @@ export default function ProfileChatSession({
   const handleComposerKeyDown = (
     event: ReactKeyboardEvent<HTMLTextAreaElement>
   ) => {
+    if (event.key === "Escape" && editingMessage) {
+      event.preventDefault();
+      cancelEditingMessage();
+      return;
+    }
+
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       void sendMessage();
@@ -394,7 +711,7 @@ export default function ProfileChatSession({
                 <span
                   className={`h-2.5 w-2.5 rounded-full ${
                     effectiveTargetPresence.isOnline
-                      ? "bg-emerald-500 shadow-[0_0_0_4px_rgba(34,197,94,0.12)] animate-pulse"
+                      ? "animate-pulse bg-emerald-500 shadow-[0_0_0_4px_rgba(34,197,94,0.12)]"
                       : "bg-rose-500 shadow-[0_0_0_4px_rgba(244,63,94,0.1)]"
                   }`}
                 />
@@ -410,7 +727,7 @@ export default function ProfileChatSession({
 
           <div className="ui-card-lift-soft mt-6 rounded-[18px] bg-[linear-gradient(135deg,rgba(255,244,246,0.98)_0%,rgba(255,251,252,0.92)_100%)] p-4">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-500 ui-icon-lift">
+              <div className="ui-icon-lift flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-500">
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
@@ -451,7 +768,8 @@ export default function ProfileChatSession({
                     Start the conversation
                   </h3>
                   <p className="mt-2 max-w-md text-[15px] leading-6 text-slate-500">
-                    Send your first message to {chat.targetProfile.fullName.split(" ")[0]}.
+                    Send your first message to{" "}
+                    {chat.targetProfile.fullName.split(" ")[0]}.
                   </p>
                 </div>
               ) : (
@@ -460,30 +778,83 @@ export default function ProfileChatSession({
                     message.senderProfileId === chat.viewerProfileId;
                   const shouldHighlightMessage =
                     isOwnMessage && message.id === animatedOutgoingMessageId;
+                  const isEditingCurrentMessage =
+                    isOwnMessage && message.id === editingMessageId;
+                  const isMessageBusy =
+                    isOwnMessage && message.id === pendingMessageActionId;
+                  const isEdited = message.updatedAt !== message.createdAt;
 
                   return (
                     <div
                       key={message.id}
-                      className={`ui-enter-up flex ${isOwnMessage ? "justify-end" : "justify-start"}`}
+                      className={`ui-enter-up flex ${
+                        isOwnMessage ? "justify-end" : "justify-start"
+                      }`}
                       style={{ animationDelay: "60ms", animationFillMode: "forwards" }}
                     >
                       <div
-                        className={`${shouldHighlightMessage ? "ui-message-pop " : ""}ui-card-lift-soft max-w-[82%] rounded-[22px] px-4 py-3 shadow-sm sm:max-w-[70%] ${
+                        className={cn(
+                          shouldHighlightMessage && "ui-message-pop",
+                          "ui-card-lift-soft max-w-[82%] rounded-[22px] px-4 py-3 shadow-sm sm:max-w-[70%]",
                           isOwnMessage
                             ? "bg-gradient-to-r from-rose-600 to-pink-500 text-white"
-                            : "border border-rose-100 bg-white text-slate-800"
-                        }`}
+                            : "border border-rose-100 bg-white text-slate-800",
+                          isEditingCurrentMessage &&
+                            "ring-2 ring-rose-200 ring-offset-2 ring-offset-white"
+                        )}
                       >
                         <p className="whitespace-pre-wrap break-words text-sm leading-6">
                           {message.content}
                         </p>
-                        <div
-                          className={`mt-2 text-[11px] ${
-                            isOwnMessage ? "text-white/80" : "text-slate-400"
-                          }`}
-                        >
-                          {format(new Date(message.createdAt), "MMM d, p")}
-                          {isOwnMessage && message.isRead ? " • Read" : ""}
+                        <div className="mt-2 flex items-center justify-between gap-3">
+                          <div
+                            className={`text-[11px] ${
+                              isOwnMessage ? "text-white/80" : "text-slate-400"
+                            }`}
+                          >
+                            {format(new Date(message.createdAt), "MMM d, p")}
+                            {isEdited ? " | Edited" : ""}
+                            {isOwnMessage && message.isRead ? " | Read" : ""}
+                          </div>
+
+                          {isOwnMessage ? (
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => beginEditingMessage(message)}
+                                disabled={isMessageBusy}
+                                className={cn(
+                                  "inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors",
+                                  "text-white/85 hover:bg-white/15 hover:text-white",
+                                  isMessageBusy && "cursor-not-allowed opacity-60"
+                                )}
+                                aria-label="Edit message"
+                              >
+                                {isMessageBusy && pendingMessageAction === "edit" ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <PencilLine className="h-3.5 w-3.5" />
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void deleteMessage(message)}
+                                disabled={isMessageBusy}
+                                className={cn(
+                                  "inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors",
+                                  "text-white/85 hover:bg-white/15 hover:text-white",
+                                  isMessageBusy && "cursor-not-allowed opacity-60"
+                                )}
+                                aria-label="Delete message"
+                              >
+                                {isMessageBusy && pendingMessageAction === "delete" ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                )}
+                              </button>
+                            </div>
+                          ) : null}
                         </div>
                       </div>
                     </div>
@@ -504,32 +875,99 @@ export default function ProfileChatSession({
                     : "border-rose-100"
                 }`}
               >
+                {editingMessage ? (
+                  <div className="mb-3 flex items-center justify-between gap-3 rounded-[18px] border border-rose-100 bg-white/90 px-3 py-2 text-xs text-slate-600">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-slate-800">Editing message</p>
+                      <p className="truncate text-slate-500">
+                        Update your message and press Save.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={cancelEditingMessage}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                      aria-label="Cancel editing"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : null}
+
                 <textarea
+                  ref={composerRef}
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
                   onKeyDown={handleComposerKeyDown}
-                  placeholder={`Message ${chat.targetProfile.fullName.split(" ")[0]}...`}
+                  placeholder={
+                    editingMessage
+                      ? "Edit your message..."
+                      : `Message ${chat.targetProfile.fullName.split(" ")[0]}...`
+                  }
                   rows={3}
                   maxLength={1000}
                   className="w-full resize-none bg-transparent px-2 py-1 text-sm leading-6 text-slate-700 outline-none transition-colors duration-300 placeholder:text-slate-400"
                 />
+
                 <div className="mt-3 flex items-center justify-between gap-3">
-                  <span
-                    className={`text-xs transition-all duration-300 ${
-                      hasDraft ? "text-rose-400" : "text-slate-400"
-                    }`}
-                  >
-                    {draft.trim().length}/1000
-                  </span>
+                  <div className="relative flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEmojiPickerOpen((current) => !current)}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-rose-100 bg-white/80 text-slate-500 transition-colors hover:border-rose-200 hover:text-rose-600"
+                      aria-label="Open emoji picker"
+                    >
+                      <SmilePlus className="h-4.5 w-4.5" />
+                    </button>
+
+                    {emojiPickerOpen ? (
+                      <div
+                        ref={emojiPickerRef}
+                        className="absolute bottom-full left-0 z-10 mb-3 w-[240px] rounded-[20px] border border-rose-100 bg-white p-3 shadow-[0_20px_45px_rgba(15,23,42,0.14)]"
+                      >
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                          Add Emoji
+                        </p>
+                        <div className="grid grid-cols-4 gap-2">
+                          {QUICK_EMOJIS.map((emoji) => (
+                            <button
+                              key={emoji}
+                              type="button"
+                              onClick={() => insertEmoji(emoji)}
+                              className="inline-flex h-11 items-center justify-center rounded-2xl border border-transparent text-xl transition-colors hover:border-rose-100 hover:bg-rose-50"
+                              aria-label={`Insert ${emoji}`}
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    <span
+                      className={`text-xs transition-all duration-300 ${
+                        hasDraft ? "text-rose-400" : "text-slate-400"
+                      }`}
+                    >
+                      {draft.length}/1000
+                    </span>
+                  </div>
+
                   <button
                     type="submit"
-                    disabled={!hasDraft}
+                    disabled={!canSubmitDraft}
                     className={`ui-link-shift inline-flex items-center gap-2 rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(244,63,94,0.2)] transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 ${
-                      hasDraft ? "ui-send-ready" : ""
+                      canSubmitDraft ? "ui-send-ready" : ""
                     }`}
                   >
-                    <Send className="ui-arrow-shift h-4 w-4" />
-                    Send
+                    {submitting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : editingMessage ? (
+                      <Check className="ui-arrow-shift h-4 w-4" />
+                    ) : (
+                      <Send className="ui-arrow-shift h-4 w-4" />
+                    )}
+                    {editingMessage ? "Save" : "Send"}
                   </button>
                 </div>
               </div>

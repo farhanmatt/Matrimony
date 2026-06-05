@@ -77,11 +77,10 @@ const trustStrip = [
 ];
 
 export type LandingFeaturedProfile = {
-  id: string;
-  displayName: string;
-  age: number;
+  cardKey: string;
+  nameLabelUrl: string | null;
   location: string;
-  imageUrl: string | null;
+  previewImageUrl: string | null;
 };
 
 const whyChooseUs = [
@@ -474,13 +473,17 @@ export default function FullLandingPage({
           {featuredProfiles.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
               {featuredProfiles.map((profile, index) => (
-                <LandingReveal key={profile.id} delayMs={80 + index * 70} variant="scale">
+                <LandingReveal
+                  key={profile.cardKey}
+                  delayMs={80 + index * 70}
+                  variant="scale"
+                >
                   <article className="landing-surface group overflow-hidden rounded-[1.5rem] border border-rose-100 bg-white shadow-[0_14px_34px_rgba(15,23,42,0.06)]">
                     <div className="relative h-52">
-                      {profile.imageUrl ? (
+                      {profile.previewImageUrl ? (
                         <Image
-                          src={profile.imageUrl}
-                          alt={`${profile.displayName} profile`}
+                          src={profile.previewImageUrl}
+                          alt="Blurred featured profile preview"
                           fill
                           className="landing-surface-media object-cover blur-[3px]"
                           sizes="(max-width: 1280px) 50vw, 16vw"
@@ -499,10 +502,24 @@ export default function FullLandingPage({
                       </div>
                     </div>
                     <div className="px-4 py-3">
-                      <div className="text-lg font-bold text-slate-900">
-                        {profile.displayName}, {profile.age}
+                      <div className="min-h-[1.9rem]">
+                        {profile.nameLabelUrl ? (
+                          <Image
+                            src={profile.nameLabelUrl}
+                            alt="Featured profile name"
+                            width={360}
+                            height={42}
+                            className="block h-7 w-auto max-w-full"
+                            sizes="180px"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="text-lg font-bold text-slate-900">
+                            Featured Profile
+                          </div>
+                        )}
                       </div>
-                      <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
+                      <div className="mt-2 flex items-center gap-2 text-sm text-slate-500">
                         <MapPin className="h-4 w-4 text-rose-400" />
                         {profile.location}
                       </div>

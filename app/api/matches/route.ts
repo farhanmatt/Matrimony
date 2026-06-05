@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getMatchesForProfile } from "@/lib/utils/matching";
 
 // GET /api/matches — get all mutual matches for current user
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -20,6 +20,20 @@ export async function GET() {
   }
 
   const matches = await getMatchesForProfile(ownProfile.id);
+  const summaryOnly = new URL(req.url).searchParams.get("summary") === "1";
+
+  if (summaryOnly) {
+    return NextResponse.json({
+      data: matches.map((match) => ({
+        id: match.id,
+        createdAt: match.createdAt.toISOString(),
+        isUnlocked: match.unlocks.some((unlock) => unlock.userId === session.user.id),
+        otherProfile: {
+          id: match.profileAId === ownProfile.id ? match.profileB.id : match.profileA.id,
+        },
+      })),
+    });
+  }
 
   const matchesWithUnlockStatus = matches.map((match) => {
     const otherProfile =
