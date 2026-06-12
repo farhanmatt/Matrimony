@@ -85,7 +85,7 @@ export function DashboardProfileCompletionSidebar({
   const buttonLabel =
     hasPersistedProfile || completion.hasAnyProgress
       ? "Complete Your Profile"
-      : "Create Your Profile";
+      : "Create / Update Your Profile";
   const buttonHref = hasPersistedProfile
     ? "/dashboard/profile/edit"
     : "/dashboard/profile/create";

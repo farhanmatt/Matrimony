@@ -694,6 +694,7 @@ export default async function ProfileDetailsPage({
     profile.religion === "Hindu" ||
       profile.star ||
       profile.rasi ||
+      profile.dosham ||
       profile.timeOfBirth ||
       profile.placeOfBirth ||
       profile.horoscopeImage
@@ -1017,6 +1018,7 @@ export default async function ProfileDetailsPage({
                     rows={[
                       { label: "Rasi / Moon Sign", value: profile.rasi },
                       { label: "Nakshatra", value: profile.star },
+                      { label: "Dosham", value: profile.dosham },
                       { label: "Time of Birth", value: profile.timeOfBirth },
                       { label: "Place of Birth", value: profile.placeOfBirth },
                     ]}

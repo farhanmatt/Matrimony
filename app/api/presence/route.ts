@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { markChatProfileActive } from "@/lib/server/chat-presence";
+import { markChatProfileActiveAndBroadcast } from "@/lib/server/chat-presence";
 
 export async function POST() {
   const session = await auth();
@@ -19,7 +19,7 @@ export async function POST() {
     return NextResponse.json({ data: { profileId: null, isOnline: false } });
   }
 
-  const presence = markChatProfileActive(profile.id);
+  const presence = await markChatProfileActiveAndBroadcast(profile.id);
 
   return NextResponse.json({
     data: {

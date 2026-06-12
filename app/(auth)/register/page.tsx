@@ -1,24 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import SiteLogo from "@/components/common/SiteLogo";
+import {
+  formatOtpRemainingTime,
+  getOtpRemainingSeconds,
+} from "@/lib/utils/otp-timer";
 import { resolveAllowedImageSrc } from "@/lib/utils/image";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
 
 const DEFAULT_LOGO_IMAGE = "/default-logo.svg";
+
+type PendingRegistrationState = {
+  email: string;
+  password: string;
+  verificationCodeExpiresAt: string;
+};
 
 export default function RegisterPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [logoImageUrl, setLogoImageUrl] = useState(DEFAULT_LOGO_IMAGE);
+  const [pendingRegistration, setPendingRegistration] =
+    useState<PendingRegistrationState | null>(null);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpRemainingSeconds, setOtpRemainingSeconds] = useState(0);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isResendingOtp, setIsResendingOtp] = useState(false);
+  const isOtpExpired = Boolean(pendingRegistration) && otpRemainingSeconds <= 0;
 
   useEffect(() => {
     setLogoImageUrl(
@@ -43,12 +60,36 @@ export default function RegisterPage() {
       window.removeEventListener("branding-logo-updated", handleBrandingUpdate);
   }, []);
 
+  useEffect(() => {
+    if (!pendingRegistration) {
+      setOtpRemainingSeconds(0);
+      return;
+    }
+
+    const updateRemainingSeconds = () => {
+      setOtpRemainingSeconds(
+        getOtpRemainingSeconds(pendingRegistration.verificationCodeExpiresAt)
+      );
+    };
+
+    updateRemainingSeconds();
+    const intervalId = window.setInterval(updateRemainingSeconds, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [pendingRegistration]);
+
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
 
   const onSubmit = async (data: RegisterInput) => {
@@ -65,16 +106,114 @@ export default function RegisterPage() {
       return;
     }
 
-    toast.success("Account created! Signing you in...");
+    const verificationCodeExpiresAt =
+      json.verificationCodeExpiresAt ??
+      new Date(Date.now() + 2 * 60 * 1000).toISOString();
 
-    await signIn("credentials", {
-      email: data.email,
+    setOtpRemainingSeconds(getOtpRemainingSeconds(verificationCodeExpiresAt));
+    setPendingRegistration({
+      email: json.email ?? data.email,
       password: data.password,
-      redirect: false,
+      verificationCodeExpiresAt,
     });
+    setOtpCode("");
+    toast.success(json.message ?? "Verification OTP sent to your email.");
+  };
 
-    router.push("/dashboard");
-    router.refresh();
+  const handleVerifyOtp = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!pendingRegistration) {
+      toast.error("Please submit the registration form again.");
+      return;
+    }
+
+    const code = otpCode.trim();
+    if (!/^\d{6}$/.test(code)) {
+      toast.error("Enter the 6-digit OTP sent to your email.");
+      return;
+    }
+
+    if (
+      getOtpRemainingSeconds(pendingRegistration.verificationCodeExpiresAt) <= 0
+    ) {
+      toast.error("This OTP has expired. Please request a new OTP.");
+      return;
+    }
+
+    setIsVerifyingOtp(true);
+
+    try {
+      const res = await fetch("/api/auth/register/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        toast.error(json.error ?? "OTP verification failed");
+        return;
+      }
+
+      toast.success("Email verified! Signing you in...");
+
+      await signIn("credentials", {
+        email: pendingRegistration.email,
+        password: pendingRegistration.password,
+        redirect: false,
+      });
+
+      router.push("/dashboard");
+      router.refresh();
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!pendingRegistration) {
+      toast.error("Please submit the registration form again.");
+      return;
+    }
+
+    if (getOtpRemainingSeconds(pendingRegistration.verificationCodeExpiresAt) > 0) {
+      toast.error("You can request a new OTP after the current OTP expires.");
+      return;
+    }
+
+    setIsResendingOtp(true);
+
+    try {
+      const res = await fetch("/api/auth/register/resend", {
+        method: "POST",
+      });
+      const json = await res.json();
+
+      if (!res.ok) {
+        toast.error(json.error ?? "Unable to resend OTP");
+        return;
+      }
+
+      const verificationCodeExpiresAt =
+        json.verificationCodeExpiresAt ??
+        new Date(Date.now() + 2 * 60 * 1000).toISOString();
+
+      setOtpCode("");
+      setOtpRemainingSeconds(getOtpRemainingSeconds(verificationCodeExpiresAt));
+      setPendingRegistration((current) =>
+        current
+          ? {
+              ...current,
+              verificationCodeExpiresAt,
+            }
+          : current
+      );
+      toast.success(json.message ?? "A new OTP has been sent.");
+    } finally {
+      setIsResendingOtp(false);
+    }
   };
 
   const handleGoogle = async () => {
@@ -96,9 +235,6 @@ export default function RegisterPage() {
           <h1 className="ui-enter-up mt-5 mb-1 text-2xl font-display font-bold text-gray-900" style={{ animationDelay: "120ms" }}>
             Create your account
           </h1>
-          <p className="ui-enter-up text-sm text-gray-500" style={{ animationDelay: "180ms" }}>
-            Join 10 lakh+ members. Free forever for basic features.
-          </p>
         </div>
 
         <div className="ui-enter-up ui-card-lift rounded-2xl bg-white p-8 shadow-xl" style={{ animationDelay: "240ms" }}>
@@ -130,19 +266,117 @@ export default function RegisterPage() {
             </div>
           </div>
 
+          {pendingRegistration ? (
+            <form onSubmit={handleVerifyOtp} className="space-y-5">
+              <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4">
+                <p className="text-sm font-semibold text-gray-900">
+                  Check your email
+                </p>
+                <p className="mt-1 text-sm leading-6 text-gray-600">
+                  We sent a 6-digit OTP to{" "}
+                  <span className="font-semibold text-gray-900">
+                    {pendingRegistration.email}
+                  </span>
+                  .
+                </p>
+                <p
+                  className={`mt-3 text-sm font-semibold ${
+                    isOtpExpired ? "text-rose-600" : "text-gray-700"
+                  }`}
+                >
+                  {isOtpExpired
+                    ? "This OTP has expired. Please request a new OTP."
+                    : `OTP expires in ${formatOtpRemainingTime(
+                        otpRemainingSeconds
+                      )}`}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="reg-otp">
+                  Email OTP
+                </label>
+                <input
+                  id="reg-otp"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={otpCode}
+                  onChange={(event) =>
+                    setOtpCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
+                  suppressHydrationWarning
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
+                  placeholder="000000"
+                />
+                {isOtpExpired ? (
+                  <p className="mt-1 text-xs text-rose-500">
+                    This OTP is no longer valid.
+                  </p>
+                ) : null}
+              </div>
+
+              <button
+                type="submit"
+                disabled={isVerifyingOtp || isOtpExpired}
+                suppressHydrationWarning
+                className="btn-primary ui-link-shift flex w-full items-center justify-center gap-2 rounded-xl py-3"
+              >
+                {isVerifyingOtp ? (
+                  <><Loader2 className="w-5 h-5 animate-spin" /> Verifying...</>
+                ) : (
+                  "Verify OTP & Create Account"
+                )}
+              </button>
+
+              <div className="flex flex-col gap-3 text-center text-sm sm:flex-row sm:items-center sm:justify-between">
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={isResendingOtp || !isOtpExpired}
+                  className="ui-link-shift font-semibold text-rose-600 hover:text-rose-700 disabled:opacity-60"
+                >
+                  {isResendingOtp
+                    ? "Sending..."
+                    : isOtpExpired
+                      ? "Resend OTP"
+                      : `Resend in ${formatOtpRemainingTime(
+                          otpRemainingSeconds
+                        )}`}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendingRegistration(null);
+                    setOtpCode("");
+                  }}
+                  className="ui-link-shift font-semibold text-gray-500 hover:text-gray-700"
+                >
+                  Edit details
+                </button>
+              </div>
+            </form>
+          ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="reg-name">
                 Full Name
               </label>
-              <input
-                id="reg-name"
-                type="text"
-                autoComplete="name"
-                {...register("name")}
-                suppressHydrationWarning
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
-                placeholder="Arjun Sharma"
+              <Controller
+                name="name"
+                control={control}
+                render={({ field }) => (
+                  <input
+                    id="reg-name"
+                    type="text"
+                    autoComplete="name"
+                    {...field}
+                    value={field.value ?? ""}
+                    suppressHydrationWarning
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
+                    placeholder="Arjun Sharma"
+                  />
+                )}
               />
               {errors.name && (
                 <p className="text-rose-500 text-xs mt-1">{errors.name.message}</p>
@@ -153,14 +387,21 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="reg-email">
                 Email Address
               </label>
-              <input
-                id="reg-email"
-                type="email"
-                autoComplete="email"
-                {...register("email")}
-                suppressHydrationWarning
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
-                placeholder="you@example.com"
+              <Controller
+                name="email"
+                control={control}
+                render={({ field }) => (
+                  <input
+                    id="reg-email"
+                    type="email"
+                    autoComplete="email"
+                    {...field}
+                    value={field.value ?? ""}
+                    suppressHydrationWarning
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
+                    placeholder="you@example.com"
+                  />
+                )}
               />
               {errors.email && (
                 <p className="text-rose-500 text-xs mt-1">{errors.email.message}</p>
@@ -172,14 +413,21 @@ export default function RegisterPage() {
                 Password
               </label>
               <div className="relative">
-                <input
-                  id="reg-password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  {...register("password")}
-                  suppressHydrationWarning
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
-                  placeholder="Min. 8 characters"
+                <Controller
+                  name="password"
+                  control={control}
+                  render={({ field }) => (
+                    <input
+                      id="reg-password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      {...field}
+                      value={field.value ?? ""}
+                      suppressHydrationWarning
+                      className="w-full border border-gray-300 rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
+                      placeholder="Min. 8 characters"
+                    />
+                  )}
                 />
                 <button
                   type="button"
@@ -199,14 +447,21 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="reg-confirm">
                 Confirm Password
               </label>
-              <input
-                id="reg-confirm"
-                type="password"
-                autoComplete="new-password"
-                {...register("confirmPassword")}
-                suppressHydrationWarning
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
-                placeholder="Repeat your password"
+              <Controller
+                name="confirmPassword"
+                control={control}
+                render={({ field }) => (
+                  <input
+                    id="reg-confirm"
+                    type="password"
+                    autoComplete="new-password"
+                    {...field}
+                    value={field.value ?? ""}
+                    suppressHydrationWarning
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
+                    placeholder="Repeat your password"
+                  />
+                )}
               />
               {errors.confirmPassword && (
                 <p className="text-rose-500 text-xs mt-1">{errors.confirmPassword.message}</p>
@@ -220,12 +475,13 @@ export default function RegisterPage() {
               className="btn-primary ui-link-shift flex w-full items-center justify-center gap-2 rounded-xl py-3"
             >
               {isSubmitting ? (
-                <><Loader2 className="w-5 h-5 animate-spin" /> Creating account...</>
+                <><Loader2 className="w-5 h-5 animate-spin" /> Sending OTP...</>
               ) : (
                 "Create Free Account"
               )}
             </button>
           </form>
+          )}
 
           <p className="text-center text-xs text-gray-500 mt-4 leading-relaxed">
             By registering, you agree to our{" "}

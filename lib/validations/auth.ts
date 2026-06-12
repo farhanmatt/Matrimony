@@ -56,9 +56,17 @@ export const forgotPasswordVerificationSchema = z.object({
     .regex(/^\d{6}$/, "Enter the 6-digit verification code"),
 });
 
+export const registrationOtpSchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, "Enter the 6-digit OTP"),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type AdminLoginInput = z.infer<typeof adminLoginSchema>;
 export type ForgotPasswordEmailInput = z.infer<typeof forgotPasswordEmailSchema>;
 export type ForgotPasswordPasswordInput = z.infer<typeof forgotPasswordPasswordSchema>;
 export type ForgotPasswordVerificationInput = z.infer<typeof forgotPasswordVerificationSchema>;
+export type RegistrationOtpInput = z.infer<typeof registrationOtpSchema>;

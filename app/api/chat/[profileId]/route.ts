@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
+  createFeaturedProfilePreviewToken,
+  getFeaturedProfilePreviewSource,
+} from "@/lib/server/featured-profile-preview";
+import {
   getChatProfilePresence,
-  markChatProfileActive,
+  markChatProfileActiveAndBroadcast,
 } from "@/lib/server/chat-presence";
 import { publishUserNotification } from "@/lib/utils/notification-events";
 import {
@@ -16,6 +20,8 @@ type RouteContext = {
   params: Promise<{ profileId: string }>;
 };
 
+const PROTECTED_CHAT_PROFILE_IMAGE_ROUTE = "/api/chat/profile-image";
+
 const chatMessageSelect = {
   id: true,
   content: true,
@@ -23,18 +29,36 @@ const chatMessageSelect = {
   createdAt: true,
   updatedAt: true,
   senderProfileId: true,
+  replyToMessageId: true,
+  replyToMessage: {
+    select: {
+      id: true,
+      content: true,
+      senderProfileId: true,
+    },
+  },
 } as const;
 
-function getPrimaryImage(profile: {
+function getProtectedChatImageUrl(profile: {
+  id: string;
   profileImage?: string | null;
-  photos: { url: string; isPrimary: boolean }[];
+  photos: { url: string; publicId: string; isPrimary: boolean }[];
 }) {
-  return (
-    profile.profileImage ??
-    profile.photos.find((photo) => photo.isPrimary)?.url ??
-    profile.photos[0]?.url ??
-    null
-  );
+  const previewSource = getFeaturedProfilePreviewSource({
+    ...profile,
+    profileImage: profile.profileImage ?? null,
+  });
+  const previewToken =
+    previewSource.previewUrl && previewSource.fingerprint
+      ? createFeaturedProfilePreviewToken({
+          profileId: profile.id,
+          fingerprint: previewSource.fingerprint,
+        })
+      : null;
+
+  return previewToken
+    ? `${PROTECTED_CHAT_PROFILE_IMAGE_ROUTE}/${encodeURIComponent(previewToken)}`
+    : null;
 }
 
 async function resolveChatAccess(targetProfileId: string, userId: string) {
@@ -57,7 +81,7 @@ async function resolveChatAccess(targetProfileId: string, userId: string) {
         photos: {
           orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
           take: 1,
-          select: { url: true, isPrimary: true },
+          select: { url: true, publicId: true, isPrimary: true },
         },
       },
     }),
@@ -118,7 +142,7 @@ export async function GET(
   }
 
   const { ownProfile, targetProfile } = access;
-  markChatProfileActive(ownProfile.id);
+  await markChatProfileActiveAndBroadcast(ownProfile.id);
   const targetPresence = getChatProfilePresence(targetProfile.id);
   const conversation = await findConversationForProfiles(
     ownProfile.id,
@@ -156,7 +180,7 @@ export async function GET(
           [targetProfile.city, targetProfile.state].filter(Boolean).join(", ") ||
           targetProfile.location ||
           "India",
-        imageUrl: getPrimaryImage(targetProfile),
+        imageUrl: getProtectedChatImageUrl(targetProfile),
         isOnline: targetPresence.isOnline,
         lastActiveAt: targetPresence.lastActiveAt,
       },
@@ -182,11 +206,13 @@ export async function POST(
   }
 
   const { ownProfile, targetProfile } = access;
-  markChatProfileActive(ownProfile.id);
+  await markChatProfileActiveAndBroadcast(ownProfile.id);
 
   try {
-    const { content } = await req.json();
+    const { content, replyToMessageId } = await req.json();
     const messageContent = typeof content === "string" ? content.trim() : "";
+    const normalizedReplyToMessageId =
+      typeof replyToMessageId === "string" ? replyToMessageId.trim() : "";
 
     if (!messageContent) {
       return NextResponse.json(
@@ -206,6 +232,23 @@ export async function POST(
       ownProfile.id,
       targetProfile.id
     );
+    const replyTarget = normalizedReplyToMessageId
+      ? await prisma.chatMessage.findFirst({
+          where: {
+            id: normalizedReplyToMessageId,
+            conversationId: conversation.id,
+          },
+          select: { id: true },
+        })
+      : null;
+
+    if (normalizedReplyToMessageId && !replyTarget) {
+      return NextResponse.json(
+        { error: "Reply message not found in this conversation" },
+        { status: 400 }
+      );
+    }
+
     const timestamp = new Date();
 
     const message = await prisma.$transaction(async (tx) => {
@@ -214,6 +257,7 @@ export async function POST(
           conversationId: conversation.id,
           senderProfileId: ownProfile.id,
           content: messageContent,
+          replyToMessageId: replyTarget?.id ?? null,
         },
         select: chatMessageSelect,
       });
@@ -267,7 +311,7 @@ export async function PATCH(
   }
 
   const { ownProfile, targetProfile } = access;
-  markChatProfileActive(ownProfile.id);
+  await markChatProfileActiveAndBroadcast(ownProfile.id);
 
   try {
     const { messageId, content } = await req.json();
@@ -371,7 +415,7 @@ export async function DELETE(
   }
 
   const { ownProfile, targetProfile } = access;
-  markChatProfileActive(ownProfile.id);
+  await markChatProfileActiveAndBroadcast(ownProfile.id);
 
   try {
     const { messageId } = await req.json();

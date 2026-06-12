@@ -42,3 +42,17 @@ export const RASI_OPTIONS = [
   { value: "Kumbha", label: "Kumbha - Aquarius" },
   { value: "Meena", label: "Meena - Pisces" },
 ] as const;
+
+export const DOSHAM_OPTIONS = [
+  { value: "No Dosham", label: "No Dosham" },
+  { value: "Mangal / Chevvai Dosham", label: "Mangal / Chevvai Dosham" },
+  { value: "Kalathra Dosham", label: "Kalathra Dosham" },
+  { value: "Visha Kanya Dosham", label: "Visha Kanya Dosham" },
+  { value: "Nadi Dosham", label: "Nadi Dosham" },
+  { value: "Bhakoot Dosham", label: "Bhakoot Dosham" },
+  { value: "Gana Dosham", label: "Gana Dosham" },
+  { value: "Yoni Dosham", label: "Yoni Dosham" },
+  { value: "Rajju Dosham", label: "Rajju Dosham" },
+  { value: "Vedha Dosham", label: "Vedha Dosham" },
+  { value: "Stree Deergha Dosham", label: "Stree Deergha Dosham" },
+] as const;

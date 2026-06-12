@@ -4,7 +4,7 @@ const steps = [
   {
     step: "01",
     icon: UserPlus,
-    title: "Create Your Profile",
+    title: "Create / Update Your Profile",
     description:
       "Sign up and create a detailed matrimony profile with your personal, family, and lifestyle details.",
   },

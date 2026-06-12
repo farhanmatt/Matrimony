@@ -35,8 +35,7 @@ type MatchProfile = {
   education: string | null;
   course: string | null;
   phone: string | null;
-  profileImage?: string | null;
-  photos: { url: string; isPrimary: boolean }[];
+  previewImageUrl?: string | null;
 };
 
 interface MatchProfileCardProps {
@@ -68,11 +67,7 @@ export default function MatchProfileCard({
     [profile.city, profile.state].filter(Boolean).join(", ") || "Location not added";
   const educationLabel =
     profile.course || profile.education || "Education details not added";
-  const primaryPhoto =
-    profile.profileImage ??
-    profile.photos.find((photo) => photo.isPrimary)?.url ??
-    profile.photos[0]?.url ??
-    null;
+  const primaryPhoto = profile.previewImageUrl ?? null;
   const totalAmount = baseAmount + profileAmount + perProfileChatAmount;
 
   useEffect(() => {

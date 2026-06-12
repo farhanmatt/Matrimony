@@ -62,6 +62,7 @@ export default async function DashboardLayout({
           image: session.user.image ?? null,
         }}
         initialHasProfile={Boolean(profileSummary?.id ?? notificationState.profileId)}
+        initialProfileUserId={profileSummary?.profileUserId ?? null}
         initialAccountImage={profileSummary?.accountImage ?? null}
         initialNotificationProfileId={notificationState.profileId}
         initialNotifications={notificationState.items}

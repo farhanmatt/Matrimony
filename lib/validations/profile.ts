@@ -36,6 +36,47 @@ const optionalPincode = z
   })
   .optional()
   .nullable();
+const optionalNationality = z
+  .enum(["Indian", "NRI", "Expat"])
+  .optional()
+  .nullable();
+const requiredPhone = z.preprocess(
+  (value) => {
+    if (value === null || value === undefined) {
+      return "";
+    }
+
+    return typeof value === "string" ? value.trim() : value;
+  },
+  z
+    .string()
+    .min(1, "Phone number is required")
+    .refine((value) => /^\d{10}$/.test(value), {
+      message: "Phone number must be exactly 10 digits",
+    })
+);
+const requiredNationality = z.preprocess(
+  (value) => (value === "" || value === null ? undefined : value),
+  z.enum(["Indian", "NRI", "Expat"], {
+    required_error: "Nationality is required",
+    invalid_type_error: "Nationality is required",
+  })
+);
+const requiredPincode = z.preprocess(
+  (value) => {
+    if (value === null || value === undefined) {
+      return "";
+    }
+
+    return typeof value === "string" ? value.trim() : value;
+  },
+  z
+    .string()
+    .min(1, "Pincode is required")
+    .refine((value) => /^\d{6}$/.test(value), {
+      message: "Pincode must be 6 digits",
+    })
+);
 
 function parseDateInput(value: string) {
   const trimmedValue = value.trim();
@@ -217,6 +258,7 @@ const baseProfileSchema = z.object({
   gender: z.enum(["MALE", "FEMALE", "OTHER"]),
   dateOfBirth: z.string().min(1, "Date of birth is required"),
   height: z.number().min(100).max(250).optional().nullable(),
+  nationality: optionalNationality,
   maritalStatus: z.enum([
     "NEVER_MARRIED",
     "DIVORCED",
@@ -261,6 +303,7 @@ const baseProfileSchema = z.object({
   language: z.string().max(100).optional().nullable(),
   star: z.string().max(100).optional().nullable(),
   rasi: z.string().max(100).optional().nullable(),
+  dosham: z.string().max(100).optional().nullable(),
   timeOfBirth: z.string().max(20).optional().nullable(),
   placeOfBirth: z.string().max(200).optional().nullable(),
 
@@ -316,6 +359,13 @@ export const preferenceSchema = z.object({
 });
 
 export const profileFormSchema = baseProfileSchema.extend({
+  phone: requiredPhone,
+  nationality: requiredNationality,
+  houseNumber: requiredNullableText("House number", 50),
+  streetName: requiredNullableText("Street name", 200),
+  state: requiredNullableText("State", 100),
+  city: requiredNullableText("City", 100),
+  pincode: requiredPincode,
   education: requiredNullableText("Higher education", 200),
   course: requiredNullableText("Course", 200),
   profession: requiredNullableText("Occupation", 200),

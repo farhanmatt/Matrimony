@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   getChatProfilePresence,
-  markChatProfileActive,
+  markChatProfileActiveAndBroadcast,
 } from "@/lib/server/chat-presence";
 import { canStartChatForProfiles } from "@/lib/utils/chat";
 
@@ -78,7 +78,7 @@ export async function POST(
   }
 
   const { ownProfile, targetProfile } = access;
-  markChatProfileActive(ownProfile.id);
+  await markChatProfileActiveAndBroadcast(ownProfile.id);
   const targetPresence = getChatProfilePresence(targetProfile.id);
 
   return NextResponse.json({
@@ -91,4 +91,3 @@ export async function POST(
     },
   });
 }
-

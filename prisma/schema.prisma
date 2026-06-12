@@ -141,11 +141,32 @@ model PasswordResetRequest {
   @@index([expiresAt])
 }
 
+model PendingRegistration {
+  id                         String   @id @default(cuid())
+  email                      String   @unique
+  name                       String
+  nameLookup                 String?
+  passwordHash               String
+  profile                    Json?
+  preference                 Json?
+  sessionTokenHash           String   @unique
+  verificationCodeHash       String
+  verificationCodeExpiresAt  DateTime
+  verificationAttempts       Int      @default(0)
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+  expiresAt                  DateTime
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
 // ─── Profile ─────────────────────────────────────────────────────────────────
 
 model Profile {
   id     String        @id @default(cuid())
   userId String        @unique
+  profileUserId String? @unique
   status ProfileStatus @default(DRAFT)
 
   // Personal
@@ -153,6 +174,7 @@ model Profile {
   gender        Gender
   dateOfBirth   DateTime
   height        Float?        // in cm
+  nationality   String?
   maritalStatus MaritalStatus @default(NEVER_MARRIED)
   phone         String?
   education     String?       // Higher education
@@ -185,6 +207,7 @@ model Profile {
   language  String?
   star      String? // Nakshatra
   rasi      String? // Zodiac sign / Rasi
+  dosham    String?
   timeOfBirth String?
   placeOfBirth String?
 
@@ -224,6 +247,13 @@ model Profile {
   @@index([caste])
   @@index([status])
   @@index([maritalStatus])
+}
+
+model ProfileUserIdSequence {
+  gender     String   @id
+  nextNumber Int      @default(141)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model ProfilePhoto {
@@ -313,16 +343,20 @@ model ChatMessage {
   id              String   @id @default(cuid())
   conversationId  String
   senderProfileId String
+  replyToMessageId String?
   content         String   @db.Text
   isRead          Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  conversation  ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  senderProfile Profile          @relation("ChatMessageSender", fields: [senderProfileId], references: [id], onDelete: Cascade)
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderProfile  Profile          @relation("ChatMessageSender", fields: [senderProfileId], references: [id], onDelete: Cascade)
+  replyToMessage ChatMessage?     @relation("ChatMessageReplies", fields: [replyToMessageId], references: [id], onDelete: SetNull)
+  replies        ChatMessage[]    @relation("ChatMessageReplies")
 
   @@index([conversationId, createdAt])
   @@index([senderProfileId])
+  @@index([replyToMessageId])
 }
 
 model ProfileNotification {
@@ -377,6 +411,8 @@ model Payment {
   baseAmount         Int
   profileAmount      Int
   perProfileChatAmount Int   @default(0)
+  couponCode         String?
+  discountAmount     Int      @default(0) // discount in rupees
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
@@ -414,4 +450,25 @@ model AdminSettings {
   heroImageUrl  String @default("/main.jpeg")
   logoImageUrl  String @default("")
   updatedAt     DateTime @updatedAt
+}
+
+// ─── Coupon Codes ─────────────────────────────────────────────────────────────
+
+model CouponCode {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  description     String?
+  discountType    String   @default("PERCENTAGE") // PERCENTAGE or FIXED
+  discountValue   Float    // percentage (e.g. 20 = 20%) or fixed amount in rupees
+  maxUses         Int?     // null = unlimited
+  currentUses     Int      @default(0)
+  minAmount       Int      @default(0) // minimum order amount to apply coupon
+  maxDiscount     Int?     // maximum discount amount (for percentage coupons)
+  isActive        Boolean  @default(true)
+  expiresAt       DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([code])
+  @@index([isActive])
 }

@@ -3,7 +3,14 @@
 import { CldUploadWidget } from "next-cloudinary";
 import { ImagePlus, X } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
+import {
+  DEFAULT_IMAGE_UPLOAD_MAX_BYTES,
+  DEFAULT_IMAGE_UPLOAD_SIZE_ERROR_MESSAGE,
+  getCloudinaryUploadResultInfo,
+  getImageUploadErrorMessage,
+  isImageUploadWithinSizeLimit,
+} from "@/lib/utils/image";
 
 interface ImageUploadProps {
   value: string | null | undefined;
@@ -11,6 +18,8 @@ interface ImageUploadProps {
   onRemove: () => void;
   label: string;
   error?: string;
+  maxFileSizeBytes?: number;
+  sizeErrorMessage?: string;
 }
 
 export default function ImageUpload({
@@ -19,8 +28,12 @@ export default function ImageUpload({
   onRemove,
   label,
   error,
+  maxFileSizeBytes = DEFAULT_IMAGE_UPLOAD_MAX_BYTES,
+  sizeErrorMessage = DEFAULT_IMAGE_UPLOAD_SIZE_ERROR_MESSAGE,
 }: ImageUploadProps) {
   const pendingUploadUrlRef = useRef<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const activeError = uploadError ?? error;
 
   const restorePageScroll = useCallback(() => {
     document.body.style.overflow = "auto";
@@ -32,17 +45,19 @@ export default function ImageUpload({
   }, []);
 
   const handleUpload = useCallback(
-    (result: any) => {
-      const secureUrl =
-        typeof result?.info === "object" &&
-        result.info &&
-        typeof result.info.secure_url === "string"
-          ? result.info.secure_url
-          : null;
+    (result: unknown) => {
+      const { secureUrl, bytes } = getCloudinaryUploadResultInfo(result);
 
+      if (secureUrl && !isImageUploadWithinSizeLimit(bytes, maxFileSizeBytes)) {
+        pendingUploadUrlRef.current = null;
+        setUploadError(sizeErrorMessage);
+        return;
+      }
+
+      setUploadError(null);
       pendingUploadUrlRef.current = secureUrl;
     },
-    []
+    [maxFileSizeBytes, sizeErrorMessage]
   );
 
   const handleClose = useCallback(() => {
@@ -59,20 +74,22 @@ export default function ImageUpload({
     restorePageScroll();
   }, [resetPendingUpload, restorePageScroll]);
 
-  const handleError = useCallback(() => {
+  const handleError = useCallback((nextError: unknown) => {
     resetPendingUpload();
+    setUploadError(getImageUploadErrorMessage(nextError, sizeErrorMessage));
     restorePageScroll();
-  }, [resetPendingUpload, restorePageScroll]);
+  }, [resetPendingUpload, restorePageScroll, sizeErrorMessage]);
 
   const handleOpen = useCallback(() => {
     resetPendingUpload();
+    setUploadError(null);
   }, [resetPendingUpload]);
 
   return (
     <div className="space-y-4 w-full">
       <div>
         <label className="block text-sm font-medium text-gray-700">{label}</label>
-        {error ? <p className="mt-1 text-xs text-rose-500">{error}</p> : null}
+        {activeError ? <p className="mt-1 text-xs text-rose-500">{activeError}</p> : null}
       </div>
       <div className="flex items-center gap-4">
         <CldUploadWidget
@@ -85,6 +102,8 @@ export default function ImageUpload({
           uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default"}
           options={{
             maxFiles: 1,
+            maxFileSize: maxFileSizeBytes,
+            maxImageFileSize: maxFileSizeBytes,
             multiple: false,
             resourceType: "image",
             clientAllowedFormats: ["jpg", "jpeg", "png", "webp"],
@@ -105,6 +124,7 @@ export default function ImageUpload({
                   <button
                     onClick={(e) => {
                       e.preventDefault();
+                      setUploadError(null);
                       onRemove();
                     }}
                     className="absolute top-2 right-2 p-1.5 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
