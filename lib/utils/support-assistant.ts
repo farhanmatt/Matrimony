@@ -1,3 +1,12 @@
+import { prisma } from "@/lib/prisma";
+import {
+  GENDER_LABELS,
+  MARITAL_STATUS_LABELS,
+  calculateAge,
+  cmToFeetInches,
+  formatDate,
+} from "@/lib/utils/helpers";
+
 export const supportIssueCategories = [
   {
     value: "technical_issue",
@@ -48,6 +57,81 @@ type SupportAssistantResult = {
   blocked: boolean;
   message: string;
 };
+
+const supportAssistantProfileSelect = {
+  fullName: true,
+  gender: true,
+  dateOfBirth: true,
+  height: true,
+  maritalStatus: true,
+  phone: true,
+  education: true,
+  course: true,
+  profession: true,
+  employedIn: true,
+  income: true,
+  location: true,
+  city: true,
+  state: true,
+  bio: true,
+  religion: true,
+  caste: true,
+  subCaste: true,
+  language: true,
+} as const;
+
+type SupportAssistantProfile = {
+  fullName: string;
+  gender: string;
+  dateOfBirth: Date;
+  height: number | null;
+  maritalStatus: string;
+  phone: string | null;
+  education: string | null;
+  course: string | null;
+  profession: string | null;
+  employedIn: string | null;
+  income: string | null;
+  location: string | null;
+  city: string | null;
+  state: string | null;
+  bio: string | null;
+  religion: string | null;
+  caste: string | null;
+  subCaste: string | null;
+  language: string | null;
+};
+
+type SupportAssistantUserContext = {
+  profile: SupportAssistantProfile | null;
+  counts: {
+    likesGiven: number;
+    likesReceived: number;
+    matches: number;
+    shortlist: number | null;
+  };
+};
+
+type SupportAssistantPersonalMetric =
+  | "likesGiven"
+  | "likesReceived"
+  | "matches"
+  | "shortlist";
+
+type SupportAssistantPersonalField =
+  | "name"
+  | "age"
+  | "dateOfBirth"
+  | "phone"
+  | "education"
+  | "profession"
+  | "location"
+  | "religion"
+  | "caste"
+  | "language"
+  | "maritalStatus"
+  | "height"
+  | "bio";
 
 const supportCategoryValueSet = new Set<SupportIssueCategory>(
   supportIssueCategories.map((category) => category.value)
@@ -417,6 +501,473 @@ function normalizeMessage(message: string) {
   return message.trim().replace(/\s+/g, " ");
 }
 
+function getTrimmedValue(value: string | null | undefined) {
+  const normalizedValue = value?.trim();
+  return normalizedValue ? normalizedValue : null;
+}
+
+function getProfileLocation(profile: SupportAssistantProfile) {
+  const directLocation = getTrimmedValue(profile.location);
+  if (directLocation) {
+    return directLocation;
+  }
+
+  const parts = [getTrimmedValue(profile.city), getTrimmedValue(profile.state)].filter(
+    Boolean
+  );
+  return parts.length > 0 ? parts.join(", ") : null;
+}
+
+function getProfileEducation(profile: SupportAssistantProfile) {
+  const education = getTrimmedValue(profile.education);
+  const course = getTrimmedValue(profile.course);
+
+  if (education && course) {
+    return `${education} - ${course}`;
+  }
+
+  return education ?? course;
+}
+
+function getProfileProfession(profile: SupportAssistantProfile) {
+  const profession = getTrimmedValue(profile.profession);
+  const employedIn = getTrimmedValue(profile.employedIn);
+
+  if (profession && employedIn) {
+    return `${profession} (${employedIn})`;
+  }
+
+  return profession ?? employedIn;
+}
+
+function formatProfileFieldValue(
+  profile: SupportAssistantProfile,
+  field: SupportAssistantPersonalField
+) {
+  switch (field) {
+    case "name":
+      return getTrimmedValue(profile.fullName);
+    case "age":
+      return `${calculateAge(profile.dateOfBirth)} years`;
+    case "dateOfBirth":
+      return formatDate(profile.dateOfBirth);
+    case "phone":
+      return getTrimmedValue(profile.phone);
+    case "education":
+      return getProfileEducation(profile);
+    case "profession":
+      return getProfileProfession(profile);
+    case "location":
+      return getProfileLocation(profile);
+    case "religion":
+      return getTrimmedValue(profile.religion);
+    case "caste": {
+      const caste = getTrimmedValue(profile.caste);
+      const subCaste = getTrimmedValue(profile.subCaste);
+
+      if (caste && subCaste) {
+        return `${caste} (${subCaste})`;
+      }
+
+      return caste ?? subCaste;
+    }
+    case "language":
+      return getTrimmedValue(profile.language);
+    case "maritalStatus":
+      return MARITAL_STATUS_LABELS[profile.maritalStatus] ?? profile.maritalStatus;
+    case "height":
+      return profile.height ? `${cmToFeetInches(profile.height)} (${profile.height} cm)` : null;
+    case "bio":
+      return getTrimmedValue(profile.bio);
+    default:
+      return null;
+  }
+}
+
+function getProfileFieldLabel(field: SupportAssistantPersonalField) {
+  switch (field) {
+    case "name":
+      return "name";
+    case "age":
+      return "age";
+    case "dateOfBirth":
+      return "date of birth";
+    case "phone":
+      return "phone number";
+    case "education":
+      return "education";
+    case "profession":
+      return "profession";
+    case "location":
+      return "location";
+    case "religion":
+      return "religion";
+    case "caste":
+      return "caste";
+    case "language":
+      return "language";
+    case "maritalStatus":
+      return "marital status";
+    case "height":
+      return "height";
+    case "bio":
+      return "bio";
+    default:
+      return "profile field";
+  }
+}
+
+function formatProfileSummary(profile: SupportAssistantProfile) {
+  const summaryLines = [
+    `Name: ${profile.fullName}`,
+    `Gender: ${GENDER_LABELS[profile.gender] ?? profile.gender}`,
+    `Age: ${calculateAge(profile.dateOfBirth)} years`,
+    `Date of birth: ${formatDate(profile.dateOfBirth)}`,
+    formatProfileFieldValue(profile, "maritalStatus")
+      ? `Marital status: ${formatProfileFieldValue(profile, "maritalStatus")}`
+      : null,
+    formatProfileFieldValue(profile, "education")
+      ? `Education: ${formatProfileFieldValue(profile, "education")}`
+      : null,
+    formatProfileFieldValue(profile, "profession")
+      ? `Profession: ${formatProfileFieldValue(profile, "profession")}`
+      : null,
+    formatProfileFieldValue(profile, "location")
+      ? `Location: ${formatProfileFieldValue(profile, "location")}`
+      : null,
+    formatProfileFieldValue(profile, "religion")
+      ? `Religion: ${formatProfileFieldValue(profile, "religion")}`
+      : null,
+    formatProfileFieldValue(profile, "caste")
+      ? `Caste: ${formatProfileFieldValue(profile, "caste")}`
+      : null,
+    formatProfileFieldValue(profile, "language")
+      ? `Language: ${formatProfileFieldValue(profile, "language")}`
+      : null,
+    formatProfileFieldValue(profile, "phone")
+      ? `Phone: ${formatProfileFieldValue(profile, "phone")}`
+      : null,
+    formatProfileFieldValue(profile, "bio")
+      ? `Bio: ${formatProfileFieldValue(profile, "bio")}`
+      : null,
+  ].filter((line): line is string => Boolean(line));
+
+  return summaryLines.join("\n");
+}
+
+function mentionsIssueSignal(message: string) {
+  return containsAnyKeyword(message, supportIssueSignalKeywords);
+}
+
+function looksLikeOwnDataLookup(message: string) {
+  return (
+    /\bwhat(?:'s| is| are)?\b/.test(message) ||
+    /\bshow\b/.test(message) ||
+    /\btell me\b/.test(message) ||
+    /\bgive me\b/.test(message) ||
+    /\bhow many\b/.test(message) ||
+    /\bcount\b/.test(message) ||
+    /\bnumber of\b/.test(message) ||
+    /\bdetails\b/.test(message) ||
+    /\bdata\b/.test(message) ||
+    /\babout\b/.test(message) ||
+    /\bview\b/.test(message) ||
+    /\bsee\b/.test(message) ||
+    /^my\b/.test(message)
+  );
+}
+
+function detectPersonalFieldRequest(
+  message: string
+): SupportAssistantPersonalField | null {
+  if (!looksLikeOwnDataLookup(message)) {
+    return null;
+  }
+
+  if (
+    message.includes("my name") ||
+    message.includes("my full name") ||
+    message.includes("profile name")
+  ) {
+    return "name";
+  }
+
+  if (
+    message.includes("my age") ||
+    message.includes("date of birth") ||
+    message.includes("dob") ||
+    message.includes("birthday")
+  ) {
+    return message.includes("age") ? "age" : "dateOfBirth";
+  }
+
+  if (message.includes("phone")) {
+    return "phone";
+  }
+
+  if (message.includes("education") || message.includes("course")) {
+    return "education";
+  }
+
+  if (message.includes("profession") || message.includes("job") || message.includes("work")) {
+    return "profession";
+  }
+
+  if (message.includes("location") || message.includes("city") || message.includes("state")) {
+    return "location";
+  }
+
+  if (message.includes("religion")) {
+    return "religion";
+  }
+
+  if (message.includes("caste") || message.includes("sub caste") || message.includes("subcaste")) {
+    return "caste";
+  }
+
+  if (message.includes("language")) {
+    return "language";
+  }
+
+  if (message.includes("marital status")) {
+    return "maritalStatus";
+  }
+
+  if (message.includes("height")) {
+    return "height";
+  }
+
+  if (message.includes("bio") || message.includes("about me")) {
+    return "bio";
+  }
+
+  return null;
+}
+
+function isProfileSummaryRequest(message: string) {
+  if (!looksLikeOwnDataLookup(message)) {
+    return false;
+  }
+
+  return (
+    message.includes("profile details") ||
+    message.includes("profile detail") ||
+    message.includes("profile data") ||
+    message.includes("my details") ||
+    message.includes("my data") ||
+    message.includes("details entered") ||
+    message.includes("data entered") ||
+    message.includes("saved in my profile") ||
+    message.includes("show my profile") ||
+    message.includes("about my profile")
+  );
+}
+
+function extractRequestedPersonalMetrics(
+  message: string
+): SupportAssistantPersonalMetric[] {
+  const metrics = new Set<SupportAssistantPersonalMetric>();
+  const wantsCount =
+    looksLikeOwnDataLookup(message) ||
+    message.includes("like count") ||
+    message.includes("match count") ||
+    message.includes("shortlist count");
+
+  if (!wantsCount) {
+    return [];
+  }
+
+  const mentionsReceivedLikes =
+    message.includes("received like") ||
+    message.includes("received likes") ||
+    message.includes("who liked me") ||
+    message.includes("likes received");
+  const mentionsMatches =
+    message.includes("mutual") ||
+    message.includes("match") ||
+    message.includes("matches");
+  const mentionsShortlist =
+    message.includes("shortlist") || message.includes("shortlisted");
+  const mentionsLikes = message.includes("like") || message.includes("likes");
+  const mentionsSentLikes =
+    message.includes("likes given") ||
+    message.includes("liked profiles") ||
+    message.includes("i liked") ||
+    message.includes("profiles i liked") ||
+    message.includes("sent like");
+
+  if (mentionsReceivedLikes) {
+    metrics.add("likesReceived");
+  }
+
+  if (mentionsMatches) {
+    metrics.add("matches");
+  }
+
+  if (mentionsShortlist) {
+    metrics.add("shortlist");
+  }
+
+  if (mentionsSentLikes) {
+    metrics.add("likesGiven");
+  } else if (mentionsLikes && !mentionsReceivedLikes) {
+    metrics.add("likesGiven");
+    metrics.add("likesReceived");
+  }
+
+  return Array.from(metrics);
+}
+
+function buildMetricReply(
+  counts: SupportAssistantUserContext["counts"],
+  metrics: SupportAssistantPersonalMetric[]
+) {
+  const lines = metrics.map((metric) => {
+    switch (metric) {
+      case "likesGiven":
+        return `Likes given: ${counts.likesGiven}`;
+      case "likesReceived":
+        return `Received likes: ${counts.likesReceived}`;
+      case "matches":
+        return `Mutual matches: ${counts.matches}`;
+      case "shortlist":
+        return counts.shortlist === null
+          ? "Shortlisted profiles: unavailable right now"
+          : `Shortlisted profiles: ${counts.shortlist}`;
+      default:
+        return null;
+    }
+  });
+
+  return lines.filter((line): line is string => Boolean(line)).join("\n");
+}
+
+function buildPersonalDataReply(
+  context: SupportAssistantUserContext,
+  message: string
+): SupportAssistantResult | null {
+  if (mentionsIssueSignal(message)) {
+    return null;
+  }
+
+  const requestedField = detectPersonalFieldRequest(message);
+  const requestedMetrics = extractRequestedPersonalMetrics(message);
+  const wantsProfileSummary = isProfileSummaryRequest(message);
+
+  if (!requestedField && requestedMetrics.length === 0 && !wantsProfileSummary) {
+    return null;
+  }
+
+  if (!context.profile) {
+    if (requestedMetrics.length > 0) {
+      return {
+        category: "likes_matches",
+        blocked: false,
+        message: [
+          "I could not find a saved profile for your account yet.",
+          buildMetricReply(context.counts, requestedMetrics),
+        ]
+          .filter(Boolean)
+          .join("\n\n"),
+      };
+    }
+
+    return {
+      category: "profile_photos",
+      blocked: false,
+      message:
+        "I could not find a saved profile for your account yet. Please create or complete your profile first, and then I can show your saved details here.",
+    };
+  }
+
+  const replyParts: string[] = [];
+
+  if (requestedField) {
+    const value = formatProfileFieldValue(context.profile, requestedField);
+
+    replyParts.push(
+      value
+        ? `Your ${getProfileFieldLabel(requestedField)} is ${value}.`
+        : `I could not find your ${getProfileFieldLabel(requestedField)} in the saved profile yet.`
+    );
+  }
+
+  if (wantsProfileSummary) {
+    replyParts.push(
+      `Here are the details currently saved on your profile:\n${formatProfileSummary(
+        context.profile
+      )}`
+    );
+  }
+
+  if (requestedMetrics.length > 0) {
+    replyParts.push(
+      `Here are your current counts:\n${buildMetricReply(
+        context.counts,
+        requestedMetrics
+      )}`
+    );
+  }
+
+  return {
+    category:
+      requestedField || wantsProfileSummary ? "profile_photos" : "likes_matches",
+    blocked: false,
+    message: replyParts.join("\n\n"),
+  };
+}
+
+async function getSupportAssistantUserContext(
+  userId: string,
+  shortlistCount: number | null
+): Promise<SupportAssistantUserContext> {
+  const profile = await prisma.profile.findUnique({
+    where: { userId },
+    select: {
+      id: true,
+      ...supportAssistantProfileSelect,
+    },
+  });
+
+  if (!profile) {
+    return {
+      profile: null,
+      counts: {
+        likesGiven: 0,
+        likesReceived: 0,
+        matches: 0,
+        shortlist: shortlistCount,
+      },
+    };
+  }
+
+  const [likesGiven, likesReceived, matches] = await Promise.all([
+    prisma.like.count({
+      where: { fromProfileId: profile.id },
+    }),
+    prisma.like.count({
+      where: { toProfileId: profile.id },
+    }),
+    prisma.match.count({
+      where: {
+        OR: [{ profileAId: profile.id }, { profileBId: profile.id }],
+      },
+    }),
+  ]);
+
+  const { id: _profileId, ...profileData } = profile;
+
+  return {
+    profile: profileData,
+    counts: {
+      likesGiven,
+      likesReceived,
+      matches,
+      shortlist: shortlistCount,
+    },
+  };
+}
+
 function isSupportIssueCategory(value: string): value is SupportIssueCategory {
   return supportCategoryValueSet.has(value as SupportIssueCategory);
 }
@@ -739,4 +1290,46 @@ export function analyzeSupportIssue(
     blocked: false,
     message: buildSupportReply(resolvedCategory, normalizedMessage),
   };
+}
+
+export async function analyzeSupportIssueForUser(
+  userId: string,
+  message: string,
+  shortlistCount: number | null
+): Promise<SupportAssistantResult> {
+  const normalizedMessage = normalizeMessage(message);
+
+  if (containsInappropriateContent(normalizedMessage)) {
+    return {
+      category: "other",
+      blocked: true,
+      message: "Sorry, this question is inappropriate.",
+    };
+  }
+
+  if (
+    isGreetingOnlyMessage(normalizedMessage) ||
+    isCourtesyOnlyMessage(normalizedMessage)
+  ) {
+    return {
+      category: "other",
+      blocked: false,
+      message: buildGreetingReply(normalizedMessage),
+    };
+  }
+
+  if (
+    detectPersonalFieldRequest(normalizedMessage) ||
+    isProfileSummaryRequest(normalizedMessage) ||
+    extractRequestedPersonalMetrics(normalizedMessage).length > 0
+  ) {
+    const context = await getSupportAssistantUserContext(userId, shortlistCount);
+    const personalDataReply = buildPersonalDataReply(context, normalizedMessage);
+
+    if (personalDataReply) {
+      return personalDataReply;
+    }
+  }
+
+  return analyzeSupportIssue(null, normalizedMessage);
 }

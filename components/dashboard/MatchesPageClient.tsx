@@ -34,8 +34,7 @@ interface Match {
     education: string | null;
     course: string | null;
     phone: string | null;
-    profileImage?: string | null;
-    photos: { url: string; isPrimary: boolean }[];
+    previewImageUrl?: string | null;
   };
   isUnlocked: boolean;
   createdAt: string;
@@ -92,11 +91,10 @@ export default function MatchesPageClient({
         ]);
         const matchData = await matchRes.json();
         const settingsData = await settingsRes.json();
-        const allMatches: Match[] = matchData.data ?? [];
-        const pendingMatches = allMatches.filter((match) => !match.isUnlocked);
+        const pendingMatches: Match[] = matchData.data ?? [];
 
         setMatches(pendingMatches);
-        setUnlockedMatchesCount(allMatches.length - pendingMatches.length);
+        setUnlockedMatchesCount(matchData.unlockedMatchesCount ?? 0);
         if (settingsData.settings) {
           setPricing({
             baseAmount: settingsData.settings.baseAmount,

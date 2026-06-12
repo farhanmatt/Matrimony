@@ -19,6 +19,13 @@ type PasswordResetCodeEmailParams = {
   expiresInMinutes: number;
 };
 
+type RegistrationOtpEmailParams = {
+  to: string;
+  recipientName?: string | null;
+  verificationCode: string;
+  expiresInMinutes: number;
+};
+
 type PasswordChangedEmailParams = {
   to: string;
   recipientName?: string | null;
@@ -350,6 +357,61 @@ function buildPasswordResetCodeEmailText({
   ].join("\n");
 }
 
+function buildRegistrationOtpEmailHtml({
+  recipientName,
+  verificationCode,
+  expiresInMinutes,
+}: Omit<RegistrationOtpEmailParams, "to">) {
+  const firstName = recipientName?.trim() || "there";
+
+  return `
+    <div style="margin:0;padding:32px 16px;background:#fff8fb;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
+      <div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #ffe4ea;border-radius:24px;overflow:hidden;box-shadow:0 20px 48px rgba(15,23,42,0.08);">
+        <div style="padding:28px 32px;background:linear-gradient(135deg,#fffafc 0%,#fff1f6 100%);border-bottom:1px solid #ffe4ea;">
+          <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:#fff1f2;color:#e11d48;font-size:12px;font-weight:700;letter-spacing:0.04em;">
+            EMAIL VERIFICATION
+          </div>
+          <h1 style="margin:18px 0 8px;font-size:32px;line-height:1.15;color:#0f172a;">Verify your email</h1>
+          <p style="margin:0;font-size:16px;line-height:1.7;color:#475569;">
+            Hi ${firstName}, use the OTP below to finish creating your Vivah Bandhan account.
+          </p>
+        </div>
+
+        <div style="padding:32px;">
+          <div style="margin:0 0 24px;padding:22px;border-radius:20px;background:#fff7fa;border:1px solid #ffe1ea;text-align:center;">
+            <p style="margin:0 0 10px;font-size:14px;font-weight:700;letter-spacing:0.08em;color:#e11d48;">YOUR OTP</p>
+            <p style="margin:0;font-size:36px;font-weight:800;letter-spacing:0.3em;color:#0f172a;">${verificationCode}</p>
+          </div>
+
+          <p style="margin:0;font-size:15px;line-height:1.8;color:#475569;">
+            This OTP expires in ${expiresInMinutes} minutes. Your account will only be created after this code is verified.
+          </p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function buildRegistrationOtpEmailText({
+  recipientName,
+  verificationCode,
+  expiresInMinutes,
+}: Omit<RegistrationOtpEmailParams, "to">) {
+  const firstName = recipientName?.trim() || "there";
+
+  return [
+    `Hi ${firstName},`,
+    "",
+    "Use this OTP to finish creating your Vivah Bandhan account:",
+    "",
+    verificationCode,
+    "",
+    `This OTP expires in ${expiresInMinutes} minutes.`,
+    "",
+    "Your account will only be created after this code is verified.",
+  ].join("\n");
+}
+
 function buildPasswordChangedEmailHtml({
   recipientName,
 }: Omit<PasswordChangedEmailParams, "to">) {
@@ -465,6 +527,31 @@ export async function sendPasswordResetCodeEmail({
     skippedReason:
       "SMTP_USER / SMTP_PASS are not configured. Password reset email was skipped.",
     errorContext: "Password reset email error",
+  });
+}
+
+export async function sendRegistrationOtpEmail({
+  to,
+  recipientName,
+  verificationCode,
+  expiresInMinutes,
+}: RegistrationOtpEmailParams): Promise<SendEmailResult> {
+  return sendTransactionalEmail({
+    to,
+    subject: "Your Vivah Bandhan registration OTP",
+    html: buildRegistrationOtpEmailHtml({
+      recipientName,
+      verificationCode,
+      expiresInMinutes,
+    }),
+    text: buildRegistrationOtpEmailText({
+      recipientName,
+      verificationCode,
+      expiresInMinutes,
+    }),
+    skippedReason:
+      "SMTP_USER / SMTP_PASS are not configured. Registration OTP email was skipped.",
+    errorContext: "Registration OTP email error",
   });
 }
 

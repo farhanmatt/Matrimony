@@ -5,15 +5,14 @@ import { useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   Bot,
-  CheckCircle2,
   ChevronLeft,
   LifeBuoy,
   Loader2,
   SendHorizonal,
-  ShieldCheck,
   UserRound,
 } from "lucide-react";
 import { toast } from "sonner";
+import { readShortlistedProfileIds } from "@/lib/utils/shortlist";
 
 type SupportConversationItem = {
   id: string;
@@ -26,7 +25,13 @@ function createConversationItemId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export default function SupportPageClient() {
+type SupportPageClientProps = {
+  userId?: string | null;
+};
+
+export default function SupportPageClient({
+  userId = null,
+}: SupportPageClientProps) {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const conversationListRef = useRef<HTMLDivElement | null>(null);
@@ -82,6 +87,9 @@ export default function SupportPageClient() {
         },
         body: JSON.stringify({
           message: normalizedMessage,
+          shortlistCount: userId
+            ? readShortlistedProfileIds(userId).length
+            : null,
         }),
       });
 
@@ -138,9 +146,9 @@ export default function SupportPageClient() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-[calc(100dvh-8.5rem)] min-h-0 flex-col gap-4">
       <section
-        className="ui-enter-up ui-card-lift-soft relative overflow-hidden rounded-[28px] border border-rose-100 bg-[radial-gradient(circle_at_top_left,_rgba(255,241,242,0.96),_rgba(255,255,255,1)_42%),linear-gradient(135deg,_rgba(255,255,255,1),_rgba(255,247,250,0.95))] px-4 py-4 shadow-sm sm:px-6 sm:py-5"
+        className="ui-enter-up ui-card-lift-soft relative shrink-0 overflow-hidden rounded-[28px] border border-rose-100 bg-[radial-gradient(circle_at_top_left,_rgba(255,241,242,0.96),_rgba(255,255,255,1)_42%),linear-gradient(135deg,_rgba(255,255,255,1),_rgba(255,247,250,0.95))] px-4 py-2.5 shadow-sm sm:px-6 sm:py-3"
         style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
       >
         <div className="absolute -right-16 top-0 h-40 w-40 rounded-full bg-rose-100/55 blur-3xl" />
@@ -155,48 +163,19 @@ export default function SupportPageClient() {
             Back to Dashboard
           </Link>
 
-          <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem] xl:items-start">
+          <div className="mt-2">
             <div>
-              <div className="flex items-start gap-3.5">
-                <div className="ui-soft-float flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] bg-gradient-to-br from-rose-100 via-pink-50 to-white text-rose-500 shadow-[0_16px_34px_rgba(244,63,94,0.12)]">
-                  <LifeBuoy className="h-5 w-5" />
+              <div className="flex items-start gap-2.5">
+                <div className="ui-soft-float flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-100 via-pink-50 to-white text-rose-500 shadow-[0_16px_34px_rgba(244,63,94,0.12)]">
+                  <LifeBuoy className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-rose-100 bg-white/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-rose-500 shadow-sm">
-                    <CheckCircle2 className="h-3 w-3" />
-                    Live Support Assistant
-                  </div>
-                  <h1 className="mt-3 font-display text-[1.75rem] font-bold tracking-tight text-slate-900 sm:text-[1.95rem]">
+                  <h1 className="mt-1.5 font-display text-[1.55rem] font-bold tracking-tight text-slate-900 sm:text-[1.75rem]">
                     Support Center
                   </h1>
-                  <p className="mt-1.5 max-w-2xl text-[14px] leading-7 text-slate-600">
+                  <p className="mt-0.5 max-w-2xl text-[13px] leading-5 text-slate-600">
                     Ask about your account, profile, matches, payments, notifications, or any platform issue in one continuous conversation with the support bot.
                   </p>
-                </div>
-              </div>
-            </div>
-
-            <div
-              className="ui-enter-right"
-              style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
-            >
-              <div className="ui-card-lift-soft rounded-[22px] border border-rose-100 bg-white/92 px-4 py-3.5 shadow-sm">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500">
-                    <ShieldCheck className="h-4.5 w-4.5" />
-                  </div>
-                  <div>
-                    <p className="text-[14px] font-semibold text-slate-900">
-                      Safe support replies
-                    </p>
-                    <p className="mt-1.5 text-[13px] leading-7 text-slate-500">
-                      Unrelated or inappropriate messages are blocked automatically and will return:
-                      {" "}
-                      <span className="font-semibold text-slate-700">
-                        Sorry, this question is inappropriate.
-                      </span>
-                    </p>
-                  </div>
                 </div>
               </div>
             </div>
@@ -205,7 +184,7 @@ export default function SupportPageClient() {
       </section>
 
       <section
-        className="ui-enter-up ui-card-lift-soft relative flex h-[calc(100vh-9rem)] min-h-[44rem] flex-col overflow-hidden rounded-[32px] border border-rose-100 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.06)] lg:min-h-[48rem]"
+        className="ui-enter-up ui-card-lift-soft relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[32px] border border-rose-100 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.06)]"
         style={{ animationDelay: "100ms", animationFillMode: "forwards" }}
       >
         <div className="absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,_rgba(255,241,242,0.7),_rgba(255,255,255,0))]" />
@@ -227,7 +206,11 @@ export default function SupportPageClient() {
                     className={`flex ${isBot ? "justify-start" : "justify-end"}`}
                   >
                     <div
-                      className={`max-w-[90%] rounded-[28px] border px-4 py-4 shadow-[0_20px_40px_rgba(15,23,42,0.05)] backdrop-blur sm:max-w-[82%] sm:px-5 ${
+                      className={`border shadow-[0_20px_40px_rgba(15,23,42,0.05)] backdrop-blur ${
+                        isBot
+                          ? "max-w-[88%] rounded-[24px] px-3 py-3 sm:max-w-[80%] sm:px-4"
+                          : "max-w-[78%] rounded-[24px] px-3 py-3 sm:max-w-[70%] sm:px-4"
+                      } ${
                         isBot
                           ? item.blocked
                             ? "border-amber-200 bg-[linear-gradient(180deg,_rgba(255,251,235,0.98),_rgba(255,247,237,0.92))]"
@@ -235,9 +218,15 @@ export default function SupportPageClient() {
                           : "border-rose-100 bg-[linear-gradient(180deg,_rgba(255,241,242,0.94),_rgba(255,255,255,0.98))]"
                       }`}
                     >
-                      <div className="mb-3 flex items-center gap-3">
+                      <div
+                        className={`flex items-center ${
+                          isBot ? "mb-2 gap-2.5" : "mb-2 gap-2.5"
+                        }`}
+                      >
                         <div
-                          className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
+                          className={`flex items-center justify-center ${
+                            isBot ? "h-8 w-8 rounded-xl" : "h-8 w-8 rounded-xl"
+                          } ${
                             isBot
                               ? item.blocked
                                 ? "bg-amber-100 text-amber-600"
@@ -247,22 +236,26 @@ export default function SupportPageClient() {
                         >
                           {isBot ? (
                             item.blocked ? (
-                              <AlertTriangle className="h-4.5 w-4.5" />
+                              <AlertTriangle className="h-4 w-4" />
                             ) : (
-                              <Bot className="h-4.5 w-4.5" />
+                              <Bot className="h-4 w-4" />
                             )
                           ) : (
-                            <UserRound className="h-4.5 w-4.5" />
+                            <UserRound className="h-4 w-4" />
                           )}
                         </div>
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <p className="text-[15px] font-semibold text-slate-900">
+                            <p
+                              className={`font-semibold text-slate-900 ${
+                                isBot ? "text-[14px]" : "text-[14px]"
+                              }`}
+                            >
                               {isBot ? "Support Bot" : "You"}
                             </p>
                             {isBot ? (
                               <span
-                                className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                                className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                                   item.blocked
                                     ? "bg-amber-100 text-amber-700"
                                     : "bg-white/80 text-sky-700"
@@ -274,7 +267,11 @@ export default function SupportPageClient() {
                           </div>
                         </div>
                       </div>
-                      <p className="whitespace-pre-line text-[15px] leading-7 text-slate-700">
+                      <p
+                        className={`whitespace-pre-line text-slate-700 ${
+                          isBot ? "text-[14px] leading-6" : "text-[14px] leading-6"
+                        }`}
+                      >
                         {item.text}
                       </p>
                     </div>
@@ -310,60 +307,31 @@ export default function SupportPageClient() {
             </div>
           </div>
 
-          <div className="shrink-0 border-t border-rose-100/90 bg-white/92 px-4 py-4 backdrop-blur sm:px-6">
+          <div className="relative z-10 shrink-0 border-t border-rose-100/90 bg-white/92 px-4 py-2.5 backdrop-blur sm:px-6">
             <div className="mx-auto w-full max-w-5xl">
-              <form onSubmit={handleSubmit} className="space-y-3">
-                <div className="rounded-[28px] border border-rose-100 bg-[linear-gradient(180deg,_rgba(255,255,255,1),_rgba(255,247,250,0.96))] p-3 shadow-[0_18px_40px_rgba(15,23,42,0.04)] sm:p-4">
-                  <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
-                        <SendHorizonal className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="support-message"
-                          className="block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500"
-                        >
-                          Type Your Issue
-                        </label>
-                        <p className="mt-1 text-sm leading-6 text-slate-600">
-                          Ask about website features, account access, profiles, matches, notifications, or payments in the same conversation.
-                        </p>
-                      </div>
-                    </div>
-
+              <form onSubmit={handleSubmit} className="space-y-2">
+                <div className="rounded-[28px] border border-rose-100 bg-[linear-gradient(180deg,_rgba(255,255,255,1),_rgba(255,247,250,0.96))] p-2 shadow-[0_18px_40px_rgba(15,23,42,0.04)] sm:p-2.5">
+                  <div className="mb-2 flex justify-end">
                     <span className="inline-flex shrink-0 items-center rounded-full border border-slate-200 bg-white/90 px-3 py-1 text-xs font-medium text-slate-500 shadow-sm">
                       {message.trim().length}/1500
                     </span>
                   </div>
 
-                  <textarea
-                    id="support-message"
-                    rows={2}
-                    value={message}
-                    onChange={(event) => setMessage(event.target.value)}
-                    onKeyDown={handleMessageKeyDown}
-                    placeholder="Example: In the Find Match page, the profile photo is not shown after I refresh the page."
-                    className="min-h-[92px] w-full rounded-[22px] border border-slate-200 bg-white/95 px-4 py-3 text-sm leading-6 text-slate-700 outline-none shadow-inner shadow-slate-100/80 transition-colors hover:border-rose-200 focus:border-rose-300"
-                  />
-
-                  <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="flex flex-wrap gap-2">
-                      <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-500">
-                        Press Enter to send
-                      </span>
-                      <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-500">
-                        Shift+Enter for new line
-                      </span>
-                      <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-500">
-                        Mention page and action
-                      </span>
-                    </div>
+                  <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-center">
+                    <textarea
+                      id="support-message"
+                      rows={2}
+                      value={message}
+                      onChange={(event) => setMessage(event.target.value)}
+                      onKeyDown={handleMessageKeyDown}
+                      placeholder="Example: In the Find Match page, the profile photo is not shown after I refresh the page."
+                      className="min-h-[60px] w-full flex-1 rounded-[22px] border border-slate-200 bg-white/95 px-4 py-2 text-sm leading-5 text-slate-700 outline-none shadow-inner shadow-slate-100/80 transition-colors hover:border-rose-200 focus:border-rose-300"
+                    />
 
                     <button
                       type="submit"
                       disabled={sending}
-                      className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-[18px] bg-gradient-to-r from-rose-600 via-pink-500 to-fuchsia-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_20px_40px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                      className="ui-link-shift inline-flex shrink-0 items-center justify-center gap-2 self-end rounded-[18px] bg-gradient-to-r from-rose-600 via-pink-500 to-fuchsia-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_20px_40px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70 lg:self-center"
                     >
                       {sending ? (
                         <Loader2 className="h-4.5 w-4.5 animate-spin" />

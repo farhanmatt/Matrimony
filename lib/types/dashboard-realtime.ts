@@ -1,5 +1,11 @@
 export type DashboardRealtimeEvent =
   | {
+      type: "presence_updated";
+      profileId: string;
+      isOnline: boolean;
+      lastActiveAt: string | null;
+    }
+  | {
       type: "message_created";
       createdAt: string;
       conversationId: string;

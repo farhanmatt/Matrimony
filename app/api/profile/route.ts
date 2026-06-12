@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { sendProfileCreatedEmail } from "@/lib/email";
+import {
+  ensureProfileUserId,
+  ensureProfileUserIdForProfile,
+  generateProfileUserId,
+} from "@/lib/profile-user-id";
 import { prisma } from "@/lib/prisma";
 import { profileFormSchema, type PreferenceInput } from "@/lib/validations/profile";
 
@@ -149,7 +154,19 @@ export async function GET() {
     include: { photos: true, preference: true },
   });
 
-  return NextResponse.json({ profile });
+  if (!profile) {
+    return NextResponse.json({ profile });
+  }
+
+  const profileUserId =
+    profile.profileUserId ??
+    (await ensureProfileUserIdForProfile({
+      id: profile.id,
+      gender: profile.gender,
+      profileUserId: profile.profileUserId,
+    }));
+
+  return NextResponse.json({ profile: { ...profile, profileUserId } });
 }
 
 // POST /api/profile — create profile
@@ -180,6 +197,12 @@ export async function POST(req: NextRequest) {
     ]);
 
     if (existing) {
+      await ensureProfileUserIdForProfile({
+        id: existing.id,
+        gender: existing.gender,
+        profileUserId: existing.profileUserId,
+      });
+
       return NextResponse.json(
         { error: "Profile already exists. Use PUT to update." },
         { status: 409 }
@@ -193,24 +216,31 @@ export async function POST(req: NextRequest) {
     const { dateOfBirth, additionalPhotoUrls = [], preference, ...rest } = validated.data;
     const location = compactAddressLocation(rest.city, rest.state);
 
-    const profile = await prisma.profile.create({
-      data: {
-        userId: session.user.id,
-        dateOfBirth: new Date(dateOfBirth),
-        status: "ACTIVE",
-        ...rest,
-        location,
-      },
-    });
+    const profile = await prisma.$transaction(async (tx) => {
+      const profileUserId = await generateProfileUserId(tx, rest.gender);
 
-    if (hasPreferenceValue(preference) && preference) {
-      await prisma.preference.create({
+      const createdProfile = await tx.profile.create({
         data: {
-          profileId: profile.id,
-          ...normalizePreference(preference),
+          userId: session.user.id,
+          profileUserId,
+          dateOfBirth: new Date(dateOfBirth),
+          status: "ACTIVE",
+          ...rest,
+          location,
         },
       });
-    }
+
+      if (hasPreferenceValue(preference) && preference) {
+        await tx.preference.create({
+          data: {
+            profileId: createdProfile.id,
+            ...normalizePreference(preference),
+          },
+        });
+      }
+
+      return createdProfile;
+    });
 
     await syncProfilePhotos(profile.id, rest.profileImage, additionalPhotoUrls);
 
@@ -269,25 +299,35 @@ export async function PUT(req: NextRequest) {
     const { dateOfBirth, additionalPhotoUrls = [], preference, ...rest } = validated.data;
     const location = compactAddressLocation(rest.city, rest.state);
 
-    const profile = await prisma.profile.update({
-      where: { userId: session.user.id },
-      data: {
-        dateOfBirth: new Date(dateOfBirth),
-        ...rest,
-        location,
-      },
-    });
-
-    if (preference) {
-      await prisma.preference.upsert({
-        where: { profileId: profile.id },
-        create: {
-          profileId: profile.id,
-          ...normalizePreference(preference),
+    const profile = await prisma.$transaction(async (tx) => {
+      const updatedProfile = await tx.profile.update({
+        where: { userId: session.user.id },
+        data: {
+          dateOfBirth: new Date(dateOfBirth),
+          ...rest,
+          location,
         },
-        update: normalizePreference(preference),
       });
-    }
+
+      const profileUserId = await ensureProfileUserId(tx, {
+        id: updatedProfile.id,
+        gender: updatedProfile.gender,
+        profileUserId: updatedProfile.profileUserId,
+      });
+
+      if (preference) {
+        await tx.preference.upsert({
+          where: { profileId: updatedProfile.id },
+          create: {
+            profileId: updatedProfile.id,
+            ...normalizePreference(preference),
+          },
+          update: normalizePreference(preference),
+        });
+      }
+
+      return { ...updatedProfile, profileUserId };
+    });
 
     await syncProfilePhotos(profile.id, rest.profileImage, additionalPhotoUrls);
 

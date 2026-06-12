@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   getChatProfilePresence,
-  markChatProfileActive,
+  markChatProfileActiveAndBroadcast,
 } from "@/lib/server/chat-presence";
 
 type RouteContext = {
@@ -38,7 +38,7 @@ export async function GET(
   }
 
   if (viewerProfile) {
-    markChatProfileActive(viewerProfile.id);
+    await markChatProfileActiveAndBroadcast(viewerProfile.id);
   }
 
   const presence = getChatProfilePresence(targetProfile.id);

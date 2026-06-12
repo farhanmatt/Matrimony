@@ -17,7 +17,6 @@ import {
   Mail,
   MapPin,
   MessageCircle,
-  Phone,
   Search,
   ShieldCheck,
   Sparkles,
@@ -32,13 +31,6 @@ import LandingHeroBanner from "@/components/landing/LandingHeroBanner";
 import LandingReveal from "@/components/landing/LandingReveal";
 import { blogCardImageOverrides } from "@/lib/constants/blog-card-image-overrides";
 import { blogPosts } from "@/lib/constants/blog";
-
-const heroStats = [
-  { icon: Users, value: "10L+", label: "Registered Members" },
-  { icon: Heart, value: "50K+", label: "Success Stories" },
-  { icon: ShieldCheck, value: "100%", label: "Verified Profiles" },
-  { icon: Headphones, value: "24/7", label: "Customer Support" },
-];
 
 const searchFields = [
   {
@@ -65,15 +57,6 @@ const searchFields = [
     label: "Location",
     options: ["Select Location", "Chennai", "Bangalore", "Hyderabad"],
   },
-];
-
-const trustStrip = [
-  { icon: Users, value: "10L+", label: "Happy Members" },
-  { icon: HeartHandshake, value: "50K+", label: "Success Stories" },
-  { icon: Crown, value: "30K+", label: "Premium Members" },
-  { icon: ShieldCheck, value: "100%", label: "Verified Profiles" },
-  { icon: Headphones, value: "24/7", label: "Customer Support" },
-  { icon: Sparkles, value: "15+", label: "Years of Trust" },
 ];
 
 export type LandingFeaturedProfile = {
@@ -224,6 +207,57 @@ const footerColumns = [
   },
 ];
 
+function resolveExternalUrl(value: string | undefined) {
+  const trimmed = value?.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    const url = new URL(trimmed);
+
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      return null;
+    }
+
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+const footerSocialLinks = [
+  {
+    label: "Instagram",
+    href: resolveExternalUrl(
+      process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM_URL || "https://www.instagram.com/",
+    ),
+    Icon: Instagram,
+  },
+  {
+    label: "X (Twitter)",
+    href: resolveExternalUrl(
+      process.env.NEXT_PUBLIC_SOCIAL_TWITTER_URL || "https://x.com/",
+    ),
+    Icon: Twitter,
+  },
+  {
+    label: "LinkedIn",
+    href: resolveExternalUrl(
+      process.env.NEXT_PUBLIC_SOCIAL_LINKEDIN_URL || "https://www.linkedin.com/",
+    ),
+    Icon: Linkedin,
+  },
+  {
+    label: "YouTube",
+    href: resolveExternalUrl(
+      process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE_URL || "https://www.youtube.com/",
+    ),
+    Icon: Youtube,
+  },
+];
+
 function SectionTitle({
   title,
   href,
@@ -268,119 +302,14 @@ export default function FullLandingPage({
       <LandingNavbar />
 
       <section className="relative overflow-hidden border-b border-rose-100/70 bg-white pt-[76px]">
-        <div className="pointer-events-none absolute inset-x-0 top-10 z-0 h-[34rem] overflow-hidden">
-          <div className="landing-float absolute -left-20 top-6 h-64 w-64 rounded-full bg-rose-200/55 blur-3xl" />
-          <div
-            className="landing-float absolute right-[-4rem] top-24 h-72 w-72 rounded-full bg-pink-100/75 blur-3xl"
-            style={{ animationDelay: "1.5s" }}
-          />
-          <div
-            className="landing-float absolute left-[38%] top-[5.5rem] h-24 w-24 rounded-full bg-white/70 blur-2xl"
-            style={{ animationDelay: "0.8s" }}
-          />
-        </div>
-
         <div className="relative w-full pb-24">
-          <div className="relative min-h-[28rem] overflow-hidden px-6 py-8 sm:px-8 lg:aspect-[1600/639] lg:min-h-0 lg:px-10 lg:py-8">
+          <div className="relative overflow-hidden px-6 py-8 sm:px-8 lg:aspect-[1600/639] lg:min-h-0 lg:px-10 lg:py-8">
             <LandingHeroBanner initialHeroImageUrl={heroImageUrl ?? "/main.jpeg"} />
-
-            <div className="mx-auto grid h-full max-w-7xl items-center gap-8 px-4 sm:px-6 lg:grid-cols-1 lg:gap-0 lg:px-8">
-              <div className="relative z-10 max-w-2xl py-2 lg:max-w-[48%] lg:self-center lg:py-0">
-                <div
-                  className="landing-reveal -ml-5 inline-flex items-center gap-3 rounded-full border border-rose-200 bg-white/55 px-5 py-2 text-base font-semibold text-slate-900 backdrop-blur-sm"
-                  style={{ animationDelay: "60ms" }}
-                >
-                  <span>Find Your</span>
-                  <div className="h-px w-10 bg-rose-300" />
-                  <Heart className="h-4 w-4 fill-[#f43f5e] text-[#f43f5e]" />
-                  <div className="h-px w-10 bg-rose-300" />
-                </div>
-
-                <h1
-                  className="landing-reveal mt-5 font-display text-[3rem] font-bold leading-[0.96] tracking-[-0.03em] text-[#931e42] sm:text-[3.4rem] sm:whitespace-nowrap lg:text-[3.7rem]"
-                  style={{ animationDelay: "140ms" }}
-                >
-                  Perfect Life Partner
-                </h1>
-
-                <p
-                  className="landing-reveal mt-5 max-w-xl text-[0.95rem] leading-7 text-slate-700 sm:text-base lg:text-[1.1rem] lg:leading-8"
-                  style={{ animationDelay: "220ms" }}
-                >
-                  <span className="block font-semibold">
-                    Trusted by Millions. Built on Trust.
-                  </span>
-                  <span className="block">
-                    Find a match that understands you, your family, and your
-                    values.
-                  </span>
-                </p>
-
-                <div
-                  className="landing-reveal mt-8 flex flex-col gap-4 sm:flex-row"
-                  style={{ animationDelay: "320ms" }}
-                >
-                  <Link
-                    href="/register"
-                    className="inline-flex min-w-[15rem] items-center justify-center rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-10 py-3 text-base font-semibold text-white shadow-[0_18px_36px_rgba(244,63,94,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_42px_rgba(244,63,94,0.28)]"
-                  >
-                    Register Free
-                  </Link>
-                  <Link
-                    href="/login"
-                    className="inline-flex min-w-[13rem] items-center justify-center rounded-xl border border-rose-300 bg-white/85 px-10 py-3 text-base font-semibold text-rose-500 transition-all duration-300 hover:-translate-y-0.5 hover:bg-rose-50 hover:shadow-[0_16px_30px_rgba(15,23,42,0.08)]"
-                  >
-                    Login
-                  </Link>
-                </div>
-
-                <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-[repeat(4,max-content)] xl:justify-between xl:gap-3">
-                  {heroStats.map((item, index) => (
-                    <div
-                      key={item.label}
-                      className="landing-reveal landing-inline-hover flex items-start gap-3"
-                      style={{ animationDelay: `${420 + index * 90}ms` }}
-                    >
-                      <div className="landing-surface-icon mt-1 rounded-full bg-white p-2.5 text-rose-600 shadow-sm ring-1 ring-rose-100/80">
-                        <item.icon className="h-[18px] w-[18px]" />
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-slate-900">
-                          {item.value}
-                        </div>
-                        <div className="text-[0.78rem] leading-4 text-black xl:whitespace-nowrap">
-                          {item.label}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-
-            <div
-              className="landing-reveal absolute right-6 top-6 z-10 hidden lg:block"
-              style={{ animationDelay: "360ms" }}
-            >
-              <div className="landing-badge-glow w-24 rounded-[1.5rem] border border-rose-100 bg-white/95 p-4 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 text-rose-500">
-                  <ShieldCheck className="h-6 w-6" />
-                </div>
-                <div className="mt-3 text-[1.55rem] font-bold leading-none text-slate-900">
-                  100%
-                </div>
-                <div className="mt-1 text-[0.9rem] font-medium leading-6 text-slate-500">
-                  <span>Privacy </span>
-                  <span className="text-[#f43f5e]">Assured</span>
-                </div>
-              </div>
-            </div>
           </div>
 
           <div
             id="find-match"
-            className="landing-reveal relative z-10 mx-auto mt-10 max-w-[84rem] rounded-[1rem] border border-white/80 bg-white/95 p-6 shadow-[0_24px_56px_rgba(15,23,42,0.12)] backdrop-blur lg:-mt-12"
+            className="landing-reveal relative z-10 mx-auto mt-12 max-w-[84rem] rounded-[1rem] border border-white/80 bg-white/95 p-6 shadow-[0_24px_56px_rgba(15,23,42,0.12)] backdrop-blur lg:mt-8"
             style={{ animationDelay: "620ms" }}
           >
             <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-rose-200/90 to-transparent" />
@@ -430,29 +359,6 @@ export default function FullLandingPage({
                   Search
                 </Link>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="relative z-10 -mt-16 pb-6 lg:-mt-20">
-        <div className="mx-auto max-w-[86rem] px-4 sm:px-6 lg:px-8">
-          <div
-            className="landing-reveal rounded-[1rem] border border-rose-100 bg-white px-6 py-5 shadow-[0_18px_42px_rgba(15,23,42,0.08)]"
-            style={{ animationDelay: "760ms" }}
-          >
-            <div className="grid gap-5 md:grid-cols-3 xl:grid-cols-6">
-              {trustStrip.map((item) => (
-                <div key={item.label} className="landing-inline-hover flex items-center gap-3">
-                  <div className="landing-surface-icon rounded-full bg-rose-50 p-3 text-rose-500">
-                    <item.icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-slate-900">{item.value}</div>
-                    <div className="text-sm text-slate-500">{item.label}</div>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>
@@ -815,21 +721,37 @@ export default function FullLandingPage({
               </div>
               <div className="flex items-center gap-3 lg:justify-end">
                 <span className="text-sm font-semibold text-rose-100">Follow Us</span>
-                {[Instagram, Twitter, Linkedin, Youtube].map((Icon) => (
-                  <a
-                    key={Icon.displayName}
-                    href="#"
-                    className="landing-inline-hover flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white/90 transition-colors hover:bg-white/20"
-                  >
-                    <Icon className="h-4 w-4" />
-                  </a>
-                ))}
+                {footerSocialLinks.map(({ label, href, Icon }) =>
+                  href ? (
+                    <a
+                      key={label}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={label}
+                      title={label}
+                      className="landing-inline-hover flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white/90 transition-colors hover:bg-white/20"
+                    >
+                      <Icon className="h-4 w-4" />
+                    </a>
+                  ) : (
+                    <span
+                      key={label}
+                      aria-disabled="true"
+                      aria-label={`${label} link not configured`}
+                      title={`${label} link not configured`}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40"
+                    >
+                      <Icon className="h-4 w-4" />
+                    </span>
+                  ),
+                )}
               </div>
             </div>
           </LandingReveal>
 
           <LandingReveal delayMs={110} variant="up">
-            <div className="grid gap-10 py-7 lg:grid-cols-[1.1fr_0.7fr_0.7fr_1fr_0.9fr]">
+            <div className="grid gap-10 py-7 lg:grid-cols-[1.1fr_0.7fr_0.7fr_1fr]">
               <div>
                 <Link href="/" className="flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15">
@@ -865,32 +787,15 @@ export default function FullLandingPage({
                 <div className="text-lg font-bold">Contact Us</div>
                 <ul className="mt-4 space-y-4 text-sm text-rose-100/85">
                   <li className="flex items-start gap-3">
-                    <Phone className="mt-0.5 h-4 w-4 text-rose-200" />
-                    +91 98765 43210
-                  </li>
-                  <li className="flex items-start gap-3">
                     <Mail className="mt-0.5 h-4 w-4 text-rose-200" />
-                    support@vivahbandhan.com
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <MapPin className="mt-0.5 h-4 w-4 text-rose-200" />
-                    Chennai, Tamil Nadu, India
+                    <div>
+                      <div>Bagavath85@gmail.com</div>
+                      <p className="mt-2 max-w-xs text-xs leading-5 text-rose-100/65">
+                        Have a question? We&apos;re here to help. Expect a response within 48 hours.
+                      </p>
+                    </div>
                   </li>
                 </ul>
-              </div>
-
-              <div>
-                <div className="text-lg font-bold">We are here 24/7</div>
-                <p className="mt-4 text-sm leading-7 text-rose-100/85">
-                  Our support team is always ready to assist you with registration,
-                  safety, premium plans, and profile visibility.
-                </p>
-                <Link
-                  href="/contact"
-                  className="landing-inline-hover mt-6 inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/15"
-                >
-                  Live Chat
-                </Link>
               </div>
             </div>
           </LandingReveal>

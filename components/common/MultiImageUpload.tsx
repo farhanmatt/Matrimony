@@ -3,7 +3,14 @@
 import { CldUploadWidget } from "next-cloudinary";
 import { ImagePlus, X } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  DEFAULT_IMAGE_UPLOAD_MAX_BYTES,
+  DEFAULT_IMAGE_UPLOAD_SIZE_ERROR_MESSAGE,
+  getCloudinaryUploadResultInfo,
+  getImageUploadErrorMessage,
+  isImageUploadWithinSizeLimit,
+} from "@/lib/utils/image";
 
 interface MultiImageUploadProps {
   values: string[];
@@ -12,6 +19,8 @@ interface MultiImageUploadProps {
   helperText?: string;
   error?: string;
   maxFiles?: number;
+  maxFileSizeBytes?: number;
+  sizeErrorMessage?: string;
 }
 
 export default function MultiImageUpload({
@@ -21,9 +30,13 @@ export default function MultiImageUpload({
   helperText,
   error,
   maxFiles = 4,
+  maxFileSizeBytes = DEFAULT_IMAGE_UPLOAD_MAX_BYTES,
+  sizeErrorMessage = DEFAULT_IMAGE_UPLOAD_SIZE_ERROR_MESSAGE,
 }: MultiImageUploadProps) {
   const pendingUploadUrlRef = useRef<string | null>(null);
   const valuesRef = useRef(values);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const activeError = uploadError ?? error;
 
   useEffect(() => {
     valuesRef.current = values;
@@ -38,16 +51,18 @@ export default function MultiImageUpload({
     pendingUploadUrlRef.current = null;
   }, []);
 
-  const handleUpload = useCallback((result: any) => {
-    const secureUrl =
-      typeof result?.info === "object" &&
-      result.info &&
-      typeof result.info.secure_url === "string"
-        ? result.info.secure_url
-        : null;
+  const handleUpload = useCallback((result: unknown) => {
+    const { secureUrl, bytes } = getCloudinaryUploadResultInfo(result);
 
+    if (secureUrl && !isImageUploadWithinSizeLimit(bytes, maxFileSizeBytes)) {
+      pendingUploadUrlRef.current = null;
+      setUploadError(sizeErrorMessage);
+      return;
+    }
+
+    setUploadError(null);
     pendingUploadUrlRef.current = secureUrl;
-  }, []);
+  }, [maxFileSizeBytes, sizeErrorMessage]);
 
   const handleClose = useCallback(() => {
     const currentValues = valuesRef.current;
@@ -57,6 +72,7 @@ export default function MultiImageUpload({
       !currentValues.includes(pendingUploadUrlRef.current) &&
       currentValues.length < maxFiles
     ) {
+      setUploadError(null);
       onChange([...currentValues, pendingUploadUrlRef.current]);
     }
 
@@ -69,16 +85,19 @@ export default function MultiImageUpload({
     restorePageScroll();
   }, [resetPendingUpload, restorePageScroll]);
 
-  const handleError = useCallback(() => {
+  const handleError = useCallback((nextError: unknown) => {
     resetPendingUpload();
+    setUploadError(getImageUploadErrorMessage(nextError, sizeErrorMessage));
     restorePageScroll();
-  }, [resetPendingUpload, restorePageScroll]);
+  }, [resetPendingUpload, restorePageScroll, sizeErrorMessage]);
 
   const handleOpen = useCallback(() => {
     resetPendingUpload();
+    setUploadError(null);
   }, [resetPendingUpload]);
 
   const handleRemove = (indexToRemove: number) => {
+    setUploadError(null);
     onChange(values.filter((_, index) => index !== indexToRemove));
   };
 
@@ -127,6 +146,8 @@ export default function MultiImageUpload({
             }
             options={{
               maxFiles: 1,
+              maxFileSize: maxFileSizeBytes,
+              maxImageFileSize: maxFileSizeBytes,
               multiple: false,
               resourceType: "image",
               clientAllowedFormats: ["jpg", "jpeg", "png", "webp"],
@@ -150,7 +171,7 @@ export default function MultiImageUpload({
         ) : null}
       </div>
 
-      {error ? <p className="text-xs text-rose-500">{error}</p> : null}
+      {activeError ? <p className="text-xs text-rose-500">{activeError}</p> : null}
     </div>
   );
 }

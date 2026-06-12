@@ -11,21 +11,26 @@ import { toast } from "sonner";
 import {
   ArrowLeft,
   ArrowRight,
+  ArrowRightCircle,
   Briefcase,
-  Check,
+  CheckCircle2,
   ChevronDown,
+  Copy,
   Globe2,
   ImagePlus,
   Leaf,
   Loader2,
-  Search,
   Save,
   Sparkles,
   User,
   Users,
   type LucideIcon,
 } from "lucide-react";
-import { NAKSHATRA_OPTIONS, RASI_OPTIONS } from "@/lib/constants/astrology";
+import {
+  DOSHAM_OPTIONS,
+  NAKSHATRA_OPTIONS,
+  RASI_OPTIONS,
+} from "@/lib/constants/astrology";
 import { MOTHER_TONGUE_OPTIONS } from "@/lib/constants/languages";
 import {
   STATE_OPTIONS,
@@ -50,6 +55,7 @@ import {
 import { MARITAL_STATUS_LABELS } from "@/lib/utils/helpers";
 
 const genderOptions = ["MALE", "FEMALE", "OTHER"] as const;
+const nationalityOptions = ["Indian", "NRI", "Expat"] as const;
 const maritalOptions = [
   "NEVER_MARRIED",
   "DIVORCED",
@@ -256,6 +262,7 @@ const createProfileSteps: CreateStep[] = [
       "gender",
       "dateOfBirth",
       "height",
+      "nationality",
       "maritalStatus",
       "phone",
       "bio",
@@ -310,7 +317,7 @@ const createProfileSteps: CreateStep[] = [
     sidebarDescription: "Astrological information",
     panelDescription: "Share your horoscope details",
     icon: Sparkles,
-    fields: ["star", "rasi", "timeOfBirth", "placeOfBirth"],
+    fields: ["star", "rasi", "dosham", "timeOfBirth", "placeOfBirth"],
   },
   {
     id: "lifestyle",
@@ -344,6 +351,7 @@ const createProfileSteps: CreateStep[] = [
 interface ProfileFormProps {
   defaultValues?: Partial<ProfileFormInput>;
   isEdit?: boolean;
+  profileUserId?: string | null;
 }
 
 type CreateProfileDraft = {
@@ -357,6 +365,11 @@ type PincodeLookupState = {
   message?: string;
   state?: string;
   city?: string;
+};
+
+type CreatedProfileSuccess = {
+  fullName: string;
+  profileUserId: string;
 };
 
 const emptyPreference: PreferenceInput = {
@@ -792,7 +805,7 @@ function SearchableDropdownInput({
               ref={panelRef}
               id={`${id}-dropdown`}
               role="listbox"
-              className="ui-modal-pop fixed z-[9999] overflow-hidden rounded-2xl border border-rose-100/80 bg-white shadow-[0_28px_70px_rgba(15,23,42,0.16)]"
+              className="fixed z-[9999] overflow-hidden border border-gray-400 bg-white shadow-sm"
               style={{
                 left: `${menuPosition.left}px`,
                 width: `${menuPosition.width}px`,
@@ -807,21 +820,9 @@ function SearchableDropdownInput({
                     : undefined,
               }}
             >
-              <div className="border-b border-rose-100 bg-[linear-gradient(135deg,rgba(255,244,247,0.98)_0%,rgba(255,255,255,0.98)_100%)] px-4 py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-500">
-                    <Search className="h-3.5 w-3.5" />
-                    {suggestionLabel}
-                  </span>
-                  <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-gray-500 shadow-sm">
-                    {dropdownItems.length} option{dropdownItems.length === 1 ? "" : "s"}
-                  </span>
-                </div>
-              </div>
-
               <div
-                className="max-h-[inherit] overflow-y-auto py-2"
-                style={{ maxHeight: `${Math.max(84, menuPosition.maxHeight - 57)}px` }}
+                className="max-h-[inherit] overflow-y-auto py-1"
+                style={{ maxHeight: `${menuPosition.maxHeight}px` }}
               >
                 {dropdownItems.length ? (
                   dropdownItems.map((item, index) => {
@@ -840,51 +841,20 @@ function SearchableDropdownInput({
                         data-option-index={index}
                         onMouseDown={(event) => event.preventDefault()}
                         onClick={() => handleSelect(item.value)}
-                        className={`mx-2 flex w-[calc(100%-1rem)] items-center gap-3 rounded-xl px-3.5 py-3 text-left transition-all duration-150 ${
+                        className={`block w-full px-6 py-1.5 text-left text-base leading-6 transition-colors ${
                           isActive
-                            ? "bg-rose-50 text-rose-700"
+                            ? "bg-blue-600 text-white"
                             : isSelected
-                              ? "bg-rose-50/70 text-gray-900"
-                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                              ? "bg-blue-600 text-white"
+                              : "text-gray-900 hover:bg-blue-50"
                         }`}
                       >
-                        <span
-                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-semibold transition-colors ${
-                            isSelected || isActive
-                              ? "border-rose-200 bg-white text-rose-600"
-                              : "border-gray-200 bg-gray-50 text-gray-400"
-                          }`}
-                        >
-                          {isSelected ? (
-                            <Check className="h-4 w-4" />
-                          ) : item.kind === "custom" ? (
-                            "Aa"
-                          ) : (
-                            index + 1
-                          )}
-                        </span>
-
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-medium">
-                            {item.label}
-                          </span>
-                          <span className="mt-0.5 block text-xs text-gray-400">
-                            {item.kind === "custom"
-                              ? "Use your typed value"
-                              : "Choose from suggested options"}
-                          </span>
-                        </span>
-
-                        {isSelected ? (
-                          <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-600 shadow-sm">
-                            Selected
-                          </span>
-                        ) : null}
+                        {item.label}
                       </button>
                     );
                   })
                 ) : (
-                  <div className="px-5 py-6 text-sm text-gray-500">
+                  <div className="px-6 py-2 text-base text-gray-500">
                     {emptyMessage}
                   </div>
                 )}
@@ -1141,14 +1111,170 @@ function TimeOfBirthInput({
   );
 }
 
+function ProfileCreatedSuccessModal({
+  fullName,
+  profileUserId,
+  onContinue,
+}: {
+  fullName: string;
+  profileUserId: string;
+  onContinue: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(profileUserId);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      const textarea = document.createElement("textarea");
+      textarea.value = profileUserId;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const firstName = fullName.split(" ")[0] || fullName;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="profile-created-success-title"
+      aria-describedby="profile-created-success-description"
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-4"
+      style={{ animation: "pcsm-overlay-in 300ms ease-out forwards" }}
+    >
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        style={{ animation: "pcsm-fade-in 300ms ease-out forwards" }}
+      />
+
+      <div
+        className="relative z-10 w-full max-w-[460px] overflow-hidden rounded-[20px] border border-white/20 bg-white shadow-[0_32px_80px_rgba(0,0,0,0.18)]"
+        style={{ animation: "pcsm-card-in 400ms cubic-bezier(0.16,1,0.3,1) 100ms forwards", opacity: 0 }}
+      >
+        <div className="h-[6px] bg-gradient-to-r from-rose-500 via-pink-500 to-rose-400" />
+
+        <div className="px-7 pb-8 pt-7 text-center sm:px-9">
+          <div
+            className="mx-auto flex h-[76px] w-[76px] items-center justify-center rounded-full bg-gradient-to-br from-emerald-50 to-green-50 ring-1 ring-emerald-100"
+            style={{ animation: "pcsm-icon-pop 500ms cubic-bezier(0.34,1.56,0.64,1) 350ms forwards", opacity: 0, transform: "scale(0.5)" }}
+          >
+            <CheckCircle2 className="h-10 w-10 text-emerald-500" strokeWidth={1.8} />
+          </div>
+
+          <h2
+            id="profile-created-success-title"
+            className="mt-5 font-display text-[1.55rem] font-bold leading-tight text-gray-900"
+            style={{ animation: "pcsm-slide-up 400ms ease-out 450ms forwards", opacity: 0 }}
+          >
+            🎉 Profile Created Successfully!
+          </h2>
+
+          <p
+            id="profile-created-success-description"
+            className="mt-3 text-[15px] leading-relaxed text-gray-600"
+            style={{ animation: "pcsm-slide-up 400ms ease-out 520ms forwards", opacity: 0 }}
+          >
+            Hi <span className="font-semibold text-gray-900">{firstName}</span>,
+            your profile has been created successfully.
+          </p>
+
+          <div
+            className="mx-auto mt-6 max-w-[340px] overflow-hidden rounded-[14px] border border-rose-100 bg-gradient-to-br from-rose-50/80 via-pink-50/60 to-white"
+            style={{ animation: "pcsm-slide-up 400ms ease-out 590ms forwards", opacity: 0 }}
+          >
+            <div className="px-5 py-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-400">
+                Your User ID
+              </p>
+              <div className="mt-2 flex items-center justify-center gap-2.5">
+                <span className="font-mono text-[1.35rem] font-bold tracking-wider text-gray-900">
+                  {profileUserId || "—"}
+                </span>
+                {profileUserId ? (
+                  <button
+                    type="button"
+                    onClick={handleCopy}
+                    className="group flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-rose-500 transition-all hover:border-rose-300 hover:bg-rose-50 active:scale-95"
+                    title="Copy User ID"
+                  >
+                    {copied ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    ) : (
+                      <Copy className="h-4 w-4 transition-transform group-hover:scale-110" />
+                    )}
+                  </button>
+                ) : null}
+              </div>
+              {copied ? (
+                <p className="mt-1.5 text-xs font-medium text-emerald-600">
+                  Copied to clipboard!
+                </p>
+              ) : null}
+            </div>
+          </div>
+
+          <p
+            className="mt-4 text-[13px] leading-relaxed text-gray-400"
+            style={{ animation: "pcsm-slide-up 400ms ease-out 660ms forwards", opacity: 0 }}
+          >
+            You can use this User ID for profile reference and support inquiries.
+          </p>
+
+          <button
+            type="button"
+            onClick={onContinue}
+            className="mt-7 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-8 py-3.5 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(244,63,94,0.3)] transition-all hover:shadow-[0_18px_40px_rgba(244,63,94,0.38)] active:scale-[0.97]"
+            style={{ animation: "pcsm-slide-up 400ms ease-out 730ms forwards", opacity: 0 }}
+          >
+            Go to Dashboard
+            <ArrowRightCircle className="h-4.5 w-4.5" />
+          </button>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes pcsm-overlay-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes pcsm-fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes pcsm-card-in {
+          from { opacity: 0; transform: scale(0.92) translateY(24px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes pcsm-icon-pop {
+          from { opacity: 0; transform: scale(0.5); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes pcsm-slide-up {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 export default function ProfileForm({
   defaultValues,
   isEdit = false,
+  profileUserId = null,
 }: ProfileFormProps) {
   const router = useRouter();
   const { update } = useSession();
   const [currentStep, setCurrentStep] = useState(0);
-  const isCreateDraftHydratedRef = useRef(isEdit);
+  const [isCreateDraftHydrated, setIsCreateDraftHydrated] = useState(isEdit);
   const pincodeLookupAbortRef = useRef<AbortController | null>(null);
   const pendingPincodeAutofillRef = useRef<{
     pincode: string;
@@ -1163,6 +1289,9 @@ export default function ProfileForm({
       pincode: "",
       status: "idle",
     });
+  const [createdProfileSuccess, setCreatedProfileSuccess] =
+    useState<CreatedProfileSuccess | null>(null);
+  const displayProfileUserId = profileUserId?.trim() ?? "";
 
   const {
     register,
@@ -1188,7 +1317,7 @@ export default function ProfileForm({
 
   useEffect(() => {
     if (isEdit) {
-      isCreateDraftHydratedRef.current = true;
+      setIsCreateDraftHydrated(true);
       return;
     }
 
@@ -1198,11 +1327,11 @@ export default function ProfileForm({
       reset(getProfileFormDefaults(savedDraft.values));
       setCurrentStep(Math.max(savedDraft.currentStep, 0));
     }
-    isCreateDraftHydratedRef.current = true;
+    setIsCreateDraftHydrated(true);
   }, [isEdit, reset]);
 
   useEffect(() => {
-    if (isEdit || !isCreateDraftHydratedRef.current) {
+    if (isEdit || !isCreateDraftHydrated) {
       return;
     }
 
@@ -1210,18 +1339,14 @@ export default function ProfileForm({
       currentStep,
       values: getValues(),
     });
-  }, [currentStep, getValues, isEdit]);
+  }, [currentStep, getValues, isCreateDraftHydrated, isEdit]);
 
   useEffect(() => {
-    if (isEdit || !isCreateDraftHydratedRef.current) {
+    if (isEdit || !isCreateDraftHydrated) {
       return;
     }
 
     const subscription = watch((values) => {
-      if (!isCreateDraftHydratedRef.current) {
-        return;
-      }
-
       saveCreateProfileDraft({
         currentStep,
         values: values as Partial<ProfileFormInput>,
@@ -1231,7 +1356,7 @@ export default function ProfileForm({
     return () => {
       subscription.unsubscribe();
     };
-  }, [currentStep, isEdit, watch]);
+  }, [currentStep, isCreateDraftHydrated, isEdit, watch]);
 
   const inputClass = isEdit
     ? "w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
@@ -1251,6 +1376,7 @@ export default function ProfileForm({
   const selectedEmployedIn = watch("employedIn");
   const selectedNakshatra = watch("star");
   const selectedRasi = watch("rasi");
+  const selectedDosham = watch("dosham");
   const selectedReligion = watch("religion");
   const selectedLanguage = watch("language");
   const selectedPreferenceLanguage = watch("preference.language");
@@ -1586,12 +1712,14 @@ export default function ProfileForm({
 
     setValue("star", "");
     setValue("rasi", "");
+    setValue("dosham", "");
     setValue("timeOfBirth", null);
     setValue("placeOfBirth", "");
     setValue("horoscopeImage", null);
     clearErrors([
       "star",
       "rasi",
+      "dosham",
       "timeOfBirth",
       "placeOfBirth",
       "horoscopeImage",
@@ -1765,21 +1893,25 @@ export default function ProfileForm({
       await new Promise((resolve) => setTimeout(resolve, 900));
       router.replace("/dashboard");
       return;
-    } else if (json.confirmationEmailSent) {
-      toast.success("Profile created successfully. A confirmation email has been sent.");
-    } else if (json.confirmationEmailStatus === "skipped") {
-      toast.success(
-        "Profile created successfully. The confirmation email was skipped because mail settings are incomplete."
-      );
-    } else if (json.confirmationEmailStatus === "failed") {
-      toast.success(
-        "Profile created successfully, but sending the confirmation email failed."
-      );
-    } else {
-      toast.success("Profile created successfully.");
     }
 
+    const createdProfileUserId =
+      typeof json.profile?.profileUserId === "string"
+        ? json.profile.profileUserId
+        : "";
+
     clearCreateProfileDraft();
+    setCreatedProfileSuccess({
+      fullName:
+        typeof json.profile?.fullName === "string" && json.profile.fullName.trim()
+          ? json.profile.fullName.trim()
+          : data.fullName,
+      profileUserId: createdProfileUserId,
+    });
+  };
+
+  const handleProfileSuccessContinue = () => {
+    setCreatedProfileSuccess(null);
     router.replace("/dashboard");
     router.refresh();
   };
@@ -1800,10 +1932,17 @@ export default function ProfileForm({
 
   const phoneRegistration = register("phone", {
     setValueAs: normalizePhoneDigits,
-    validate: (value) =>
-      isEdit || normalizePhoneDigits(value).length === 10
+    validate: (value) => {
+      const normalizedPhone = normalizePhoneDigits(value);
+
+      if (!normalizedPhone) {
+        return "Phone number is required";
+      }
+
+      return normalizedPhone.length === 10
         ? true
-        : "Phone number must be exactly 10 digits",
+        : "Phone number must be exactly 10 digits";
+    },
     onChange: (event) => {
       const normalizedPhone = normalizePhoneDigits(event.target.value);
       event.target.value = normalizedPhone;
@@ -1859,7 +1998,7 @@ export default function ProfileForm({
       const normalizedPincode = normalizePincodeDigits(value);
 
       if (!normalizedPincode) {
-        return true;
+        return "Pincode is required";
       }
 
       if (normalizedPincode.length !== 6) {
@@ -2012,7 +2151,7 @@ export default function ProfileForm({
 
         <div>
           <label className={labelClass} htmlFor="pf-phone">
-            Phone Number
+            Phone Number *
           </label>
           <input
             id="pf-phone"
@@ -2030,6 +2169,27 @@ export default function ProfileForm({
           ) : null}
         </div>
 
+        <div>
+          <label className={labelClass} htmlFor="pf-nationality">
+            Nationality *
+          </label>
+          <select
+            id="pf-nationality"
+            {...register("nationality", { setValueAs: toNullableValue })}
+            className={selectClass}
+          >
+            <option value="">Select nationality</option>
+            {nationalityOptions.map((nationality) => (
+              <option key={nationality} value={nationality}>
+                {nationality}
+              </option>
+            ))}
+          </select>
+          {errors.nationality ? (
+            <p className={errorClass}>{errors.nationality.message}</p>
+          ) : null}
+        </div>
+
       </div>
 
       <div className="space-y-4">
@@ -2038,7 +2198,7 @@ export default function ProfileForm({
         <div className={`grid gap-5 ${isEdit ? "sm:grid-cols-2" : "sm:grid-cols-2 xl:grid-cols-3"}`}>
           <div>
             <label className={labelClass} htmlFor="pf-houseNumber">
-              House Number
+              House Number *
             </label>
             <input
               id="pf-houseNumber"
@@ -2054,7 +2214,7 @@ export default function ProfileForm({
 
           <div>
             <label className={labelClass} htmlFor="pf-streetName">
-              Street Name
+              Street Name *
             </label>
             <input
               id="pf-streetName"
@@ -2070,7 +2230,7 @@ export default function ProfileForm({
 
           <div>
             <label className={labelClass} htmlFor="pf-state">
-              State
+              State *
             </label>
             <Controller
               name="state"
@@ -2098,7 +2258,7 @@ export default function ProfileForm({
 
           <div>
             <label className={labelClass} htmlFor="pf-city">
-              City
+              City *
             </label>
             <Controller
               name="city"
@@ -2134,7 +2294,7 @@ export default function ProfileForm({
 
           <div>
             <label className={labelClass} htmlFor="pf-pincode">
-              Pincode
+              Pincode *
             </label>
             <input
               id="pf-pincode"
@@ -2585,6 +2745,31 @@ export default function ProfileForm({
           />
           {errors.timeOfBirth ? (
             <p className={errorClass}>{errors.timeOfBirth.message}</p>
+          ) : null}
+        </div>
+
+        <div>
+          <label className={labelClass} htmlFor="pf-dosham">
+            Dosham
+          </label>
+          <select
+            id="pf-dosham"
+            {...register("dosham")}
+            className={selectClass}
+          >
+            <option value="">Select Dosham</option>
+            {selectedDosham &&
+            !DOSHAM_OPTIONS.some((option) => option.value === selectedDosham) ? (
+              <option value={selectedDosham}>{selectedDosham}</option>
+            ) : null}
+            {DOSHAM_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          {errors.dosham ? (
+            <p className={errorClass}>{errors.dosham.message}</p>
           ) : null}
         </div>
 
@@ -3075,6 +3260,7 @@ export default function ProfileForm({
   };
 
   return (
+    <>
     <form onSubmit={handleFormSubmit} className="space-y-8">
       {!isEdit ? (
         <>
@@ -3244,6 +3430,27 @@ export default function ProfileForm({
         </>
       ) : (
         <>
+          {displayProfileUserId ? (
+            <div
+              className="ui-enter-up rounded-2xl border border-rose-100 bg-[linear-gradient(135deg,#fff7fa_0%,#ffffff_100%)] p-5 shadow-sm"
+              style={{ animationDelay: "20ms", animationFillMode: "forwards" }}
+            >
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">
+                    Your User ID
+                  </p>
+                  <p className="mt-2 font-mono text-2xl font-bold tracking-[0.08em] text-gray-900">
+                    {displayProfileUserId}
+                  </p>
+                </div>
+                <p className="max-w-md text-sm leading-6 text-gray-500">
+                  This ID is generated automatically and cannot be edited.
+                </p>
+              </div>
+            </div>
+          ) : null}
+
           <SectionBlock
             title="Personal Information"
             description="Update your basic and address details."
@@ -3343,5 +3550,17 @@ export default function ProfileForm({
         </div>
       ) : null}
     </form>
+
+      {createdProfileSuccess && typeof document !== "undefined"
+        ? createPortal(
+            <ProfileCreatedSuccessModal
+              fullName={createdProfileSuccess.fullName}
+              profileUserId={createdProfileSuccess.profileUserId}
+              onContinue={handleProfileSuccessContinue}
+            />,
+            document.body
+          )
+        : null}
+    </>
   );
 }

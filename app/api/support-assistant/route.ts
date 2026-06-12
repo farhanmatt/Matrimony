@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { analyzeSupportIssue } from "@/lib/utils/support-assistant";
+import { analyzeSupportIssueForUser } from "@/lib/utils/support-assistant";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -12,10 +12,17 @@ export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as {
       message?: unknown;
+      shortlistCount?: unknown;
     };
 
     const message =
       typeof body.message === "string" ? body.message.trim() : "";
+    const shortlistCount =
+      typeof body.shortlistCount === "number" &&
+      Number.isInteger(body.shortlistCount) &&
+      body.shortlistCount >= 0
+        ? body.shortlistCount
+        : null;
 
     if (!message) {
       return NextResponse.json(
@@ -31,7 +38,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result = analyzeSupportIssue(null, message);
+    const result = await analyzeSupportIssueForUser(
+      session.user.id,
+      message,
+      shortlistCount
+    );
 
     return NextResponse.json({
       data: result,

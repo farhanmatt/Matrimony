@@ -4,10 +4,17 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import ProfileForm from "@/components/profile/ProfileForm";
 import { normalizeMotherTongue } from "@/lib/constants/languages";
+import { ensureProfileUserIdForProfile } from "@/lib/profile-user-id";
 import type { ProfileFormInput } from "@/lib/validations/profile";
 import { format } from "date-fns";
 
 export const metadata: Metadata = { title: "Edit Profile" };
+
+const allowedNationalities: NonNullable<ProfileFormInput["nationality"]>[] = [
+  "Indian",
+  "NRI",
+  "Expat",
+];
 
 export default async function EditProfilePage() {
   const session = await auth();
@@ -20,6 +27,14 @@ export default async function EditProfilePage() {
 
   if (!profile) redirect("/dashboard/profile/create");
 
+  const profileUserId =
+    profile.profileUserId ??
+    (await ensureProfileUserIdForProfile({
+      id: profile.id,
+      gender: profile.gender,
+      profileUserId: profile.profileUserId,
+    }));
+
   const profileData = profile as typeof profile & {
     phone?: string | null;
     course?: string | null;
@@ -30,6 +45,11 @@ export default async function EditProfilePage() {
     physicalActivity?: string | null;
     personalityType?: string | null;
   };
+  const normalizedNationality = allowedNationalities.includes(
+    profile.nationality as NonNullable<ProfileFormInput["nationality"]>
+  )
+    ? (profile.nationality as NonNullable<ProfileFormInput["nationality"]>)
+    : undefined;
 
   // Map Prisma model to form shape
   const defaultValues: Partial<ProfileFormInput> = {
@@ -37,6 +57,7 @@ export default async function EditProfilePage() {
     gender: profile.gender as ProfileFormInput["gender"],
     dateOfBirth: format(new Date(profile.dateOfBirth), "yyyy-MM-dd"),
     height: profile.height ?? undefined,
+    nationality: normalizedNationality,
     maritalStatus: profile.maritalStatus as ProfileFormInput["maritalStatus"],
     phone: profileData.phone ?? undefined,
     education: profile.education ?? undefined,
@@ -62,6 +83,7 @@ export default async function EditProfilePage() {
     language: normalizeMotherTongue(profile.language),
     star: profile.star ?? undefined,
     rasi: profile.rasi ?? undefined,
+    dosham: profile.dosham ?? undefined,
     timeOfBirth: profileData.timeOfBirth ?? undefined,
     placeOfBirth: profileData.placeOfBirth ?? undefined,
     diet: profile.diet ?? undefined,
@@ -114,7 +136,11 @@ export default async function EditProfilePage() {
         className="ui-enter-scale ui-card-lift-soft rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8"
         style={{ animationDelay: "180ms", animationFillMode: "forwards" }}
       >
-        <ProfileForm defaultValues={defaultValues} isEdit />
+        <ProfileForm
+          defaultValues={defaultValues}
+          isEdit
+          profileUserId={profileUserId}
+        />
       </div>
     </div>
   );

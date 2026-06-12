@@ -1,124 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import type { Prisma } from "@prisma/client";
+import { sendRegistrationOtpEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
+import {
+  createRegistrationSessionToken,
+  createRegistrationVerificationCode,
+  getRegistrationCodeExpiry,
+  getRegistrationCookieOptions,
+  getRegistrationSessionExpiry,
+  REGISTRATION_OTP_CODE_TTL_MINUTES,
+  REGISTRATION_OTP_COOKIE_NAME,
+} from "@/lib/registration-otp";
 import {
   normalizeEmailIdentifier,
   normalizeNameLookup,
 } from "@/lib/utils/user-identity";
 import { registerSchema } from "@/lib/validations/auth";
-import {
-  preferenceSchema,
-  profileSchema,
-  type PreferenceInput,
-} from "@/lib/validations/profile";
+import { preferenceSchema, profileSchema } from "@/lib/validations/profile";
 
-function compactAddressLocation(
-  city?: string | null,
-  state?: string | null,
-  fallbackLocation?: string | null
-) {
-  const parts = [city, state]
-    .map((value) => value?.trim())
-    .filter((value): value is string => Boolean(value));
-
-  if (parts.length > 0) {
-    return parts.join(", ");
-  }
-
-  const fallback = fallbackLocation?.trim();
-  return fallback ? fallback : null;
-}
-
-function extractCloudinaryPublicId(url: string) {
-  try {
-    const parsedUrl = new URL(url);
-    const pathParts = parsedUrl.pathname.split("/").filter(Boolean);
-    const uploadIndex = pathParts.indexOf("upload");
-
-    if (uploadIndex === -1) {
-      return null;
-    }
-
-    const uploadPathParts = pathParts.slice(uploadIndex + 1);
-    const versionIndex = uploadPathParts.findIndex((part) => /^v\d+$/.test(part));
-    const publicIdParts =
-      versionIndex >= 0
-        ? uploadPathParts.slice(versionIndex + 1)
-        : uploadPathParts;
-
-    if (publicIdParts.length === 0) {
-      return null;
-    }
-
-    const lastPart = publicIdParts[publicIdParts.length - 1];
-    publicIdParts[publicIdParts.length - 1] = lastPart.replace(/\.[^.]+$/, "");
-
-    return publicIdParts.join("/");
-  } catch {
-    return null;
-  }
-}
-
-function normalizePhotoUrls(
-  profileImage?: string | null,
-  additionalPhotoUrls: string[] = []
-) {
-  const uniqueUrls = new Set<string>();
-  const normalizedUrls: string[] = [];
-
-  for (const candidate of [profileImage, ...additionalPhotoUrls]) {
-    const trimmedUrl = candidate?.trim();
-    if (!trimmedUrl || uniqueUrls.has(trimmedUrl)) {
-      continue;
-    }
-
-    uniqueUrls.add(trimmedUrl);
-    normalizedUrls.push(trimmedUrl);
-  }
-
-  return normalizedUrls;
-}
-
-function buildProfilePhotoData(
-  profileId: string,
-  profileImage?: string | null,
-  additionalPhotoUrls: string[] = []
-) {
-  const normalizedUrls = normalizePhotoUrls(profileImage, additionalPhotoUrls);
-  const primaryUrl = profileImage?.trim() || normalizedUrls[0] || null;
-
-  return normalizedUrls.map((url, index) => ({
-    profileId,
-    url,
-    publicId:
-      extractCloudinaryPublicId(url) ?? `profile-${profileId}-${index + 1}`,
-    isPrimary: url === primaryUrl,
-  }));
-}
-
-function emptyToNull(value: string | null | undefined) {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  const trimmedValue = value.trim();
-  return trimmedValue.length > 0 ? trimmedValue : null;
-}
-
-function normalizePreference(data: PreferenceInput) {
-  return {
-    ageMin: data.ageMin ?? null,
-    ageMax: data.ageMax ?? null,
-    heightMin: data.heightMin ?? null,
-    heightMax: data.heightMax ?? null,
-    religion: emptyToNull(data.religion),
-    caste: emptyToNull(data.caste),
-    education: emptyToNull(data.education),
-    profession: emptyToNull(data.profession),
-    location: emptyToNull(data.location),
-    maritalStatus: emptyToNull(data.maritalStatus),
-    language: emptyToNull(data.language),
-  };
+function toJsonValue(value: unknown): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
 }
 
 export async function POST(req: NextRequest) {
@@ -172,83 +74,80 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const passwordHash = await bcrypt.hash(password, 12);
+    const verificationCode = createRegistrationVerificationCode();
+    const verificationCodeHash = await bcrypt.hash(verificationCode, 10);
+    const verificationCodeExpiresAt = getRegistrationCodeExpiry();
+    const { token, tokenHash } = createRegistrationSessionToken();
+    const expiresAt = getRegistrationSessionExpiry();
 
-    const result = await prisma.$transaction(async (tx) => {
-      const createdUser = await tx.user.create({
-        data: {
-          name,
-          nameLookup: normalizedNameLookup,
-          email,
-          password: hashedPassword,
-        },
-        select: { id: true, name: true, email: true },
-      });
-
-      let createdProfileId: string | null = null;
-
-      if (validatedProfile?.success) {
-        const { dateOfBirth, additionalPhotoUrls = [], ...rest } =
-          validatedProfile.data;
-
-        const createdProfile = await tx.profile.create({
-          data: {
-            userId: createdUser.id,
-            dateOfBirth: new Date(dateOfBirth),
-            status: "ACTIVE",
-            ...rest,
-            location: compactAddressLocation(rest.city, rest.state, rest.location),
-          },
-          select: { id: true },
-        });
-
-        createdProfileId = createdProfile.id;
-
-        const photoRows = buildProfilePhotoData(
-          createdProfile.id,
-          rest.profileImage,
-          additionalPhotoUrls
-        );
-
-        if (photoRows.length > 0) {
-          await tx.profilePhoto.createMany({
-            data: photoRows,
-          });
-        }
-
-        if (rest.profileImage) {
-          await tx.user.update({
-            where: { id: createdUser.id },
-            data: { image: rest.profileImage },
-          });
-        }
-
-        if (validatedPreference?.success) {
-          await tx.preference.create({
-            data: {
-              profileId: createdProfile.id,
-              ...normalizePreference(validatedPreference.data),
-            },
-          });
-        }
-      }
-
-      return {
-        user: createdUser,
-        profileCreated: Boolean(createdProfileId),
-      };
+    await prisma.pendingRegistration.deleteMany({
+      where: { email },
     });
 
-    return NextResponse.json(
-      {
-        message: "Account created successfully",
-        user: result.user,
-        profileCreated: result.profileCreated,
+    const pendingRegistration = await prisma.pendingRegistration.create({
+      data: {
+        email,
+        name,
+        nameLookup: normalizedNameLookup,
+        passwordHash,
+        profile:
+          validatedProfile?.success && validatedProfile.data
+            ? toJsonValue(validatedProfile.data)
+            : undefined,
+        preference:
+          validatedPreference?.success && validatedPreference.data
+            ? toJsonValue(validatedPreference.data)
+            : undefined,
+        sessionTokenHash: tokenHash,
+        verificationCodeHash,
+        verificationCodeExpiresAt,
+        expiresAt,
       },
-      { status: 201 }
+      select: { id: true },
+    });
+
+    const emailResult = await sendRegistrationOtpEmail({
+      to: email,
+      recipientName: name,
+      verificationCode,
+      expiresInMinutes: REGISTRATION_OTP_CODE_TTL_MINUTES,
+    });
+
+    if (!emailResult.ok) {
+      await prisma.pendingRegistration
+        .delete({ where: { id: pendingRegistration.id } })
+        .catch(() => {});
+
+      return NextResponse.json(
+        {
+          error:
+            emailResult.reason ||
+            "We couldn't send the verification OTP. Please try again.",
+        },
+        { status: emailResult.status === "skipped" ? 503 : 500 }
+      );
+    }
+
+    const response = NextResponse.json(
+      {
+        message: "Verification OTP sent successfully.",
+        requiresOtp: true,
+        email,
+        verificationCodeExpiresAt: verificationCodeExpiresAt.toISOString(),
+      },
+      { status: 202 }
     );
+
+    response.cookies.set(
+      REGISTRATION_OTP_COOKIE_NAME,
+      token,
+      getRegistrationCookieOptions(expiresAt)
+    );
+
+    return response;
   } catch (error) {
-    console.error("Register error:", error);
+    console.error("Register OTP start error:", error);
     return NextResponse.json(
       { error: "Something went wrong. Please try again." },
       { status: 500 }

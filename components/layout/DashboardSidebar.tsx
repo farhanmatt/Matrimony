@@ -52,6 +52,7 @@ function isActivePath(pathname: string, href: string) {
 export default function DashboardSidebar({
   initialUser,
   initialHasProfile = false,
+  initialProfileUserId = null,
   initialAccountImage = null,
   initialNotificationProfileId = null,
   initialNotifications = [],
@@ -63,6 +64,7 @@ export default function DashboardSidebar({
     image: string | null;
   };
   initialHasProfile?: boolean;
+  initialProfileUserId?: string | null;
   initialAccountImage?: string | null;
   initialNotificationProfileId?: string | null;
   initialNotifications?: DashboardNotificationItem[];
@@ -196,6 +198,9 @@ export default function DashboardSidebar({
   const currentUser = session?.user ?? initialUser;
   const visibleAccountImage = accountImage ?? currentUser.image ?? null;
   const brandLogoSrc = logoImageUrl || "/default-logo.svg";
+  const accountSubtitle = hasProfile
+    ? initialProfileUserId ?? "User ID pending"
+    : "Profile setup pending";
 
   const profileNavItem = hasProfile
     ? { href: "/dashboard/profile/edit", icon: Edit3, label: "Edit Profile" }
@@ -370,7 +375,7 @@ export default function DashboardSidebar({
                       {currentUser.name ?? "User"}
                     </p>
                     <p className="truncate text-xs text-gray-500">
-                      {hasProfile ? "Profile ready" : "Profile setup pending"}
+                      {accountSubtitle}
                     </p>
                   </div>
                   <ChevronDown

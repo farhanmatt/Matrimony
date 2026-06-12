@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getProtectedMatchProfileImageUrl } from "@/lib/server/match-profile-preview";
 import { getMatchesForProfile } from "@/lib/utils/matching";
 
 // GET /api/matches — get all mutual matches for current user
@@ -35,14 +36,41 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const matchesWithUnlockStatus = matches.map((match) => {
+  const pendingMatches = matches.reduce<
+    Array<{
+      id: string;
+      createdAt: string;
+      isUnlocked: false;
+      otherProfile: {
+        id: string;
+        fullName: string;
+        gender: string;
+        dateOfBirth: string;
+        height: number | null;
+        maritalStatus: string;
+        profession: string | null;
+        city: string | null;
+        state: string | null;
+        religion: string | null;
+        education: string | null;
+        course: string | null;
+        phone: null;
+        previewImageUrl: string | null;
+      };
+    }>
+  >((items, match) => {
+    const isUnlocked = match.unlocks.some((unlock) => unlock.userId === session.user.id);
+    if (isUnlocked) {
+      return items;
+    }
+
     const otherProfile =
       match.profileAId === ownProfile.id ? match.profileB : match.profileA;
 
-    return {
+    items.push({
       id: match.id,
       createdAt: match.createdAt.toISOString(),
-      isUnlocked: match.unlocks.some((unlock) => unlock.userId === session.user.id),
+      isUnlocked: false,
       otherProfile: {
         id: otherProfile.id,
         fullName: otherProfile.fullName,
@@ -56,12 +84,16 @@ export async function GET(req: NextRequest) {
         religion: otherProfile.religion,
         education: otherProfile.education,
         course: otherProfile.course,
-        phone: otherProfile.phone,
-        profileImage: otherProfile.profileImage,
-        photos: otherProfile.photos,
+        phone: null,
+        previewImageUrl: getProtectedMatchProfileImageUrl(otherProfile),
       },
-    };
-  });
+    });
 
-  return NextResponse.json({ data: matchesWithUnlockStatus });
+    return items;
+  }, []);
+
+  return NextResponse.json({
+    data: pendingMatches,
+    unlockedMatchesCount: matches.length - pendingMatches.length,
+  });
 }

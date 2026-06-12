@@ -23,7 +23,7 @@ export default async function CreateProfilePage() {
         className="ui-enter-up mb-2 text-[1.7rem] font-display font-bold text-gray-900"
         style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
       >
-        Create Your Profile
+        Create / Update Your Profile
       </h1>
       <p
         className="ui-enter-up mb-8 text-[14px] text-gray-500"

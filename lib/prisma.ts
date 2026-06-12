@@ -150,6 +150,13 @@ export function getPrismaClient(): PrismaClientInstance {
   return nextClient;
 }
 
-const prisma: PrismaClientInstance = getPrismaClient();
+const prisma = new Proxy({} as PrismaClientInstance, {
+  get(_target, property) {
+    const client = getPrismaClient() as unknown as Record<PropertyKey, unknown>;
+    const value = Reflect.get(client, property, client);
+
+    return typeof value === "function" ? value.bind(client) : value;
+  },
+}) as PrismaClientInstance;
 
 export { prisma };

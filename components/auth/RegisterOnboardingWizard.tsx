@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {
@@ -20,6 +20,10 @@ import { NAKSHATRA_OPTIONS, RASI_OPTIONS } from "@/lib/constants/astrology";
 import { MOTHER_TONGUE_OPTIONS } from "@/lib/constants/languages";
 import { profileSchema, preferenceSchema } from "@/lib/validations/profile";
 import { registerSchema } from "@/lib/validations/auth";
+import {
+  formatOtpRemainingTime,
+  getOtpRemainingSeconds,
+} from "@/lib/utils/otp-timer";
 import { MARITAL_STATUS_LABELS } from "@/lib/utils/helpers";
 
 const genderOptions = [
@@ -81,6 +85,14 @@ const onboardingSteps = [
   },
 ] as const;
 
+const OTP_STEP_INDEX = onboardingSteps.length;
+
+type PendingRegistrationState = {
+  email: string;
+  password: string;
+  verificationCodeExpiresAt: string;
+};
+
 type WizardFormValues = {
   name: string;
   email: string;
@@ -95,7 +107,6 @@ type WizardFormValues = {
     | "NEVER_MARRIED"
     | "DIVORCED"
     | "WIDOWED"
-    | "SEPARATED"
     | "AWAITING_DIVORCE";
   location: string;
   bio: string;
@@ -181,6 +192,13 @@ export default function RegisterOnboardingWizard() {
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState<number>(-1);
+  const [pendingRegistration, setPendingRegistration] =
+    useState<PendingRegistrationState | null>(null);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpRemainingSeconds, setOtpRemainingSeconds] = useState(0);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isResendingOtp, setIsResendingOtp] = useState(false);
+  const isOtpExpired = Boolean(pendingRegistration) && otpRemainingSeconds <= 0;
 
   const {
     register,
@@ -215,10 +233,29 @@ export default function RegisterOnboardingWizard() {
   });
 
   const isAccountStep = currentStep === -1;
+  const isOtpStep = currentStep === OTP_STEP_INDEX;
   const stepMeta = useMemo(
-    () => (isAccountStep ? null : onboardingSteps[currentStep]),
-    [currentStep, isAccountStep]
+    () => (isAccountStep || isOtpStep ? null : onboardingSteps[currentStep]),
+    [currentStep, isAccountStep, isOtpStep]
   );
+
+  useEffect(() => {
+    if (!pendingRegistration) {
+      setOtpRemainingSeconds(0);
+      return;
+    }
+
+    const updateRemainingSeconds = () => {
+      setOtpRemainingSeconds(
+        getOtpRemainingSeconds(pendingRegistration.verificationCodeExpiresAt)
+      );
+    };
+
+    updateRemainingSeconds();
+    const intervalId = window.setInterval(updateRemainingSeconds, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [pendingRegistration]);
 
   const inputClass =
     "w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all";
@@ -277,6 +314,11 @@ export default function RegisterOnboardingWizard() {
   };
 
   const handleStepBack = () => {
+    if (isOtpStep) {
+      setCurrentStep(onboardingSteps.length - 1);
+      return;
+    }
+
     setCurrentStep((step) => step - 1);
   };
 
@@ -288,12 +330,113 @@ export default function RegisterOnboardingWizard() {
       return;
     }
 
+    if (isOtpStep) {
+      await handleVerifyOtp();
+      return;
+    }
+
     if (currentStep < onboardingSteps.length - 1) {
       await handleStepNext();
       return;
     }
 
     await handleSubmit(onSubmit)(event);
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!pendingRegistration) {
+      toast.error("Please submit the registration form again.");
+      setCurrentStep(-1);
+      return;
+    }
+
+    const code = otpCode.trim();
+    if (!/^\d{6}$/.test(code)) {
+      toast.error("Enter the 6-digit OTP sent to your email.");
+      return;
+    }
+
+    if (
+      getOtpRemainingSeconds(pendingRegistration.verificationCodeExpiresAt) <= 0
+    ) {
+      toast.error("This OTP has expired. Please request a new OTP.");
+      return;
+    }
+
+    setIsVerifyingOtp(true);
+
+    try {
+      const res = await fetch("/api/auth/register/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        toast.error(json.error ?? "OTP verification failed");
+        return;
+      }
+
+      toast.success("Email verified! Signing you in...");
+
+      await signIn("credentials", {
+        email: pendingRegistration.email,
+        password: pendingRegistration.password,
+        redirect: false,
+      });
+
+      router.push("/dashboard");
+      router.refresh();
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!pendingRegistration) {
+      toast.error("Please submit the registration form again.");
+      setCurrentStep(-1);
+      return;
+    }
+
+    if (getOtpRemainingSeconds(pendingRegistration.verificationCodeExpiresAt) > 0) {
+      toast.error("You can request a new OTP after the current OTP expires.");
+      return;
+    }
+
+    setIsResendingOtp(true);
+
+    try {
+      const res = await fetch("/api/auth/register/resend", {
+        method: "POST",
+      });
+      const json = await res.json();
+
+      if (!res.ok) {
+        toast.error(json.error ?? "Unable to resend OTP");
+        return;
+      }
+
+      const verificationCodeExpiresAt =
+        json.verificationCodeExpiresAt ??
+        new Date(Date.now() + 2 * 60 * 1000).toISOString();
+
+      setOtpCode("");
+      setOtpRemainingSeconds(getOtpRemainingSeconds(verificationCodeExpiresAt));
+      setPendingRegistration((current) =>
+        current
+          ? {
+              ...current,
+              verificationCodeExpiresAt,
+            }
+          : current
+      );
+      toast.success(json.message ?? "A new OTP has been sent.");
+    } finally {
+      setIsResendingOtp(false);
+    }
   };
 
   const onSubmit = async (values: WizardFormValues) => {
@@ -384,16 +527,19 @@ export default function RegisterOnboardingWizard() {
       return;
     }
 
-    toast.success("Account created! Signing you in...");
+    const verificationCodeExpiresAt =
+      json.verificationCodeExpiresAt ??
+      new Date(Date.now() + 2 * 60 * 1000).toISOString();
 
-    await signIn("credentials", {
-      email: values.email,
+    setOtpRemainingSeconds(getOtpRemainingSeconds(verificationCodeExpiresAt));
+    setPendingRegistration({
+      email: json.email ?? values.email,
       password: values.password,
-      redirect: false,
+      verificationCodeExpiresAt,
     });
-
-    router.push("/dashboard");
-    router.refresh();
+    setOtpCode("");
+    setCurrentStep(OTP_STEP_INDEX);
+    toast.success(json.message ?? "Verification OTP sent to your email.");
   };
 
   return (
@@ -409,16 +555,22 @@ export default function RegisterOnboardingWizard() {
           </span>
         </Link>
         <h1 className="text-3xl font-display font-bold text-gray-900 mt-5 mb-1">
-          {isAccountStep ? "Create your account" : stepMeta?.title}
+          {isAccountStep
+            ? "Create your account"
+            : isOtpStep
+              ? "Verify your email"
+              : stepMeta?.title}
         </h1>
         <p className="text-gray-500 text-sm max-w-2xl mx-auto">
           {isAccountStep
             ? "Register first, then complete your 7-step profile onboarding."
+            : isOtpStep
+              ? "Enter the OTP sent to your email to create your account."
             : stepMeta?.description}
         </p>
       </div>
 
-      {!isAccountStep ? (
+      {!isAccountStep && !isOtpStep ? (
         <div className="mb-6 rounded-3xl border border-rose-100 bg-white/80 p-4 shadow-sm backdrop-blur-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -503,6 +655,55 @@ export default function RegisterOnboardingWizard() {
         ) : null}
 
         <form onSubmit={handleFormSubmit} className="space-y-6">
+          {isOtpStep ? (
+            <div className="space-y-5">
+              <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4">
+                <p className="text-sm font-semibold text-gray-900">
+                  Check your email
+                </p>
+                <p className="mt-1 text-sm leading-6 text-gray-600">
+                  We sent a 6-digit OTP to{" "}
+                  <span className="font-semibold text-gray-900">
+                    {pendingRegistration?.email}
+                  </span>
+                  .
+                </p>
+                <p
+                  className={`mt-3 text-sm font-semibold ${
+                    isOtpExpired ? "text-rose-600" : "text-gray-700"
+                  }`}
+                >
+                  {isOtpExpired
+                    ? "This OTP has expired. Please request a new OTP."
+                    : `OTP expires in ${formatOtpRemainingTime(
+                        otpRemainingSeconds
+                      )}`}
+                </p>
+              </div>
+
+              <div>
+                <label className={labelClass} htmlFor="onb-otp">
+                  Email OTP
+                </label>
+                <input
+                  id="onb-otp"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={otpCode}
+                  onChange={(event) =>
+                    setOtpCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
+                  className={`${inputClass} tracking-[0.3em]`}
+                  placeholder="000000"
+                />
+                {isOtpExpired ? (
+                  <p className={errorClass}>This OTP is no longer valid.</p>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
           {isAccountStep ? (
             <div className="grid gap-5">
               <div>
@@ -1140,7 +1341,38 @@ export default function RegisterOnboardingWizard() {
                 </button>
               ) : null}
 
-              {isAccountStep ? (
+              {isOtpStep ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={isResendingOtp || !isOtpExpired}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 px-5 py-3 text-sm font-semibold text-rose-600 transition-colors hover:border-rose-300 hover:bg-rose-50 disabled:opacity-60"
+                  >
+                    {isResendingOtp
+                      ? "Sending..."
+                      : isOtpExpired
+                        ? "Resend OTP"
+                        : `Resend in ${formatOtpRemainingTime(
+                            otpRemainingSeconds
+                          )}`}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isVerifyingOtp || isOtpExpired}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md disabled:opacity-70"
+                  >
+                    {isVerifyingOtp ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Verifying...
+                      </>
+                    ) : (
+                      "Verify OTP & Create Account"
+                    )}
+                  </button>
+                </>
+              ) : isAccountStep ? (
                 <button
                   type="button"
                   onClick={handleAccountNext}
@@ -1167,7 +1399,7 @@ export default function RegisterOnboardingWizard() {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Creating...
+                      Sending OTP...
                     </>
                   ) : (
                     "Create Account"

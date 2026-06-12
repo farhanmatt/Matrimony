@@ -204,12 +204,13 @@ export async function GET(req: NextRequest) {
     },
   ];
 
-  if (profile.star || profile.rasi || profile.timeOfBirth || profile.placeOfBirth || profile.horoscopeImage) {
+  if (profile.star || profile.rasi || profile.dosham || profile.timeOfBirth || profile.placeOfBirth || profile.horoscopeImage) {
     sections.push({
       title: "Horoscope Details",
       rows: [
         { label: "Rasi / Moon Sign", value: formatValue(profile.rasi) },
         { label: "Nakshatra", value: formatValue(profile.star) },
+        { label: "Dosham", value: formatValue(profile.dosham) },
         { label: "Time of Birth", value: formatValue(profile.timeOfBirth) },
         { label: "Place of Birth", value: formatValue(profile.placeOfBirth) },
         { label: "Horoscope Image", value: formatValue(profile.horoscopeImage) },

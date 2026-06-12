@@ -1,16 +1,19 @@
 import { prisma } from "@/lib/prisma";
+import { getProtectedMatchProfileImageUrl } from "@/lib/server/match-profile-preview";
 import {
   likedProfileCardSelect,
   serializeLikedProfileCard,
 } from "@/lib/server/liked-profile-preview";
 import { getAdminSettingsSnapshot } from "@/lib/utils/admin-settings";
 import { getMatchesForProfile } from "@/lib/utils/matching";
+import { ensureProfileUserIdForProfile } from "@/lib/profile-user-id";
 
 export async function getDashboardProfileSummary(userId: string) {
   const profile = await prisma.profile.findUnique({
     where: { userId },
     select: {
       id: true,
+      profileUserId: true,
       gender: true,
       profileImage: true,
       photos: {
@@ -25,8 +28,17 @@ export async function getDashboardProfileSummary(userId: string) {
     return null;
   }
 
+  const profileUserId =
+    profile.profileUserId ??
+    (await ensureProfileUserIdForProfile({
+      id: profile.id,
+      gender: profile.gender,
+      profileUserId: profile.profileUserId,
+    }));
+
   return {
     id: profile.id,
+    profileUserId,
     gender: profile.gender,
     accountImage: profile.profileImage ?? profile.photos[0]?.url ?? null,
   };
@@ -87,26 +99,65 @@ export async function getMatchesPageData(userId: string) {
   }
 
   const matches = await getMatchesForProfile(ownProfile.id);
-  const allMatches = matches.map((match) => ({
-    id: match.id,
-    otherProfile:
-      match.profileAId === ownProfile.id ? match.profileB : match.profileA,
-    isUnlocked: match.unlocks.some((unlock) => unlock.userId === userId),
-    createdAt: match.createdAt.toISOString(),
-  }));
-  const pendingMatches = allMatches
-    .filter((match) => !match.isUnlocked)
-    .map((match) => ({
-      ...match,
+  const pendingMatches = matches.reduce<
+    Array<{
+      id: string;
+      createdAt: string;
+      isUnlocked: false;
       otherProfile: {
-        ...match.otherProfile,
-        dateOfBirth: match.otherProfile.dateOfBirth.toISOString(),
+        id: string;
+        fullName: string;
+        gender: string;
+        dateOfBirth: string;
+        height: number | null;
+        maritalStatus: string;
+        profession: string | null;
+        city: string | null;
+        state: string | null;
+        religion: string | null;
+        education: string | null;
+        course: string | null;
+        phone: null;
+        previewImageUrl: string | null;
+      };
+    }>
+  >((items, match) => {
+    const isUnlocked = match.unlocks.some((unlock) => unlock.userId === userId);
+    if (isUnlocked) {
+      return items;
+    }
+
+    const otherProfile =
+      match.profileAId === ownProfile.id ? match.profileB : match.profileA;
+
+    items.push({
+      id: match.id,
+      createdAt: match.createdAt.toISOString(),
+      isUnlocked: false,
+      otherProfile: {
+        id: otherProfile.id,
+        fullName: otherProfile.fullName,
+        gender: otherProfile.gender,
+        dateOfBirth: otherProfile.dateOfBirth.toISOString(),
+        height: otherProfile.height,
+        maritalStatus: otherProfile.maritalStatus,
+        profession: otherProfile.profession,
+        city: otherProfile.city,
+        state: otherProfile.state,
+        religion: otherProfile.religion,
+        education: otherProfile.education,
+        course: otherProfile.course,
+        phone: null,
+        previewImageUrl: getProtectedMatchProfileImageUrl(otherProfile),
       },
-    }));
+    });
+
+    return items;
+  }, []);
 
   return {
     matches: pendingMatches,
-    unlockedMatchesCount: allMatches.length - pendingMatches.length,
+    unlockedMatchesCount: matches.length - pendingMatches.length,
     pricing: {
       baseAmount: settings.baseAmount,
       profileAmount: settings.profileAmount,

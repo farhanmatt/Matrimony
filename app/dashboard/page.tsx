@@ -1,5 +1,10 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  createFeaturedProfilePreviewToken,
+  getFeaturedProfilePreviewSource,
+} from "@/lib/server/featured-profile-preview";
+import { getProtectedMatchProfileImageUrl } from "@/lib/server/match-profile-preview";
 import { isDatabaseConnectionError } from "@/lib/utils/errors";
 import { calculateAge } from "@/lib/utils/helpers";
 import { getMatchesForProfile } from "@/lib/utils/matching";
@@ -208,16 +213,39 @@ function getFallbackAvatar(gender?: string | null, index = 0) {
 }
 
 function getProfileCardImage(
-  profileImage?: string | null,
-  primaryPhotoUrl?: string | null,
+  previewImageUrl?: string | null,
   gender?: string | null,
   index = 0
 ) {
   return (
-    getSafeImageUrl(profileImage) ??
-    getSafeImageUrl(primaryPhotoUrl) ??
+    getSafeImageUrl(previewImageUrl) ??
     getFallbackAvatar(gender, index)
   );
+}
+
+function getAuthenticatedProfilePreviewUrl(profile: {
+  id: string;
+  profileImage?: string | null;
+  photos: Array<{
+    url: string;
+    publicId: string;
+  }>;
+}) {
+  const previewSource = getFeaturedProfilePreviewSource({
+    profileImage: profile.profileImage ?? null,
+    photos: profile.photos,
+  });
+  const previewToken =
+    previewSource.previewUrl && previewSource.fingerprint
+      ? createFeaturedProfilePreviewToken({
+          profileId: profile.id,
+          fingerprint: previewSource.fingerprint,
+        })
+      : null;
+
+  return previewToken
+    ? `/api/profiles/preview/${encodeURIComponent(previewToken)}`
+    : null;
 }
 
 async function getDashboardHomeData(userId: string) {
@@ -333,7 +361,7 @@ async function getDashboardHomeData(userId: string) {
               profileImage: true,
               photos: {
                 where: { isPrimary: true },
-                select: { url: true, isPrimary: true },
+                select: { url: true, publicId: true, isPrimary: true },
                 take: 1,
               },
             },
@@ -368,7 +396,7 @@ async function getDashboardHomeData(userId: string) {
           profileImage: true,
           photos: {
             where: { isPrimary: true },
-            select: { url: true, isPrimary: true },
+            select: { url: true, publicId: true, isPrimary: true },
             take: 1,
           },
         },
@@ -446,8 +474,7 @@ export default async function DashboardPage() {
     profession: candidate.profession ?? "Professional",
     location: getLocation(candidate.city, candidate.state),
     image: getProfileCardImage(
-      candidate.profileImage,
-      candidate.photos[0]?.url,
+      getAuthenticatedProfilePreviewUrl(candidate),
       candidate.gender,
       index
     ),
@@ -481,8 +508,7 @@ export default async function DashboardPage() {
       profession: like.fromProfile.profession ?? "Interest received",
       location: getLocation(like.fromProfile.city, like.fromProfile.state),
       avatar:
-        like.fromProfile.profileImage ??
-        like.fromProfile.photos[0]?.url ??
+        getAuthenticatedProfilePreviewUrl(like.fromProfile) ??
         sampleProfileImages[0],
       status: "Received",
     }));
@@ -494,8 +520,7 @@ export default async function DashboardPage() {
       profession: match.profession ?? "Match found",
       location: getLocation(match.city, match.state),
       avatar:
-        match.profileImage ??
-        match.photos[0]?.url ??
+        getProtectedMatchProfileImageUrl(match) ??
         sampleProfileImages[index % sampleProfileImages.length],
       status: "New Match",
     }));
@@ -611,7 +636,7 @@ export default async function DashboardPage() {
                   href={profile ? "/dashboard/browse" : "/dashboard/profile/create"}
                   className="ui-link-shift inline-flex items-center gap-2.5 rounded-[10px] bg-[#e11d48] px-3.5 py-2 text-[13px] font-semibold text-white shadow-lg shadow-rose-200 transition-all hover:-translate-y-0.5 hover:bg-[#be123c] hover:shadow-xl"
                 >
-                  {profile ? "Explore Matches" : "Create Your Profile"}
+                  {profile ? "Explore Matches" : "Create / Update Your Profile"}
                   <span className="ui-icon-lift flex h-7 w-7 items-center justify-center rounded-full bg-white text-rose-600 shadow-sm">
                     <ArrowRight className="ui-arrow-shift h-3 w-3" />
                   </span>
@@ -695,6 +720,7 @@ export default async function DashboardPage() {
                       fill
                       className="ui-media-zoom scale-[1.04] object-cover blur-[5px]"
                       sizes="(max-width: 640px) 100vw, 260px"
+                      unoptimized
                     />
                     <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-rose-600 shadow-sm backdrop-blur">
                       {candidate.badge}
@@ -759,8 +785,9 @@ export default async function DashboardPage() {
                         src={item.avatar}
                         alt={item.name}
                         fill
-                        className="ui-media-zoom object-cover"
+                        className="ui-media-zoom scale-[1.06] object-cover blur-[3px]"
                         sizes="48px"
+                        unoptimized
                       />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -817,8 +844,9 @@ export default async function DashboardPage() {
                         src={item.avatar}
                         alt={item.name}
                         fill
-                        className="ui-media-zoom object-cover"
+                        className="ui-media-zoom scale-[1.06] object-cover blur-[3px]"
                         sizes="48px"
+                        unoptimized
                       />
                     </div>
                     <div className="min-w-0 flex-1">

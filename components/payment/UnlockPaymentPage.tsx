@@ -26,7 +26,43 @@ export default function UnlockPaymentPage({
 }: UnlockPaymentPageProps) {
   const router = useRouter();
   const [status, setStatus] = useState<"idle" | "processing" | "success" | "error">("idle");
-  const totalAmount = baseAmount + profileAmount + perProfileChatAmount;
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    discountAmount: number;
+    message: string;
+  } | null>(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+
+  const subtotal = baseAmount + profileAmount + perProfileChatAmount;
+  const totalAmount = subtotal - (appliedCoupon?.discountAmount || 0);
+
+  const handleApplyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    setIsValidatingCoupon(true);
+    try {
+      const res = await fetch("/api/coupon/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponInput, totalAmount: subtotal }),
+      });
+      const data = await res.json();
+      if (data.valid) {
+        setAppliedCoupon({
+          code: data.code,
+          discountAmount: data.discountAmount,
+          message: data.message,
+        });
+        toast.success(data.message);
+      } else {
+        toast.error(data.error || "Invalid coupon code");
+      }
+    } catch {
+      toast.error("Failed to validate coupon");
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
 
   const handlePay = async () => {
     if (status === "processing") {
@@ -39,7 +75,10 @@ export default function UnlockPaymentPage({
       const unlockRes = await fetch("/api/unlock", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matchId }),
+        body: JSON.stringify({ 
+          matchId,
+          couponCode: appliedCoupon?.code 
+        }),
       });
 
       const unlockData = await unlockRes.json();
@@ -147,6 +186,12 @@ export default function UnlockPaymentPage({
                       <span>Per profile chat amount</span>
                       <span className="font-semibold">{formatCurrency(perProfileChatAmount)}</span>
                     </div>
+                    {appliedCoupon && (
+                      <div className="flex items-center justify-between font-medium text-green-600">
+                        <span>Discount ({appliedCoupon.code})</span>
+                        <span>-{formatCurrency(appliedCoupon.discountAmount)}</span>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between border-t border-gray-200 pt-3 text-base">
                       <span className="font-semibold text-gray-900">Total</span>
                       <span className="font-bold text-rose-600">{formatCurrency(totalAmount)}</span>
@@ -178,36 +223,67 @@ export default function UnlockPaymentPage({
           </div>
 
           {status !== "success" ? (
-            <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900">Confirm unlock</h2>
-              <p className="mt-2 text-sm text-gray-500">
-                Click the button below to unlock this matched profile right away.
-              </p>
-
-              <button
-                type="button"
-                onClick={handlePay}
-                disabled={status === "processing"}
-                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3.5 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {status === "processing" ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="h-4 w-4" />
-                    Pay {formatCurrency(totalAmount)}
-                  </>
-                )}
-              </button>
-
-              <div className="mt-4 rounded-2xl bg-gray-50 p-4 text-xs text-gray-500">
-                <p className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                  This unlock is applied instantly to your account.
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
+                <h2 className="text-lg font-semibold text-gray-900">Coupon Code</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Have a coupon code? Apply it below.
                 </p>
+                <div className="mt-4 flex gap-2">
+                  <input
+                    type="text"
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value)}
+                    placeholder="Enter code"
+                    className="flex-1 rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm outline-none transition-colors focus:border-rose-300"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    disabled={isValidatingCoupon || !couponInput.trim()}
+                    className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                  >
+                    {isValidatingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                  </button>
+                </div>
+                {appliedCoupon && (
+                  <p className="mt-2 text-xs text-green-600 font-medium">
+                    {appliedCoupon.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
+                <h2 className="text-lg font-semibold text-gray-900">Confirm unlock</h2>
+                <p className="mt-2 text-sm text-gray-500">
+                  Click the button below to unlock this matched profile right away.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={handlePay}
+                  disabled={status === "processing"}
+                  className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3.5 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {status === "processing" ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="h-4 w-4" />
+                      Pay {formatCurrency(totalAmount)}
+                    </>
+                  )}
+                </button>
+
+                <div className="mt-4 rounded-2xl bg-gray-50 p-4 text-xs text-gray-500">
+                  <p className="flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                    This unlock is applied instantly to your account.
+                  </p>
+                </div>
               </div>
             </div>
           ) : null}

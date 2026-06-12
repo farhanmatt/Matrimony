@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   let requestedMatchId: string | null = null;
 
   try {
-    const { matchId } = await req.json();
+    const { matchId, couponCode } = await req.json();
     requestedMatchId = typeof matchId === "string" ? matchId : null;
     if (!matchId || typeof matchId !== "string") {
       return NextResponse.json({ error: "matchId is required" }, { status: 400 });
@@ -109,9 +109,50 @@ export async function POST(req: NextRequest) {
 
     const { baseAmount, profileAmount, perProfileChatAmount } =
       await getUnlockPricing();
-    const totalAmount = (baseAmount + profileAmount + perProfileChatAmount) * 100;
+    let subtotalAmount = baseAmount + profileAmount + perProfileChatAmount;
+    let discountRupees = 0;
+    let appliedCouponCode: string | null = null;
+
+    if (couponCode && typeof couponCode === "string") {
+      const normalized = couponCode.trim().toUpperCase();
+      const coupon = await prisma.couponCode.findUnique({
+        where: { code: normalized },
+      });
+
+      if (
+        coupon &&
+        coupon.isActive &&
+        (!coupon.expiresAt || new Date() <= coupon.expiresAt) &&
+        (coupon.maxUses === null || coupon.currentUses < coupon.maxUses) &&
+        subtotalAmount >= coupon.minAmount
+      ) {
+        if (coupon.discountType === "PERCENTAGE") {
+          discountRupees = Math.floor((subtotalAmount * coupon.discountValue) / 100);
+          if (coupon.maxDiscount !== null && discountRupees > coupon.maxDiscount) {
+            discountRupees = coupon.maxDiscount;
+          }
+        } else {
+          discountRupees = Math.floor(coupon.discountValue);
+        }
+
+        if (discountRupees > subtotalAmount) {
+          discountRupees = subtotalAmount;
+        }
+
+        appliedCouponCode = normalized;
+      }
+    }
+
+    const totalAmount = (subtotalAmount - discountRupees) * 100;
 
     const unlock = await prisma.$transaction(async (tx) => {
+      if (appliedCouponCode) {
+        await tx.couponCode.update({
+          where: { code: appliedCouponCode },
+          data: { currentUses: { increment: 1 } },
+        });
+      }
+
       // Keep the existing payment + unlock data model while Razorpay is disabled.
       const paymentData = {
         userId: session.user.id,
@@ -123,6 +164,8 @@ export async function POST(req: NextRequest) {
         baseAmount,
         profileAmount,
         perProfileChatAmount,
+        couponCode: appliedCouponCode,
+        discountAmount: discountRupees,
       };
 
       const payment = await tx.payment
@@ -137,8 +180,9 @@ export async function POST(req: NextRequest) {
             throw error;
           }
 
+          // Fallback for legacy DB schema compatibility
           const { perProfileChatAmount: _ignored, ...legacyPaymentData } =
-            paymentData;
+            paymentData as any;
 
           return tx.payment.create({
             data: legacyPaymentData,
