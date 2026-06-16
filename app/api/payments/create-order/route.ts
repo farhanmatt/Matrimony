@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getRazorpay } from "@/lib/razorpay";
 import { prisma } from "@/lib/prisma";
-import {
-  getUnlockPricing,
-  isPerProfileChatAmountCompatibilityError,
-} from "@/lib/utils/admin-settings";
 import { hasMutualLike } from "@/lib/utils/matching";
 
 // POST /api/payments/create-order
@@ -67,9 +63,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Fetch current pricing
-    const { baseAmount, profileAmount, perProfileChatAmount } =
-      await getUnlockPricing();
-    const totalAmount = (baseAmount + profileAmount + perProfileChatAmount) * 100; // paise
+    const settings = await prisma.adminSettings.findUnique({
+      where: { id: "singleton" },
+    });
+    const baseAmount = settings?.baseAmount ?? 500;
+    const profileAmount = settings?.profileAmount ?? 500;
+    const totalAmount = (baseAmount + profileAmount) * 100; // paise
 
     // Create Razorpay order
     const razorpay = getRazorpay();
@@ -84,39 +83,17 @@ export async function POST(req: NextRequest) {
     });
 
     // Store payment record
-    const paymentData = {
-      userId: session.user.id,
-      matchId,
-      razorpayOrderId: order.id,
-      amount: totalAmount,
-      baseAmount,
-      profileAmount,
-      perProfileChatAmount,
-      status: "CREATED",
-    };
-
-    await prisma.payment
-      .create({
-        data: paymentData,
-        select: {
-          id: true,
-        },
-      })
-      .catch(async (error) => {
-        if (!isPerProfileChatAmountCompatibilityError(error)) {
-          throw error;
-        }
-
-        const { perProfileChatAmount: _ignored, ...legacyPaymentData } =
-          paymentData;
-
-        await prisma.payment.create({
-          data: legacyPaymentData,
-          select: {
-            id: true,
-          },
-        });
-      });
+    await prisma.payment.create({
+      data: {
+        userId: session.user.id,
+        matchId,
+        razorpayOrderId: order.id,
+        amount: totalAmount,
+        baseAmount,
+        profileAmount,
+        status: "CREATED",
+      },
+    });
 
     return NextResponse.json({
       orderId: order.id,
@@ -124,7 +101,6 @@ export async function POST(req: NextRequest) {
       currency: "INR",
       baseAmount,
       profileAmount,
-      perProfileChatAmount,
       keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
     });
   } catch (error) {

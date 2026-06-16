@@ -60,48 +60,26 @@ export async function DELETE(req: NextRequest) {
         return 0;
       }
 
-      await tx.$executeRaw(
-        Prisma.sql`
-          INSERT INTO "DeletedMatch" (
-            "matchId",
-            "profileAId",
-            "profileBId",
-            "profileAName",
-            "profileAGender",
-            "profileACity",
-            "profileALocation",
-            "profileAState",
-            "profileBName",
-            "profileBGender",
-            "profileBCity",
-            "profileBLocation",
-            "profileBState",
-            "unlockCount",
-            "matchCreatedAt"
-          ) VALUES ${Prisma.join(
-            matches.map((match) =>
-              Prisma.sql`(
-                ${match.id},
-                ${match.profileAId},
-                ${match.profileBId},
-                ${match.profileA.fullName},
-                ${match.profileA.gender},
-                ${match.profileA.city},
-                ${match.profileA.location},
-                ${match.profileA.state},
-                ${match.profileB.fullName},
-                ${match.profileB.gender},
-                ${match.profileB.city},
-                ${match.profileB.location},
-                ${match.profileB.state},
-                ${match.unlocks.length},
-                ${match.createdAt}
-              )`,
-            ),
-          )}
-          ON CONFLICT ("matchId") DO NOTHING
-        `,
-      );
+      await tx.deletedMatch.createMany({
+        data: matches.map((match) => ({
+          matchId: match.id,
+          profileAId: match.profileAId,
+          profileBId: match.profileBId,
+          profileAName: match.profileA.fullName,
+          profileAGender: match.profileA.gender,
+          profileACity: match.profileA.city,
+          profileALocation: match.profileA.location,
+          profileAState: match.profileA.state,
+          profileBName: match.profileB.fullName,
+          profileBGender: match.profileB.gender,
+          profileBCity: match.profileB.city,
+          profileBLocation: match.profileB.location,
+          profileBState: match.profileB.state,
+          unlockCount: match.unlocks.length,
+          matchCreatedAt: match.createdAt,
+        })),
+        skipDuplicates: true,
+      });
 
       await tx.match.deleteMany({
         where: { id: { in: matches.map((match) => match.id) } },

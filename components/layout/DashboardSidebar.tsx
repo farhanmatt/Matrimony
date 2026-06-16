@@ -32,7 +32,7 @@ const baseNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Home" },
   { href: "/dashboard/browse", icon: Search, label: "Find Match" },
   { href: "/dashboard/liked", icon: Heart, label: "Interest" },
-  { href: "/dashboard/shortlist", icon: Bookmark, label: "Shortlist" },
+  { href: "/dashboard/shortlist", icon: Bookmark, label: "Shortlisted Profiles" },
   { href: "/dashboard/received-likes", icon: Inbox, label: "Received Likes" },
   { href: "/dashboard/matches", icon: HeartHandshake, label: "Mutual Interest" },
   { href: "/dashboard/unlocked", icon: Unlock, label: "Unlocked Profiles" },
@@ -42,7 +42,6 @@ const baseNavItems = [
 
 const DASHBOARD_MOBILE_NAV_OPEN_KEY = "vivah-bandhan-dashboard-mobile-nav-open";
 const DESKTOP_ACCOUNT_MENU_DURATION_MS = 240;
-
 function isActivePath(pathname: string, href: string) {
   return href === "/dashboard"
     ? pathname === "/dashboard"

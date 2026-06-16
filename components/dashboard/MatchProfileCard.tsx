@@ -35,7 +35,8 @@ type MatchProfile = {
   education: string | null;
   course: string | null;
   phone: string | null;
-  previewImageUrl?: string | null;
+  profileImage?: string | null;
+  photos: { url: string; isPrimary: boolean }[];
 };
 
 interface MatchProfileCardProps {
@@ -67,7 +68,11 @@ export default function MatchProfileCard({
     [profile.city, profile.state].filter(Boolean).join(", ") || "Location not added";
   const educationLabel =
     profile.course || profile.education || "Education details not added";
-  const primaryPhoto = profile.previewImageUrl ?? null;
+  const primaryPhoto =
+    profile.profileImage ??
+    profile.photos.find((photo) => photo.isPrimary)?.url ??
+    profile.photos[0]?.url ??
+    null;
   const totalAmount = baseAmount + profileAmount + perProfileChatAmount;
 
   useEffect(() => {
@@ -113,7 +118,7 @@ export default function MatchProfileCard({
   };
 
   return (
-    <article className="ui-card-lift group relative overflow-hidden rounded-[12px] border border-rose-100/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.07)]">
+    <article className="relative overflow-hidden rounded-[12px] border border-rose-100/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.07)]">
       <div className="relative min-h-[138px] overflow-visible border-b border-rose-100/70">
         <div className="absolute inset-0 overflow-hidden rounded-t-[12px] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.95)_0%,_rgba(255,240,245,0.92)_42%,_rgba(255,232,239,0.88)_100%)]">
           {primaryPhoto ? (
@@ -122,11 +127,12 @@ export default function MatchProfileCard({
               alt={`${profile.fullName} match profile`}
               fill
               className={cn(
-                "ui-media-zoom object-cover object-center opacity-20",
-                isUnlocked ? "blur-0 opacity-90" : "blur-md scale-105"
+                "object-cover object-center opacity-20",
+                isUnlocked ? "blur-0 opacity-90" : "blur-xl scale-110"
               )}
               sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 25vw"
-              quality={75}
+              quality={100}
+              unoptimized
             />
           ) : null}
 
@@ -142,20 +148,20 @@ export default function MatchProfileCard({
           <button
             type="button"
             onClick={() => setIsMenuOpen((current) => !current)}
-            className="ui-link-shift inline-flex h-9 w-9 items-center justify-center rounded-[10px] bg-white/90 text-slate-500 shadow-sm transition-colors hover:bg-white hover:text-slate-700"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] bg-white/90 text-slate-500 shadow-sm transition-colors hover:bg-white hover:text-slate-700"
             aria-label="Open match actions"
           >
             <EllipsisVertical className="h-4.5 w-4.5" />
           </button>
 
           {isMenuOpen ? (
-            <div className="ui-enter-up absolute right-0 top-12 z-40 w-48 overflow-hidden rounded-[10px] border border-rose-100 bg-white py-2 shadow-[0_16px_40px_rgba(15,23,42,0.12)]">
+            <div className="absolute right-0 top-12 z-40 w-48 overflow-hidden rounded-[10px] border border-rose-100 bg-white py-2 shadow-[0_16px_40px_rgba(15,23,42,0.12)]">
               {isUnlocked ? (
                 <>
                   <Link
                     href={profileHref}
                     onClick={() => setIsMenuOpen(false)}
-                    className="ui-link-shift flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
                   >
                     <ExternalLink className="h-4 w-4" />
                     Open profile
@@ -163,7 +169,7 @@ export default function MatchProfileCard({
                   <button
                     type="button"
                     onClick={() => void copyProfileLink()}
-                    className="ui-link-shift flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
                   >
                     <Copy className="h-4 w-4" />
                     Copy profile link
@@ -171,7 +177,7 @@ export default function MatchProfileCard({
                   <button
                     type="button"
                     onClick={() => void copyPhoneNumber()}
-                    className="ui-link-shift flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
                   >
                     <Phone className="h-4 w-4" />
                     Copy phone
@@ -184,7 +190,7 @@ export default function MatchProfileCard({
                     onUnlock(matchId);
                     setIsMenuOpen(false);
                   }}
-                  className="ui-link-shift flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                  className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
                 >
                   <Eye className="h-4 w-4" />
                   Unlock profile
@@ -197,7 +203,7 @@ export default function MatchProfileCard({
         <div className="flex min-h-[138px] items-center justify-center">
           <div
             className={cn(
-              "ui-soft-float flex h-16 w-16 items-center justify-center rounded-[12px] shadow-[0_22px_46px_rgba(244,114,182,0.18)]",
+              "flex h-16 w-16 items-center justify-center rounded-[12px] shadow-[0_22px_46px_rgba(244,114,182,0.18)]",
               isUnlocked ? "bg-white/90 text-rose-500" : "bg-rose-100/90 text-white"
             )}
           >
@@ -208,7 +214,7 @@ export default function MatchProfileCard({
                 width={64}
                 height={64}
                 className="h-16 w-16 rounded-[12px] object-cover"
-                quality={70}
+                unoptimized
               />
             ) : (
               <Lock className="h-8 w-8" />
@@ -223,7 +229,7 @@ export default function MatchProfileCard({
             <h3 className="font-display text-[0.94rem] font-bold text-slate-900">
               {firstName}
             </h3>
-            <BadgeCheck className="ui-icon-lift h-4.5 w-4.5 text-rose-500" />
+            <BadgeCheck className="h-4.5 w-4.5 text-rose-500" />
             {!isUnlocked ? (
               <span className="text-sm tracking-[0.3em] text-slate-300">....</span>
             ) : null}
@@ -253,27 +259,27 @@ export default function MatchProfileCard({
         {isUnlocked ? (
           <Link
             href={profileHref}
-            className="ui-link-shift inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_16px_34px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_16px_34px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5"
           >
             <Eye className="h-4.5 w-4.5" />
             Open Full Profile
           </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={() => onUnlock(matchId)}
-              className="ui-link-shift inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_16px_34px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5"
-            >
-              <Eye className="h-4.5 w-4.5" />
-              Unlock Full Profile - {formatCurrency(totalAmount)}
-            </button>
-          )}
+        ) : (
+          <button
+            type="button"
+            onClick={() => onUnlock(matchId)}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_16px_34px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5"
+          >
+            <Eye className="h-4.5 w-4.5" />
+            Unlock Full Profile - {formatCurrency(totalAmount)}
+          </button>
+        )}
 
         <div className="border-t border-slate-100 pt-1">
           <button
             type="button"
             onClick={() => setShowQuickInfo((current) => !current)}
-            className="ui-link-shift inline-flex w-full items-center justify-center gap-2 px-3 py-2 text-[13px] font-semibold text-slate-500 transition-colors hover:text-rose-600"
+            className="inline-flex w-full items-center justify-center gap-2 px-3 py-2 text-[13px] font-semibold text-slate-500 transition-colors hover:text-rose-600"
           >
             View Quick Info
             {showQuickInfo ? (
@@ -284,7 +290,7 @@ export default function MatchProfileCard({
           </button>
 
           {showQuickInfo ? (
-            <div className="ui-enter-up grid gap-3 rounded-[10px] bg-slate-50/80 px-4 py-3 text-[13px] text-slate-600">
+            <div className="grid gap-3 rounded-[10px] bg-slate-50/80 px-4 py-3 text-[13px] text-slate-600">
               <div className="flex items-start gap-2">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" />
                 <span>{location}</span>

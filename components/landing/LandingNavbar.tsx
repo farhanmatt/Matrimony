@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
+import type { Session } from "next-auth";
 import { Menu, X } from "lucide-react";
 import SiteLogo from "@/components/common/SiteLogo";
 import { resolveAllowedImageSrc } from "@/lib/utils/image";
@@ -19,8 +20,11 @@ const navLinks = [
   { href: "/contact", label: "Help" },
 ];
 
-export default function LandingNavbar() {
-  const { data: session } = useSession();
+type LandingNavbarProps = {
+  session?: Session | null;
+};
+
+export default function LandingNavbar({ session }: LandingNavbarProps) {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);

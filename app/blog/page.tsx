@@ -5,6 +5,7 @@ import { ArrowRight, BookOpen, ChevronRight, Heart } from "lucide-react";
 import LandingNavbar from "@/components/landing/LandingNavbar";
 import Footer from "@/components/layout/Footer";
 import { blogPosts, formatBlogDate } from "@/lib/constants/blog";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Expert Advice & Blog",
@@ -13,10 +14,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/blog" },
 };
 
-export default function BlogListingPage() {
+export default async function BlogListingPage() {
+  const session = await auth();
+
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#fff_0%,#fff7fa_48%,#ffffff_100%)]">
-      <LandingNavbar />
+      <LandingNavbar session={session} />
 
       <section className="pt-28 sm:pt-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

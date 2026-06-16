@@ -4,8 +4,6 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
-import { isDatabaseConnectionError } from "@/lib/utils/errors";
-import AdminDatabaseUnavailableState from "@/components/admin/AdminDatabaseUnavailableState";
 import StatusBadge from "@/components/common/StatusBadge";
 import {
   ArrowLeft,
@@ -55,6 +53,58 @@ function getPrimaryPhoto(profile: {
 function formatMoney(value: number) {
   return `₹${value.toLocaleString("en-IN")}`;
 }
+
+function isMissingProfileUnlockColumnError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return message.includes("profileunlockamount") || message.includes("p2022") || message.includes("column");
+}
+
+type PaymentDetailRecord = {
+  id: string;
+  amount: number;
+  baseAmount: number;
+  profileAmount: number;
+  perProfileChatAmount: number;
+  profileUnlockAmount?: number | null;
+  currency: string;
+  status: string;
+  razorpayOrderId: string;
+  razorpayPaymentId: string | null;
+  createdAt: Date;
+  user: {
+    name: string | null;
+    email: string;
+    image: string | null;
+    createdAt: Date;
+  };
+  unlock: {
+    matchId: string;
+    user: { name: string | null; email: string };
+  } | null;
+};
+
+type MatchDetailRecord = {
+  id: string;
+  profileA: {
+    id: string;
+    fullName: string;
+    gender: string;
+    dateOfBirth: Date;
+    city: string | null;
+    state: string | null;
+    location: string | null;
+    profession: string | null;
+    education: string | null;
+    profileImage: string | null;
+    user: { image: string | null };
+    photos: Array<{ url: string; isPrimary: boolean }>;
+  };
+  profileB: MatchDetailRecord["profileA"];
+};
 
 function fieldValue(value: string | number | null | undefined) {
   if (value === null || value === undefined) return "Not added";
@@ -146,64 +196,26 @@ export default async function AdminPaymentDetailPage({
   const { id } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const returnTo = safeReturnTo(firstValue(resolvedSearchParams.returnTo));
-  let dbUnavailable = false;
-
   try {
     const payment = await prisma.payment.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        amount: true,
+        baseAmount: true,
+        profileAmount: true,
+        perProfileChatAmount: true,
+        currency: true,
+        status: true,
+        razorpayOrderId: true,
+        razorpayPaymentId: true,
+        createdAt: true,
         user: {
           select: {
             name: true,
             email: true,
             image: true,
             createdAt: true,
-          },
-        },
-        unlock: {
-          include: {
-            match: {
-              include: {
-                profileA: {
-                  select: {
-                    id: true,
-                    fullName: true,
-                    gender: true,
-                    dateOfBirth: true,
-                    city: true,
-                    state: true,
-                    location: true,
-                    profession: true,
-                    education: true,
-                    profileImage: true,
-                    photos: { orderBy: { createdAt: "asc" } },
-                    user: { select: { image: true } },
-                  },
-                },
-                profileB: {
-                  select: {
-                    id: true,
-                    fullName: true,
-                    gender: true,
-                    dateOfBirth: true,
-                    city: true,
-                    state: true,
-                    location: true,
-                    profession: true,
-                    education: true,
-                    profileImage: true,
-                    photos: { orderBy: { createdAt: "asc" } },
-                    user: { select: { image: true } },
-                  },
-                },
-              },
-            },
-            user: {
-              select: {
-                name: true,
-                email: true,
-              },
-            },
           },
         },
       },
@@ -213,11 +225,80 @@ export default async function AdminPaymentDetailPage({
       notFound();
     }
 
-    const unlock = payment.unlock;
-    const match = unlock?.match ?? null;
-    const paymentAmount = Math.round(payment.amount / 100);
-    const paymentPricing = payment as typeof payment & {
+    const paymentDetails: PaymentDetailRecord = {
+      ...payment,
+      profileUnlockAmount: payment.profileAmount,
+      unlock: null,
+    };
+
+    const unlock = await prisma.unlock.findUnique({
+      where: { paymentId: paymentDetails.id },
+      select: {
+        matchId: true,
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    paymentDetails.unlock = unlock;
+
+    let match: MatchDetailRecord | null = null;
+
+    if (unlock) {
+      try {
+        match = await prisma.match.findUnique({
+          where: { id: unlock.matchId },
+          select: {
+            id: true,
+            profileA: {
+              select: {
+                id: true,
+                fullName: true,
+                gender: true,
+                dateOfBirth: true,
+                city: true,
+                state: true,
+                location: true,
+                profession: true,
+                education: true,
+                profileImage: true,
+                photos: { orderBy: { createdAt: "asc" } },
+                user: { select: { image: true } },
+              },
+            },
+            profileB: {
+              select: {
+                id: true,
+                fullName: true,
+                gender: true,
+                dateOfBirth: true,
+                city: true,
+                state: true,
+                location: true,
+                profession: true,
+                education: true,
+                profileImage: true,
+                photos: { orderBy: { createdAt: "asc" } },
+                user: { select: { image: true } },
+              },
+            },
+          },
+        });
+      } catch (error) {
+        if (!isMissingProfileUnlockColumnError(error)) {
+          throw error;
+        }
+      }
+    }
+
+    const paymentAmount = Math.round(paymentDetails.amount / 100);
+    const paymentPricing = paymentDetails as typeof paymentDetails & {
       perProfileChatAmount: number;
+      profileUnlockAmount: number;
     };
 
     return (
@@ -256,7 +337,7 @@ export default async function AdminPaymentDetailPage({
               Open Match
             </Link>
             <Link
-              href={`/admin/payments?search=${encodeURIComponent(payment.razorpayOrderId)}`}
+              href={`/admin/payments?search=${encodeURIComponent(paymentDetails.razorpayOrderId)}`}
               className="inline-flex items-center gap-2 rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(244,63,94,0.22)] transition-transform hover:-translate-y-0.5"
             >
               <Hash className="h-4 w-4" />
@@ -296,14 +377,14 @@ export default async function AdminPaymentDetailPage({
                 <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-400">
                   Currency
                 </div>
-                <div className="mt-2 text-lg font-semibold text-gray-900">{payment.currency}</div>
+                <div className="mt-2 text-lg font-semibold text-gray-900">{paymentDetails.currency}</div>
               </div>
               <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-400">
                   Base Amount
                 </div>
                 <div className="mt-2 text-lg font-semibold text-gray-900">
-                  {formatMoney(payment.baseAmount)}
+                  {formatMoney(paymentDetails.baseAmount)}
                 </div>
               </div>
               <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4">
@@ -311,7 +392,15 @@ export default async function AdminPaymentDetailPage({
                   Profile Amount
                 </div>
                 <div className="mt-2 text-lg font-semibold text-gray-900">
-                  {formatMoney(payment.profileAmount)}
+                  {formatMoney(paymentDetails.profileAmount)}
+                </div>
+              </div>
+              <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-400">
+                  Unlock Amount
+                </div>
+                <div className="mt-2 text-lg font-semibold text-gray-900">
+                  {formatMoney(paymentPricing.profileUnlockAmount)}
                 </div>
               </div>
               <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4">
@@ -327,7 +416,7 @@ export default async function AdminPaymentDetailPage({
                   Razorpay Payment ID
                 </div>
                 <div className="mt-2 break-words text-sm font-medium text-gray-900">
-                  {fieldValue(payment.razorpayPaymentId)}
+                  {fieldValue(paymentDetails.razorpayPaymentId)}
                 </div>
               </div>
               <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4">
@@ -335,7 +424,7 @@ export default async function AdminPaymentDetailPage({
                   Created At
                 </div>
                 <div className="mt-2 text-sm font-medium text-gray-900">
-                  {formatDate(payment.createdAt)}
+                  {formatDate(paymentDetails.createdAt)}
                 </div>
               </div>
             </div>
@@ -344,11 +433,11 @@ export default async function AdminPaymentDetailPage({
               <div className="grid gap-3 text-sm text-gray-600 sm:grid-cols-2">
                 <div className="flex items-center gap-2">
                   <Hash className="h-4 w-4 text-rose-500" />
-                  <span className="break-all">Order ID: {payment.razorpayOrderId}</span>
+                  <span className="break-all">Order ID: {paymentDetails.razorpayOrderId}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="h-4 w-4 text-rose-500" />
-                  <span>Current status: {payment.status}</span>
+                  <span>Current status: {paymentDetails.status}</span>
                 </div>
               </div>
             </div>
@@ -373,15 +462,15 @@ export default async function AdminPaymentDetailPage({
               </div>
 
               <div className="space-y-3 p-6 text-sm text-gray-600">
-                <div className="font-semibold text-gray-900">{payment.user.name ?? payment.user.email}</div>
-                <div>{payment.user.email}</div>
+                <div className="font-semibold text-gray-900">{paymentDetails.user.name ?? paymentDetails.user.email}</div>
+                <div>{paymentDetails.user.email}</div>
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-4 w-4 text-rose-500" />
-                  <span>Joined {formatDate(payment.user.createdAt)}</span>
+                  <span>Joined {formatDate(paymentDetails.user.createdAt)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <UserRound className="h-4 w-4 text-rose-500" />
-                  <span>Payment user profile image available: {payment.user.image ? "Yes" : "No"}</span>
+                  <span>Payment user profile image available: {paymentDetails.user.image ? "Yes" : "No"}</span>
                 </div>
               </div>
             </section>
@@ -442,30 +531,8 @@ export default async function AdminPaymentDetailPage({
       </div>
     );
   } catch (error) {
-    if (isDatabaseConnectionError(error)) {
-      dbUnavailable = true;
-    } else {
-      throw error;
-    }
+    throw error;
   }
-
-  if (dbUnavailable) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-gray-900">Payment Details</h1>
-          <p className="mt-2 text-sm text-slate-500">Unable to load this payment right now.</p>
-        </div>
-
-        <AdminDatabaseUnavailableState
-          title="Payment details unavailable"
-          description="We couldn't reach the database to load the full payment details."
-        />
-      </div>
-    );
-  }
-
-  return null;
 }
 
 

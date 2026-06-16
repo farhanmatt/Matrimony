@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { v2 as cloudinary } from "cloudinary";
 import { randomUUID } from "crypto";
+import { Readable } from "stream";
+import { auth } from "@/lib/auth";
 import type { Session } from "next-auth";
 
 export const runtime = "nodejs";
@@ -15,19 +16,20 @@ const ALLOWED_MIME_TYPES = new Set([
 ]);
 
 const MIME_TO_EXT: Record<string, string> = {
-  "image/jpeg": ".jpg",
-  "image/png": ".png",
-  "image/webp": ".webp",
-  "image/gif": ".gif",
-  "image/svg+xml": ".svg",
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/svg+xml": "svg",
 };
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 function adminGuard(session: Session | null) {
   if (!session?.user?.id || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+
   return null;
 }
 
@@ -48,19 +50,19 @@ function ensureCloudinaryConfigured() {
   });
 }
 
-async function uploadBrandingImage(buffer: Buffer, mimeType: string) {
+function uploadBrandingImage(buffer: Buffer, mimeType: string) {
   ensureCloudinaryConfigured();
 
   const publicId = randomUUID();
-  const format = MIME_TO_EXT[mimeType]?.replace(".", "") || undefined;
+  const format = MIME_TO_EXT[mimeType];
 
   return new Promise<string>((resolve, reject) => {
-    const upload = cloudinary.uploader.upload_stream(
+    const uploadStream = cloudinary.uploader.upload_stream(
       {
-        public_id: publicId,
         folder: "branding",
-        overwrite: false,
+        public_id: publicId,
         resource_type: "image",
+        overwrite: true,
         format,
       },
       (error, result) => {
@@ -75,10 +77,10 @@ async function uploadBrandingImage(buffer: Buffer, mimeType: string) {
         }
 
         resolve(result.secure_url);
-      }
+      },
     );
 
-    upload.end(buffer);
+    Readable.from(buffer).pipe(uploadStream);
   });
 }
 

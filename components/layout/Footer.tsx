@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Heart, Mail, Phone, MapPin, Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+import { Heart, Mail, Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -83,23 +83,18 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-5 font-display">Contact Us</h3>
             <ul className="space-y-4 text-sm">
-              <li className="flex items-start gap-3">
-                <MapPin className="ui-icon-lift mt-0.5 h-4 w-4 shrink-0 text-rose-400" />
-                <span className="text-gray-400">
-                  123 Matrimony Lane, Mumbai, Maharashtra 400001
-                </span>
-              </li>
-              <li className="flex items-center gap-3">
-                <Phone className="ui-icon-lift h-4 w-4 shrink-0 text-rose-400" />
-                <a href="tel:+911800123456" className="ui-link-shift text-gray-400 transition-colors hover:text-rose-400">
-                  +91 1800 123 456
-                </a>
-              </li>
-              <li className="flex items-center gap-3">
-                <Mail className="ui-icon-lift h-4 w-4 shrink-0 text-rose-400" />
-                <a href="mailto:support@vivahbandhan.com" className="ui-link-shift text-gray-400 transition-colors hover:text-rose-400">
-                  support@vivahbandhan.com
-                </a>
+              <li className="flex items-start gap-4">
+                <div className="ui-icon-lift mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-gray-800 text-rose-400">
+                  <Mail className="h-4 w-4" />
+                </div>
+                <div>
+                  <a href="mailto:Bagavath85@gmail.com" className="ui-link-shift text-[15px] font-medium text-gray-200 transition-colors hover:text-rose-400">
+                    Bagavath85@gmail.com
+                  </a>
+                  <p className="mt-2 text-xs leading-relaxed text-gray-500">
+                    Have a question? We&apos;re here to help. Expect a response within 48 hours.
+                  </p>
+                </div>
               </li>
             </ul>
           </div>

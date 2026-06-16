@@ -140,9 +140,11 @@ export default function Navbar() {
           ))}
           <div className="pt-3 border-t border-gray-100 flex flex-col gap-2">
             {session ? (
+              
               <>
                 <button
                   type="button"
+
                   onClick={() => {
                     setIsMobileOpen(false);
                     signOut({ callbackUrl: "/" });

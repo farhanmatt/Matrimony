@@ -23,6 +23,7 @@ type PaymentRow = {
   amount: number;
   baseAmount: number;
   profileAmount: number;
+  profileUnlockAmount: number;
   perProfileChatAmount: number;
   status: string;
   razorpayOrderId: string;
@@ -152,7 +153,14 @@ export default async function AdminPaymentsPage({
       where,
       skip: (page - 1) * limit,
       take: limit,
-      include: {
+      select: {
+        id: true,
+        amount: true,
+        baseAmount: true,
+        profileAmount: true,
+        status: true,
+        razorpayOrderId: true,
+        createdAt: true,
         user: {
           select: {
             name: true,
@@ -199,7 +207,6 @@ export default async function AdminPaymentsPage({
         <div className="text-sm text-gray-600">
           <div>Base: {formatCurrency(payment.baseAmount)}</div>
           <div>Profile: {formatCurrency(payment.profileAmount)}</div>
-          <div>Chat: {formatCurrency(payment.perProfileChatAmount)}</div>
         </div>
       ),
     },
@@ -242,23 +249,20 @@ export default async function AdminPaymentsPage({
 
     return (
     <div className="flex min-h-[calc(100vh-8rem)] flex-col space-y-6">
-      <div className="ui-enter-left" style={{ animationDelay: "40ms" }}>
+      <div>
         <h1 className="text-2xl font-display font-bold text-gray-900">Payments</h1>
         <p className="mt-1 text-sm text-gray-500">
           {total} total transactions{" • "}{formatCurrency(totalRevenue)} total revenue
         </p>
       </div>
 
-      <div className="ui-enter-up border-t border-gray-200" style={{ animationDelay: "90ms" }} />
+      <div className="border-t border-gray-200" />
 
       <AdminListCard
-        className="ui-enter-scale min-h-0"
+        className="min-h-0"
         toolbar={
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-            <AdminSearchInput
-              placeholder="Search by user, email or order ID..."
-              className="ui-link-shift flex w-full max-w-[760px] overflow-hidden rounded-xl border border-rose-100 bg-white shadow-[0_10px_24px_rgba(244,63,94,0.06)] transition-all duration-300 hover:border-rose-200 hover:shadow-[0_16px_34px_rgba(244,63,94,0.1)] focus-within:-translate-y-0.5 focus-within:border-rose-200 focus-within:shadow-[0_16px_34px_rgba(244,63,94,0.1)]"
-            />
+            <AdminSearchInput placeholder="Search by user, email or order ID..." />
 
             <div className="flex items-center gap-3 xl:ml-auto">
               <AdminPaymentFilters />
@@ -313,7 +317,8 @@ export default async function AdminPaymentsPage({
                 amount: row.amount,
                 baseAmount: row.baseAmount,
                 profileAmount: row.profileAmount,
-                perProfileChatAmount: row.perProfileChatAmount,
+                profileUnlockAmount: row.profileAmount,
+                perProfileChatAmount: 0,
                 status: row.status,
                 razorpayOrderId: row.razorpayOrderId,
                 createdAt: row.createdAt,
@@ -337,15 +342,11 @@ export default async function AdminPaymentsPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {payments.map((payment, index) => {
+                {payments.map((payment) => {
                   const row = payment as unknown as PaymentRow;
 
                   return (
-                    <tr
-                      key={row.id}
-                      className="ui-enter-up transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-gray-50"
-                      style={{ animationDelay: `${180 + Math.min(index, 8) * 40}ms` }}
-                    >
+                    <tr key={row.id} className="transition-colors hover:bg-gray-50">
                       {visibleColumns.map((column) => (
                         <td key={`${row.id}-${column.key}`} className="px-6 py-5 align-top">
                           {column.render(row)}
@@ -366,6 +367,7 @@ export default async function AdminPaymentsPage({
     </div>
     );
   } catch {
+    console.error("Failed to load admin payments page data.");
     return (
       <div className="space-y-6">
         <div>

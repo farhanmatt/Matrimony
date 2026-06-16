@@ -17,9 +17,11 @@ export function isDatabaseConnectionError(error: unknown): boolean {
 
   return (
     code === "P1001" ||
+    code === "P2024" ||
     code === "P2021" ||
     message.includes("P1001") ||
     message.includes("Can't reach database server") ||
+    message.includes("Timed out fetching a new connection from the connection pool") ||
     message.includes("PrismaClientInitializationError") ||
     message.includes("does not exist in the current database")
   );

@@ -22,6 +22,10 @@ export function isDefaultAdminIdentifier(identifier: string) {
   );
 }
 
+export function isDefaultAdminCredentials(identifier: string, password: string) {
+  return isDefaultAdminIdentifier(identifier) && password === ADMIN_PASSWORD;
+}
+
 export async function upsertAdminUser(prisma: PrismaClient) {
   const existingAdmin = await prisma.user.findUnique({
     where: { email: ADMIN_EMAIL },

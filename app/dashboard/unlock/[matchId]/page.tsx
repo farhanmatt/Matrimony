@@ -75,6 +75,10 @@ export default async function UnlockMatchPage({
   const settings = await prisma.adminSettings.findUnique({
     where: { id: "singleton" },
   });
+  const profileUnlockAmount =
+    (settings as { profileUnlockAmount?: number } | null)?.profileUnlockAmount ??
+    settings?.profileAmount ??
+    500;
   const perProfileChatAmount = (settings as { perProfileChatAmount?: number } | null)
     ?.perProfileChatAmount ?? 0;
 
@@ -83,7 +87,7 @@ export default async function UnlockMatchPage({
       matchId={match.id}
       profileName={targetProfileName}
       baseAmount={settings?.baseAmount ?? 500}
-      profileAmount={settings?.profileAmount ?? 500}
+      profileUnlockAmount={profileUnlockAmount}
       perProfileChatAmount={perProfileChatAmount}
       returnTo={returnTo}
     />

@@ -70,6 +70,12 @@ const familyStatusOptions = [
   "RICH",
   "AFFLUENT",
 ] as const;
+const residentialStatusOptions = [
+  "Own House",
+  "Rented House",
+  "Government Quarters",
+  "Company Accommodation",
+] as const;
 const dietOptions = ["Vegetarian", "Non-Vegetarian", "Vegan", "Eggetarian"];
 const smokingOptions = ["Never", "Occasionally", "Regularly"];
 const drinkingOptions = ["Never", "Occasionally", "Regularly"];
@@ -104,6 +110,15 @@ const personalityTypeOptions = [
   "Family-Oriented",
   "Spiritual",
 ];
+const disabilityTypeOptions = [
+  "Locomotor Disability",
+  "Visual Impairment",
+  "Hearing Impairment",
+  "Speech Impairment",
+  "Orthopedic Disability",
+  "Multiple Disabilities",
+  "Other",
+] as const;
 const religions = [
   "Hindu",
   "Muslim",
@@ -222,7 +237,7 @@ const labelMap: Record<string, Record<string, string>> = {
   },
 };
 
-type ProfileFieldName = keyof ProfileInput & string;
+type ProfileFieldName = keyof ProfileFormInput & string;
 type TimePeriod = (typeof timePeriodOptions)[number];
 type CreateStepId =
   | "personal"
@@ -231,6 +246,7 @@ type CreateStepId =
   | "cultural"
   | "horoscope"
   | "lifestyle"
+  | "preferences"
   | "photos";
 type TimeOfBirthParts = {
   hour: string;
@@ -263,6 +279,8 @@ const createProfileSteps: CreateStep[] = [
       "dateOfBirth",
       "height",
       "nationality",
+      "isPhysicallyChallenged",
+      "disabilityType",
       "maritalStatus",
       "phone",
       "bio",
@@ -286,6 +304,7 @@ const createProfileSteps: CreateStep[] = [
       "motherName",
       "familyType",
       "familyStatus",
+      "residentialStatus",
       "siblings",
     ],
   },
@@ -337,6 +356,18 @@ const createProfileSteps: CreateStep[] = [
     ],
   },
   {
+    id: "preferences",
+    title: "Partner Preference",
+    description:
+      "Set your ideal partner criteria. This is optional and helps us show you better matches.",
+    sidebarDescription: "Your ideal partner",
+    panelDescription: "Tell us about your partner preferences (Optional)",
+    icon: Sparkles,
+    fields: [
+      "preference",
+    ],
+  },
+  {
     id: "photos",
     title: "Add Photos",
     description:
@@ -356,6 +387,7 @@ interface ProfileFormProps {
 
 type CreateProfileDraft = {
   currentStep: number;
+  maxStepReached: number;
   values: Partial<ProfileFormInput>;
 };
 
@@ -1274,6 +1306,7 @@ export default function ProfileForm({
   const router = useRouter();
   const { update } = useSession();
   const [currentStep, setCurrentStep] = useState(0);
+  const [maxStepReached, setMaxStepReached] = useState(0);
   const [isCreateDraftHydrated, setIsCreateDraftHydrated] = useState(isEdit);
   const pincodeLookupAbortRef = useRef<AbortController | null>(null);
   const pendingPincodeAutofillRef = useRef<{
@@ -1326,9 +1359,16 @@ export default function ProfileForm({
       setIncomeSelectValue(getAnnualIncomeSelectValue(savedDraft.values.income));
       reset(getProfileFormDefaults(savedDraft.values));
       setCurrentStep(Math.max(savedDraft.currentStep, 0));
+      setMaxStepReached(Math.max(savedDraft.maxStepReached ?? 0, savedDraft.currentStep, 0));
     }
     setIsCreateDraftHydrated(true);
   }, [isEdit, reset]);
+
+  useEffect(() => {
+    if (currentStep > maxStepReached) {
+      setMaxStepReached(currentStep);
+    }
+  }, [currentStep, maxStepReached]);
 
   useEffect(() => {
     if (isEdit || !isCreateDraftHydrated) {
@@ -1337,9 +1377,10 @@ export default function ProfileForm({
 
     saveCreateProfileDraft({
       currentStep,
+      maxStepReached,
       values: getValues(),
     });
-  }, [currentStep, getValues, isCreateDraftHydrated, isEdit]);
+  }, [currentStep, getValues, isCreateDraftHydrated, isEdit, maxStepReached]);
 
   useEffect(() => {
     if (isEdit || !isCreateDraftHydrated) {
@@ -1349,6 +1390,7 @@ export default function ProfileForm({
     const subscription = watch((values) => {
       saveCreateProfileDraft({
         currentStep,
+        maxStepReached,
         values: values as Partial<ProfileFormInput>,
       });
     });
@@ -1389,6 +1431,7 @@ export default function ProfileForm({
   const selectedHobbies = watch("hobbies");
   const selectedPhysicalActivity = watch("physicalActivity");
   const selectedPersonalityType = watch("personalityType");
+  const isPhysicallyChallenged = watch("isPhysicallyChallenged");
   const matchedStateOption = findMatchingStateOption(selectedState);
   const matchedCityOption = matchedStateOption
     ? findMatchingCityForState(matchedStateOption, [selectedCity])
@@ -1747,6 +1790,19 @@ export default function ProfileForm({
   );
   const CurrentCreateStepIcon = currentCreateStep.icon;
 
+  const stepStatuses = useMemo(() => {
+    return activeCreateProfileSteps.map((step, index) => {
+      const isCurrent = index === currentStep;
+      // Check if any field in this step has an error in the form state
+      const hasError = step.fields.some((field) => !!errors[field]);
+
+      if (hasError) return "error";
+      if (isCurrent) return "current";
+      if (index < currentStep) return "completed";
+      return "pending";
+    });
+  }, [activeCreateProfileSteps, currentStep, errors]);
+
   const syncDateOfBirthAgeError = useCallback(
     (
       genderValue: ProfileFormInput["gender"] | "" | null | undefined = getValues("gender"),
@@ -1816,6 +1872,16 @@ export default function ProfileForm({
     scrollToTop();
   };
 
+  const handleStepClick = (index: number) => {
+    if (isEdit) return;
+    if (index === currentStep) return;
+
+    if (index <= maxStepReached) {
+      setCurrentStep(index);
+      scrollToTop();
+    }
+  };
+
   const handleSaveAndExit = () => {
     if (isEdit) {
       router.push("/dashboard");
@@ -1824,6 +1890,7 @@ export default function ProfileForm({
 
     saveCreateProfileDraft({
       currentStep,
+      maxStepReached,
       values: getValues(),
     });
 
@@ -2190,6 +2257,45 @@ export default function ProfileForm({
           ) : null}
         </div>
 
+        <div>
+          <label className={labelClass} htmlFor="pf-physically-challenged">
+            Physically Challenged *
+          </label>
+          <select
+            id="pf-physically-challenged"
+            {...register("isPhysicallyChallenged", { setValueAs: (v) => v === "true" })}
+            className={selectClass}
+          >
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+          </select>
+          {errors.isPhysicallyChallenged ? (
+            <p className={errorClass}>{errors.isPhysicallyChallenged.message}</p>
+          ) : null}
+        </div>
+
+        {isPhysicallyChallenged ? (
+          <div>
+            <label className={labelClass} htmlFor="pf-disability-type">
+              Disability Type *
+            </label>
+            <select
+              id="pf-disability-type"
+              {...register("disabilityType", { setValueAs: toNullableValue })}
+              className={selectClass}
+            >
+              <option value="">Select Disability Type</option>
+              {disabilityTypeOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+            {errors.disabilityType ? (
+              <p className={errorClass}>{errors.disabilityType.message}</p>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       <div className="space-y-4">
@@ -2676,6 +2782,27 @@ export default function ProfileForm({
           />
           {errors.siblings ? (
             <p className={errorClass}>{errors.siblings.message}</p>
+          ) : null}
+        </div>
+
+        <div>
+          <label className={labelClass} htmlFor="pf-residentialStatus">
+            Residential Status *
+          </label>
+          <select
+            id="pf-residentialStatus"
+            {...register("residentialStatus", { setValueAs: toNullableValue })}
+            className={selectClass}
+          >
+            <option value="">Select</option>
+            {residentialStatusOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+          {errors.residentialStatus ? (
+            <p className={errorClass}>{errors.residentialStatus.message}</p>
           ) : null}
         </div>
       </div>
@@ -3254,6 +3381,8 @@ export default function ProfileForm({
         return renderLifestyle();
       case "photos":
         return renderPhotoUploads();
+      case "preferences":
+        return renderPartnerPreferences();
       default:
         return renderPersonalInformation();
     }
@@ -3261,295 +3390,316 @@ export default function ProfileForm({
 
   return (
     <>
-    <form onSubmit={handleFormSubmit} className="space-y-8">
-      {!isEdit ? (
-        <>
-          <div className="ui-card-lift-soft overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_24px_72px_rgba(15,23,42,0.06)]">
-            <div className="grid xl:grid-cols-[290px_minmax(0,1fr)]">
-              <aside className="border-b border-gray-100 bg-[linear-gradient(180deg,#fffdfd_0%,#fff7fa_100%)] p-6 sm:p-7 xl:border-b-0 xl:border-r xl:p-8">
-                <div className="ui-card-lift-soft bg-white/85 p-5 backdrop-blur-sm">
-                  <h2 className="whitespace-nowrap text-[1.15rem] font-semibold text-gray-900">
-                    Complete Your Profile
-                  </h2>
-                  <div className="mt-4 text-[2.15rem] font-display font-bold leading-none text-rose-600">
-                    {completionPercentage}%
-                  </div>
-                  <div className="-mx-3 mt-4 h-2 overflow-hidden rounded-full bg-rose-100">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-rose-500 to-pink-500 transition-all"
-                      style={{ width: `${completionPercentage}%` }}
-                    />
-                  </div>
-                  <p className="mt-3 text-sm text-gray-500">
-                    {completedStepCount} of {activeCreateProfileSteps.length} sections completed
-                  </p>
-                </div>
-
-                <div className="relative mt-3 space-y-4">
-                  <div className="pointer-events-none absolute bottom-[18px] left-[18px] top-[18px] z-0 w-px -translate-x-1/2 bg-gradient-to-b from-rose-200 via-rose-100 to-gray-200" />
-                  {activeCreateProfileSteps.map((step, index) => {
-                    const isCurrent = index === currentStep;
-                    const isCompleted = index < currentStep;
-
-                    return (
-                      <div key={step.title} className="relative z-10 flex items-start gap-4">
-                        <div
-                          className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm font-semibold transition-all ${
-                            isCurrent
-                              ? "border-transparent bg-gradient-to-br from-rose-500 to-pink-500 text-white shadow-sm"
-                              : isCompleted
-                                ? "border-rose-200 bg-rose-50 text-rose-600"
-                                : "border-gray-200 bg-white text-gray-500"
-                          }`}
-                        >
-                          {index + 1}
-                        </div>
-                        <div className="min-w-0">
-                          <p
-                            className={`text-sm font-semibold ${
-                              isCurrent ? "text-rose-600" : "text-gray-900"
-                            }`}
-                          >
-                            {step.title}
-                          </p>
-                          <p className="mt-1 text-[13px] leading-5 text-gray-500">
-                            {step.sidebarDescription}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="ui-card-lift-soft mt-8 rounded-[12px] border border-rose-100 bg-[linear-gradient(135deg,#fff9fb_0%,#fff1f5_100%)] p-5 shadow-sm">
-                  <p className="text-sm font-semibold text-gray-900">Need Help?</p>
-                  <p className="mt-1 text-sm leading-6 text-gray-500">
-                    We&apos;re here to assist you at every step.
-                  </p>
-                  <Link
-                    href="/contact"
-                    className="ui-link-shift mt-4 inline-flex items-center text-sm font-semibold text-rose-600 transition-colors hover:text-rose-700"
-                  >
-                    Contact Support
-                  </Link>
-                </div>
-              </aside>
-
-              <div className="bg-white p-6 sm:p-7 xl:p-8">
-                <div className="ui-card-lift-soft rounded-[14px] border border-gray-100 bg-[linear-gradient(180deg,#ffffff_0%,#fffdfd_100%)] p-6 shadow-[0_18px_48px_rgba(15,23,42,0.04)] sm:p-7 lg:p-8">
-                  <div className="ui-soft-float mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-50 text-rose-500 ring-1 ring-rose-100">
-                    <CurrentCreateStepIcon className="h-8 w-8" />
-                  </div>
-
-                  <div className="mt-5 text-center">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-rose-500">
-                      Stage {currentStep + 1} of {activeCreateProfileSteps.length}
-                    </p>
-                    <h2 className="mt-3 font-display text-[1.9rem] font-bold text-gray-900">
-                      {currentCreateStep.title}
+      <form onSubmit={handleFormSubmit} className="space-y-8">
+        {!isEdit ? (
+          <>
+            <div className="ui-card-lift-soft overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_24px_72px_rgba(15,23,42,0.06)]">
+              <div className="grid xl:grid-cols-[290px_minmax(0,1fr)]">
+                <aside className="border-b border-gray-100 bg-[linear-gradient(180deg,#fffdfd_0%,#fff7fa_100%)] p-6 sm:p-7 xl:border-b-0 xl:border-r xl:p-8">
+                  <div className="ui-card-lift-soft bg-white/85 p-5 backdrop-blur-sm">
+                    <h2 className="whitespace-nowrap text-[1.15rem] font-semibold text-gray-900">
+                      Complete Your Profile
                     </h2>
-                    <p className="mt-2 text-base text-gray-500">
-                      {currentCreateStep.panelDescription}
+                    <div className="mt-4 text-[2.15rem] font-display font-bold leading-none text-rose-600">
+                      {completionPercentage}%
+                    </div>
+                    <div className="-mx-3 mt-4 h-2 overflow-hidden rounded-full bg-rose-100">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-rose-500 to-pink-500 transition-all"
+                        style={{ width: `${completionPercentage}%` }}
+                      />
+                    </div>
+                    <p className="mt-3 text-sm text-gray-500">
+                      {completedStepCount} of {activeCreateProfileSteps.length} sections
+                      completed
                     </p>
                   </div>
 
-                  <div className="mt-8">{renderCreateStepContent()}</div>
+                  <div className="relative mt-3 space-y-4">
+                    <div className="pointer-events-none absolute bottom-[18px] left-[18px] top-[18px] z-0 w-px -translate-x-1/2 bg-gradient-to-b from-rose-200 via-rose-100 to-gray-200" />
+                    {activeCreateProfileSteps.map((step, index) => {
+                      const status = stepStatuses[index];
 
-                  <div className="mt-8 flex flex-col gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                      <button
-                        type="button"
-                        onClick={handleSaveAndExit}
-                        className="ui-link-shift inline-flex items-center justify-center rounded-xl border border-rose-200 px-6 py-3 text-sm font-semibold text-rose-600 transition-colors hover:border-rose-300 hover:bg-rose-50"
-                      >
-                        Save & Exit
-                      </button>
+                      const isClickable = index <= maxStepReached && index !== currentStep;
 
-                      {currentStep > 0 ? (
-                        <button
-                          type="button"
-                          onClick={handlePreviousStep}
-                          className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-6 py-3 text-sm font-semibold text-gray-600 transition-colors hover:border-rose-200 hover:text-rose-600"
+                      return (
+                        <div
+                          key={step.title}
+                          className={`relative z-10 flex items-start gap-4 ${
+                            isClickable ? "cursor-pointer group select-none" : ""
+                          }`}
+                          onClick={() => handleStepClick(index)}
                         >
-                          <ArrowLeft className="ui-arrow-shift h-4 w-4" />
-                          Back
-                        </button>
-                      ) : null}
+                          <div
+                            className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm font-semibold transition-all ${
+                              status === "current"
+                                ? "border-transparent bg-gradient-to-br from-rose-500 to-pink-500 text-white shadow-sm"
+                                : status === "error"
+                                  ? "border-transparent bg-red-500 text-white shadow-sm ring-2 ring-red-100"
+                                  : status === "completed"
+                                    ? "border-transparent bg-emerald-500 text-white shadow-sm"
+                                    : "border-gray-200 bg-white text-gray-500"
+                            } ${isClickable ? "group-hover:scale-105 group-active:scale-95 shadow-sm ring-rose-50" : ""}`}
+                          >
+                            {status === "completed" ? (
+                              <CheckCircle2 className="h-5 w-5" />
+                            ) : (
+                              index + 1
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p
+                              className={`text-sm font-semibold ${
+                                status === "current"
+                                  ? "text-rose-600"
+                                  : status === "error"
+                                    ? "text-red-600"
+                                    : status === "completed"
+                                      ? "text-emerald-700"
+                                      : "text-gray-900"
+                              } ${isClickable ? "group-hover:text-rose-500 transition-colors" : ""}`}
+                            >
+                              {step.title}
+                            </p>
+                            <p className="mt-1 text-[13px] leading-5 text-gray-500">
+                              {step.sidebarDescription}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </aside>
+
+                <div className="bg-white p-6 sm:p-7 xl:p-8">
+                  <div className="ui-card-lift-soft rounded-[14px] border border-gray-100 bg-[linear-gradient(180deg,#ffffff_0%,#fffdfd_100%)] p-6 shadow-[0_18px_48px_rgba(15,23,42,0.04)] sm:p-7 lg:p-8">
+                    <div className="ui-soft-float mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-50 text-rose-500 ring-1 ring-rose-100">
+                      <CurrentCreateStepIcon className="h-8 w-8" />
                     </div>
 
-                    {!isLastCreateStep ? (
-                      <button
-                        type="button"
-                        onClick={handleNextStep}
-                        className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-7 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(244,63,94,0.28)] transition-all hover:shadow-[0_18px_40px_rgba(244,63,94,0.34)]"
-                      >
-                        Save & Continue
-                        <ArrowRight className="ui-arrow-shift h-4 w-4" />
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleCreateProfile}
-                        disabled={isSubmitting}
-                        className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-7 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(244,63,94,0.28)] transition-all hover:shadow-[0_18px_40px_rgba(244,63,94,0.34)] disabled:opacity-70"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 className="h-5 w-5 animate-spin" />
-                            Creating...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="h-4 w-4" />
-                            Create Profile
-                          </>
+                    <div className="mt-5 text-center">
+                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-rose-500">
+                        Stage {currentStep + 1} of {activeCreateProfileSteps.length}
+                      </p>
+                      <h2 className="mt-3 font-display text-[1.9rem] font-bold text-gray-900">
+                        {currentCreateStep.title}
+                      </h2>
+                      <p className="mt-2 text-base text-gray-500">
+                        {currentCreateStep.panelDescription}
+                      </p>
+                    </div>
+
+                    <div className="mt-8">{renderCreateStepContent()}</div>
+
+                    <div className="mt-8 flex flex-col gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex flex-col gap-3 sm:flex-row">
+                        <button
+                          type="button"
+                          onClick={handleSaveAndExit}
+                          className="ui-link-shift inline-flex items-center justify-center rounded-xl border border-rose-200 px-6 py-3 text-sm font-semibold text-rose-600 transition-colors hover:border-rose-300 hover:bg-rose-50"
+                        >
+                          Save & Exit
+                        </button>
+
+                        {currentStep > 0 ? (
+                          <button
+                            type="button"
+                            onClick={handlePreviousStep}
+                            className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-6 py-3 text-sm font-semibold text-gray-600 transition-colors hover:border-rose-200 hover:text-rose-600"
+                          >
+                            <ArrowLeft className="ui-arrow-shift h-4 w-4" />
+                            Back
+                          </button>
+                        ) : null}
+                      </div>
+
+                      <div className="flex flex-col gap-3 sm:flex-row">
+                        {currentCreateStep.id === "preferences" && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleNextStep();
+                            }}
+                            className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-6 py-3 text-sm font-semibold text-gray-500 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                          >
+                            Skip
+                          </button>
                         )}
-                      </button>
-                    )}
+
+                        {!isLastCreateStep ? (
+                          <button
+                            type="button"
+                            onClick={handleNextStep}
+                            className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-7 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(244,63,94,0.28)] transition-all hover:shadow-[0_18px_40px_rgba(244,63,94,0.34)]"
+                          >
+                            Save & Continue
+                            <ArrowRight className="ui-arrow-shift h-4 w-4" />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleCreateProfile}
+                            disabled={isSubmitting}
+                            className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-7 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(244,63,94,0.28)] transition-all hover:shadow-[0_18px_40px_rgba(244,63,94,0.34)] disabled:opacity-70"
+                          >
+                            {isSubmitting ? (
+                              <>
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                                Creating...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="h-4 w-4" />
+                                Create Profile
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="ui-card-lift-soft rounded-[12px] border border-rose-100 bg-[linear-gradient(135deg,#fff7fa_0%,#fff1f6_100%)] px-5 py-4 shadow-sm">
-            <div className="flex items-center gap-4">
-              <div className="ui-icon-lift flex h-12 w-12 items-center justify-center rounded-xl bg-white text-rose-500 shadow-sm">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">
-                  Your information is safe and secure with us.
-                </p>
-                <p className="mt-1 text-sm text-gray-500">
-                  We don&apos;t share your details with anyone.
-                </p>
-              </div>
-            </div>
-          </div>
-        </>
-      ) : (
-        <>
-          {displayProfileUserId ? (
-            <div
-              className="ui-enter-up rounded-2xl border border-rose-100 bg-[linear-gradient(135deg,#fff7fa_0%,#ffffff_100%)] p-5 shadow-sm"
-              style={{ animationDelay: "20ms", animationFillMode: "forwards" }}
-            >
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="ui-card-lift-soft rounded-[12px] border border-rose-100 bg-[linear-gradient(135deg,#fff7fa_0%,#fff1f6_100%)] px-5 py-4 shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="ui-icon-lift flex h-12 w-12 items-center justify-center rounded-xl bg-white text-rose-500 shadow-sm">
+                  <Sparkles className="h-5 w-5" />
+                </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">
-                    Your User ID
+                  <p className="text-sm font-semibold text-gray-900">
+                    Your information is safe and secure with us.
                   </p>
-                  <p className="mt-2 font-mono text-2xl font-bold tracking-[0.08em] text-gray-900">
-                    {displayProfileUserId}
+                  <p className="mt-1 text-sm text-gray-500">
+                    We don&apos;t share your details with anyone.
                   </p>
                 </div>
-                <p className="max-w-md text-sm leading-6 text-gray-500">
-                  This ID is generated automatically and cannot be edited.
-                </p>
               </div>
             </div>
-          ) : null}
+          </>
+        ) : (
+          <>
+            {displayProfileUserId ? (
+              <div
+                className="ui-enter-up rounded-2xl border border-rose-100 bg-[linear-gradient(135deg,#fff7fa_0%,#ffffff_100%)] p-5 shadow-sm"
+                style={{ animationDelay: "20ms", animationFillMode: "forwards" }}
+              >
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">
+                      Your User ID
+                    </p>
+                    <p className="mt-2 font-mono text-2xl font-bold tracking-[0.08em] text-gray-900">
+                      {displayProfileUserId}
+                    </p>
+                  </div>
+                  <p className="max-w-md text-sm leading-6 text-gray-500">
+                    This ID is generated automatically and cannot be edited.
+                  </p>
+                </div>
+              </div>
+            ) : null}
 
-          <SectionBlock
-            title="Personal Information"
-            description="Update your basic and address details."
-            delayMs={40}
-          >
-            {renderPersonalInformation()}
-          </SectionBlock>
-
-          <SectionBlock
-            title="Family Details"
-            description="Update your parents and family background details."
-            delayMs={110}
-          >
-            {renderFamilyDetails()}
-          </SectionBlock>
-
-          <SectionBlock
-            title="Education & Career Information"
-            description="Keep your education and profession details current."
-            delayMs={180}
-          >
-            {renderEducationCareer()}
-          </SectionBlock>
-
-          <SectionBlock
-            title="Cultural Background"
-            description="Edit your religion, mother tongue, caste, and sub caste details."
-            delayMs={250}
-          >
-            {renderCulturalBackground()}
-          </SectionBlock>
-
-          {shouldShowHoroscopeStep ? (
             <SectionBlock
-              title="Horoscope"
-              description="Update your astrology details if you use them."
-              delayMs={320}
+              title="Personal Information"
+              description="Update your basic and address details."
+              delayMs={40}
             >
-              {renderHoroscope()}
+              {renderPersonalInformation()}
             </SectionBlock>
-          ) : null}
 
-          <SectionBlock
-            title="Lifestyle"
-            description="Share your food and habit preferences."
-            delayMs={390}
-          >
-            {renderLifestyle()}
-          </SectionBlock>
-
-          <SectionBlock
-            title="Partner Preferences"
-            description="Add the partner details you want to see in your match suggestions."
-            delayMs={460}
-          >
-            {renderPartnerPreferences()}
-          </SectionBlock>
-
-          <SectionBlock
-            title="Add Photos"
-            description={
-              shouldShowHoroscopeStep
-                ? "Manage your profile and horoscope images."
-                : "Manage your profile image."
-            }
-            delayMs={530}
-          >
-            {renderPhotoUploads()}
-          </SectionBlock>
-        </>
-      )}
-
-      {isEdit ? (
-        <div
-          className="ui-enter-up flex flex-col gap-3 border-t border-gray-100 pt-2 sm:flex-row sm:justify-start"
-          style={{ animationDelay: "600ms", animationFillMode: "forwards" }}
-        >
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="btn-primary ui-link-shift flex items-center justify-center gap-2 px-8 py-3"
+            <SectionBlock
+              title="Family Details"
+              description="Update your parents and family background details."
+              delayMs={110}
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="w-5 h-5" />
-                  Save Changes
-                </>
-              )}
-            </button>
+              {renderFamilyDetails()}
+            </SectionBlock>
+
+            <SectionBlock
+              title="Education & Career Information"
+              description="Keep your education and profession details current."
+              delayMs={180}
+            >
+              {renderEducationCareer()}
+            </SectionBlock>
+
+            <SectionBlock
+              title="Cultural Background"
+              description="Edit your religion, mother tongue, caste, and sub caste details."
+              delayMs={250}
+            >
+              {renderCulturalBackground()}
+            </SectionBlock>
+
+            {shouldShowHoroscopeStep ? (
+              <SectionBlock
+                title="Horoscope"
+                description="Update your astrology details if you use them."
+                delayMs={320}
+              >
+                {renderHoroscope()}
+              </SectionBlock>
+            ) : null}
+
+            <SectionBlock
+              title="Lifestyle"
+              description="Share your food and habit preferences."
+              delayMs={390}
+            >
+              {renderLifestyle()}
+            </SectionBlock>
+
+            <SectionBlock
+              title="Partner Preferences"
+              description="Add the partner details you want to see in your match suggestions."
+              delayMs={460}
+            >
+              {renderPartnerPreferences()}
+            </SectionBlock>
+
+            <SectionBlock
+              title="Add Photos"
+              description={
+                shouldShowHoroscopeStep
+                  ? "Manage your profile and horoscope images."
+                  : "Manage your profile image."
+              }
+              delayMs={530}
+            >
+              {renderPhotoUploads()}
+            </SectionBlock>
+          </>
+        )}
+
+        {isEdit ? (
+          <div
+            className="ui-enter-up flex flex-col gap-3 border-t border-gray-100 pt-2 sm:flex-row sm:justify-start"
+            style={{ animationDelay: "600ms", animationFillMode: "forwards" }}
+          >
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn-primary ui-link-shift flex items-center justify-center gap-2 px-8 py-3"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-5 h-5" />
+                    Save Changes
+                  </>
+                )}
+              </button>
+            </div>
           </div>
-        </div>
-      ) : null}
-    </form>
+        ) : null}
+      </form>
 
       {createdProfileSuccess && typeof document !== "undefined"
         ? createPortal(

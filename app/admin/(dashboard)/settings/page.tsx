@@ -1,349 +1,144 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CheckCircle2, Info, Loader2, Save, ShieldCheck } from "lucide-react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils/helpers";
-
-type PricingSettingsResponse = {
-  settings?: {
-    baseAmount?: number;
-    profileAmount?: number;
-    perProfileChatAmount?: number;
-  };
-  error?: string;
-};
-
-async function safeReadJson(response: Response) {
-  const text = await response.text();
-  if (!text.trim()) return null;
-
-  try {
-    return JSON.parse(text) as PricingSettingsResponse;
-  } catch {
-    return null;
-  }
-}
-
-function toSafeAmount(value: number) {
-  return Number.isFinite(value) && value >= 0 ? value : 0;
-}
-
-function calculateChatPrice(basePrice: number, perShortlistedProfilePrice: number, perProfileChatPrice: number) {
-  return toSafeAmount(basePrice) + toSafeAmount(perShortlistedProfilePrice) + toSafeAmount(perProfileChatPrice);
-}
-
-function PriceField({
-  id,
-  label,
-  value,
-  onChange,
-  helperText,
-}: {
-  id: string;
-  label: string;
-  value: number;
-  onChange: (value: number) => void;
-  helperText: string;
-}) {
-  return (
-    <div className="group">
-      <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor={id}>
-        {label}
-      </label>
-      <div className="relative transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-focus-within:-translate-y-0.5">
-        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-medium text-slate-400 transition-colors duration-300 group-hover:text-rose-400 group-focus-within:text-rose-400">
-          ₹
-        </span>
-        <input
-          id={id}
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          value={Number.isFinite(value) ? value : 0}
-          onChange={(event) => {
-            const nextValue = event.target.value.replace(/[^\d]/g, "");
-            onChange(nextValue === "" ? 0 : Number(nextValue));
-          }}
-          className="w-full rounded-[18px] border border-slate-200 bg-white py-3 pl-9 pr-4 text-sm text-slate-800 outline-none shadow-[0_12px_28px_rgba(15,23,42,0.03)] transition-all duration-300 placeholder:text-slate-400 hover:border-rose-200 focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-        />
-      </div>
-      <p className="mt-1.5 text-xs text-slate-400 transition-colors duration-300 group-hover:text-slate-500">{helperText}</p>
-    </div>
-  );
-}
+import { Loader2, Save, DollarSign, Info } from "lucide-react";
 
 export default function AdminSettingsPage() {
   const [baseAmount, setBaseAmount] = useState(500);
   const [profileAmount, setProfileAmount] = useState(500);
-  const [perProfileChatAmount, setPerProfileChatAmount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [previewPulse, setPreviewPulse] = useState(false);
 
   useEffect(() => {
-    let active = true;
-
-    fetch("/api/admin/settings", { cache: "no-store" })
-      .then(async (response) => {
-        const data = await safeReadJson(response);
-
-        if (!active) return;
-
-        if (response.ok && data?.settings) {
-          if (typeof data.settings.baseAmount === "number") {
-            setBaseAmount(data.settings.baseAmount);
-          }
-          if (typeof data.settings.profileAmount === "number") {
-            setProfileAmount(data.settings.profileAmount);
-          }
-          if (typeof data.settings.perProfileChatAmount === "number") {
-            setPerProfileChatAmount(data.settings.perProfileChatAmount);
-          }
-          return;
+    fetch("/api/admin/settings")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.settings) {
+          setBaseAmount(data.settings.baseAmount);
+          setProfileAmount(data.settings.profileAmount);
         }
-
-        if (!response.ok) {
-          toast.error(data?.error ?? "Failed to load pricing settings");
-        }
-      })
-      .catch(() => {
-        if (active) toast.error("Failed to load pricing settings");
-      })
-      .finally(() => {
-        if (active) setLoading(false);
+        setLoading(false);
       });
-
-    return () => {
-      active = false;
-    };
   }, []);
-
-  const chatPrice = calculateChatPrice(baseAmount, profileAmount, perProfileChatAmount);
-
-  useEffect(() => {
-    if (loading) return;
-
-    setPreviewPulse(false);
-
-    const frameId = window.requestAnimationFrame(() => {
-      setPreviewPulse(true);
-    });
-    const timeoutId = window.setTimeout(() => {
-      setPreviewPulse(false);
-    }, 380);
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-      window.clearTimeout(timeoutId);
-    };
-  }, [baseAmount, profileAmount, perProfileChatAmount, loading]);
 
   const handleSave = async () => {
     setSaving(true);
-
-    try {
-      const res = await fetch("/api/admin/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ baseAmount, profileAmount, perProfileChatAmount }),
-      });
-
-      const data = await safeReadJson(res);
-
-      if (res.ok) {
-        toast.success("Chat pricing updated successfully!");
-      } else {
-        toast.error(data?.error ?? "Failed to update");
-      }
-    } catch {
-      toast.error("Failed to update");
-    } finally {
-      setSaving(false);
+    const res = await fetch("/api/admin/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ baseAmount, profileAmount }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      toast.success("Pricing updated successfully!");
+    } else {
+      toast.error(data.error ?? "Failed to update");
     }
+    setSaving(false);
   };
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-rose-500" />
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
       </div>
     );
   }
 
+  const total = baseAmount + profileAmount;
+
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6">
-      <section className="space-y-3">
-        <div
-          className="ui-enter-up inline-flex items-center gap-2 rounded-full border border-rose-100 bg-white px-4 py-2 text-sm font-medium text-rose-700 shadow-sm"
-          style={{ animationDelay: "30ms" }}
-        >
-          <ShieldCheck className="h-4 w-4" />
-          Profile unlock payment style pricing editor
+    <div className="max-w-xl">
+      <h1 className="text-2xl font-display font-bold text-gray-900 mb-2">
+        Pricing Settings
+      </h1>
+      <p className="text-gray-500 text-sm mb-8">
+        Configure the profile unlock pricing. Changes take effect immediately.
+      </p>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8 space-y-6">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-3 text-sm text-blue-700">
+          <Info className="w-5 h-5 shrink-0 mt-0.5" />
+          <div>
+            <strong>Pricing Formula:</strong> Total = Base Amount + Profile Amount.
+            The user sees this breakdown before making a payment.
+          </div>
         </div>
-        <div className="ui-enter-left" style={{ animationDelay: "80ms" }}>
-          <h1 className="font-display text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            Chat Pricing Settings
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-500 sm:text-base">
-            Configure the chat pricing. Changes take effect immediately and the
-            preview below updates as you type.
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="base-amount">
+            Base Amount (₹)
+          </label>
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">₹</span>
+            <input
+              id="base-amount"
+              type="number"
+              min={0}
+              value={baseAmount}
+              onChange={(e) => setBaseAmount(Number(e.target.value))}
+              className="w-full border border-gray-200 rounded-xl pl-8 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+            />
+          </div>
+          <p className="text-gray-400 text-xs mt-1.5">
+            Fixed base fee applied to every unlock
           </p>
         </div>
-      </section>
 
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-        <div
-          className="ui-enter-scale ui-card-lift-soft overflow-hidden rounded-[28px] border border-rose-100 bg-white shadow-sm"
-          style={{ animationDelay: "140ms" }}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="profile-amount">
+            Profile Amount (₹)
+          </label>
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">₹</span>
+            <input
+              id="profile-amount"
+              type="number"
+              min={0}
+              value={profileAmount}
+              onChange={(e) => setProfileAmount(Number(e.target.value))}
+              className="w-full border border-gray-200 rounded-xl pl-8 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+            />
+          </div>
+          <p className="text-gray-400 text-xs mt-1.5">
+            Per-profile unlock fee
+          </p>
+        </div>
+
+        {/* Live preview */}
+        <div className="bg-rose-50 rounded-xl p-4 border border-rose-100">
+          <p className="text-xs font-semibold text-rose-600 mb-2 uppercase tracking-wide">
+            Live Preview — What User Sees
+          </p>
+          <div className="space-y-1 text-sm text-gray-700">
+            <div className="flex justify-between">
+              <span>Base Amount</span>
+              <span>₹{baseAmount}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Profile Amount</span>
+              <span>₹{profileAmount}</span>
+            </div>
+            <div className="flex justify-between font-bold text-rose-600 border-t border-rose-200 pt-1 mt-1 text-base">
+              <span>Total</span>
+              <span>₹{total}</span>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="btn-primary flex items-center gap-2 py-3 px-8 rounded-xl"
         >
-          <div className="border-b border-rose-100 bg-gradient-to-r from-rose-600 to-pink-500 px-6 py-5 text-white">
-            <div className="flex items-center gap-3">
-              <div className="ui-icon-lift flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15">
-                <Info className="h-5 w-5" />
-              </div>
-              <div>
-                <h2 className="font-display text-xl font-bold">Pricing formula</h2>
-                <p className="mt-1 text-sm text-rose-50">
-                  Chat Price = Base Price + Per Shortlisted Profile Price + Per
-                  Profile Chat Price
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-6 p-6 sm:p-8">
-            <div className="grid gap-6">
-              <div className="ui-enter-up" style={{ animationDelay: "180ms" }}>
-              <PriceField
-                id="base-amount"
-                label="Base Price (₹)"
-                value={baseAmount}
-                onChange={setBaseAmount}
-                helperText="Fixed base fee applied to every chat request"
-              />
-              </div>
-
-              <div className="ui-enter-up" style={{ animationDelay: "220ms" }}>
-              <PriceField
-                id="profile-amount"
-                label="Per Shortlisted Profile Price (₹)"
-                value={profileAmount}
-                onChange={setProfileAmount}
-                helperText="Added for each shortlisted profile in the chat flow"
-              />
-              </div>
-
-              <div className="ui-enter-up" style={{ animationDelay: "260ms" }}>
-              <PriceField
-                id="per-profile-chat-amount"
-                label="Per Profile Chat Price (₹)"
-                value={perProfileChatAmount}
-                onChange={setPerProfileChatAmount}
-                helperText="Extra chat charge added for each profile chat"
-              />
-              </div>
-            </div>
-
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="ui-enter-up ui-link-shift inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(244,63,94,0.22)] transition-all duration-300 hover:shadow-[0_18px_38px_rgba(244,63,94,0.28)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
-              style={{ animationDelay: "300ms" }}
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="h-5 w-5" />
-                  Save Chat Pricing
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <div
-            className="ui-enter-scale ui-card-lift-soft overflow-hidden rounded-[28px] border border-rose-100 bg-white shadow-sm"
-            style={{ animationDelay: "180ms" }}
-          >
-            <div className="border-b border-rose-100 px-6 py-5">
-              <h2 className="font-display text-xl font-bold text-slate-900">
-                Live Preview
-              </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                This is what users will see before they pay.
-              </p>
-            </div>
-
-            <div className="p-6">
-              <div
-                className={cn(
-                  "rounded-[24px] border bg-[linear-gradient(180deg,rgba(255,250,251,0.9)_0%,rgba(255,244,246,0.98)_100%)] p-5 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                  previewPulse
-                    ? "border-rose-200 shadow-[0_18px_40px_rgba(244,63,94,0.12)]"
-                    : "border-rose-100 shadow-none"
-                )}
-              >
-                <div className="mb-4 flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-600">Chat Price</span>
-                  <span
-                    className={cn(
-                      "text-3xl font-bold tracking-tight text-rose-600 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                      previewPulse ? "scale-105 text-rose-500" : "scale-100"
-                    )}
-                  >
-                    ₹{chatPrice}
-                  </span>
-                </div>
-
-                <div className="space-y-3 text-sm text-slate-700">
-                  <div className="flex items-center justify-between">
-                    <span>Base Price</span>
-                    <span className="font-semibold">₹{toSafeAmount(baseAmount)}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Per Shortlisted Profile Price</span>
-                    <span className="font-semibold">₹{toSafeAmount(profileAmount)}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Per Profile Chat Price</span>
-                    <span className="font-semibold">₹{toSafeAmount(perProfileChatAmount)}</span>
-                  </div>
-
-                  <div className="mt-2 border-t border-rose-200 pt-3">
-                    <div className="flex items-center justify-between text-base">
-                      <span className="font-semibold text-slate-900">Total</span>
-                      <span className="font-bold text-rose-600">₹{chatPrice}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="ui-enter-up ui-card-lift-soft rounded-[28px] border border-emerald-100 bg-emerald-50 px-6 py-5 text-emerald-800 shadow-sm"
-            style={{ animationDelay: "240ms" }}
-          >
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="ui-icon-lift mt-0.5 h-5 w-5 shrink-0" />
-              <div>
-                <h3 className="font-semibold">Working flow</h3>
-                <p className="mt-1 text-sm leading-6 text-emerald-700">
-                  This page saves pricing to the database and the same values are
-                  used by the profile unlock payment flow and admin payment
-                  records.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+          {saving ? (
+            <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</>
+          ) : (
+            <><Save className="w-5 h-5" /> Save Pricing</>
+          )}
+        </button>
+      </div>
     </div>
   );
 }

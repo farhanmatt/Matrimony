@@ -169,33 +169,6 @@ export default async function SettingsPage() {
             email={user.email}
             hasPassword={Boolean(user.password)}
           />
-
-          <section
-            id="help-support"
-            className="ui-card-lift-soft flex flex-col gap-4 rounded-[24px] border border-rose-100 bg-[linear-gradient(135deg,rgba(255,255,255,0.98)_0%,rgba(255,246,249,0.94)_100%)] px-6 py-5 shadow-sm md:flex-row md:items-center md:justify-between"
-          >
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 ui-icon-lift">
-                <Headphones className="h-5 w-5" />
-              </div>
-              <div>
-                <h2 className="font-display text-[1.35rem] font-bold text-slate-900">
-                  Need Help?
-                </h2>
-                <p className="mt-2 max-w-2xl text-[15px] text-slate-500">
-                  If you need any assistance or have questions, our support team is always ready to help you.
-                </p>
-              </div>
-            </div>
-
-            <Link
-              href="/dashboard/support"
-              className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-[16px] border border-rose-200 px-5 py-3 text-sm font-semibold text-rose-600 transition-colors hover:border-rose-300 hover:bg-rose-50"
-            >
-              <Headphones className="ui-arrow-shift h-4.5 w-4.5" />
-              Contact Support
-            </Link>
-          </section>
         </div>
 
         <aside
@@ -260,3 +233,4 @@ export default async function SettingsPage() {
     </div>
   );
 }
+

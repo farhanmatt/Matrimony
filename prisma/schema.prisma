@@ -163,6 +163,7 @@ model PendingRegistration {
 
 // ─── Profile ─────────────────────────────────────────────────────────────────
 
+
 model Profile {
   id     String        @id @default(cuid())
   userId String        @unique
@@ -176,6 +177,8 @@ model Profile {
   height        Float?        // in cm
   nationality   String?
   maritalStatus MaritalStatus @default(NEVER_MARRIED)
+  isPhysicallyChallenged Boolean @default(false)
+  disabilityType String?
   phone         String?
   education     String?       // Higher education
   course        String?
@@ -198,6 +201,7 @@ model Profile {
   motherName  String?
   familyType  FamilyType?
   familyStatus FamilyStatus?
+  residentialStatus String?
   siblings    Int?
 
   // Religious / Cultural
@@ -308,6 +312,7 @@ model Like {
 
 model Match {
   id         String   @id @default(cuid())
+  matchCode  String?  @unique
   profileAId String
   profileBId String
   createdAt  DateTime @default(now())
@@ -410,6 +415,7 @@ model Payment {
   status             String   @default("CREATED") // CREATED | PAID | FAILED
   baseAmount         Int
   profileAmount      Int
+  profileUnlockAmount Int    @default(500)
   perProfileChatAmount Int   @default(0)
   couponCode         String?
   discountAmount     Int      @default(0) // discount in rupees
@@ -446,6 +452,7 @@ model AdminSettings {
   id            String @id @default("singleton")
   baseAmount    Int    @default(500)    // in rupees
   profileAmount Int    @default(500)    // in rupees
+  profileUnlockAmount Int @default(500)  // in rupees
   perProfileChatAmount Int @default(0)   // in rupees
   heroImageUrl  String @default("/main.jpeg")
   logoImageUrl  String @default("")

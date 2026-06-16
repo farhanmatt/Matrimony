@@ -30,45 +30,8 @@ export default function PaymentModal({
   onSuccess,
 }: PaymentModalProps) {
   const [status, setStatus] = useState<UnlockStatus>("idle");
-  const [couponInput, setCouponInput] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<{
-    code: string;
-    discountAmount: number;
-    message: string;
-  } | null>(null);
-  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
-
-  const subtotal = baseAmount + profileAmount + perProfileChatAmount;
-  const total = subtotal - (appliedCoupon?.discountAmount || 0);
-
+  const total = baseAmount + profileAmount + perProfileChatAmount;
   const hasFinishedSuccessRef = useRef(false);
-
-  const handleApplyCoupon = async () => {
-    if (!couponInput.trim()) return;
-    setIsValidatingCoupon(true);
-    try {
-      const res = await fetch("/api/coupon/validate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: couponInput, totalAmount: subtotal }),
-      });
-      const data = await res.json();
-      if (data.valid) {
-        setAppliedCoupon({
-          code: data.code,
-          discountAmount: data.discountAmount,
-          message: data.message,
-        });
-        toast.success(data.message);
-      } else {
-        toast.error(data.error || "Invalid coupon code");
-      }
-    } catch {
-      toast.error("Failed to validate coupon");
-    } finally {
-      setIsValidatingCoupon(false);
-    }
-  };
 
   const finishSuccess = useCallback(
     (options?: { redirectToUnlocked?: boolean }) => {
@@ -106,10 +69,7 @@ export default function PaymentModal({
       const unlockRes = await fetch("/api/unlock", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          matchId,
-          couponCode: appliedCoupon?.code 
-        }),
+        body: JSON.stringify({ matchId }),
       });
       const unlockData = await unlockRes.json();
 
@@ -227,45 +187,13 @@ export default function PaymentModal({
                   <span>{formatCurrency(profileAmount)}</span>
                 </div>
                 <div className="flex justify-between text-sm text-gray-600">
-                  <span>Per Profile Chat Amount</span>
+                  <span>Chat Unlock Amount</span>
                   <span>{formatCurrency(perProfileChatAmount)}</span>
                 </div>
-                {appliedCoupon && (
-                  <div className="flex justify-between text-sm font-medium text-green-600">
-                    <span>Discount ({appliedCoupon.code})</span>
-                    <span>-{formatCurrency(appliedCoupon.discountAmount)}</span>
-                  </div>
-                )}
                 <div className="mt-2 flex justify-between border-t border-gray-200 pt-2 text-base font-bold text-gray-900">
                   <span>Total Amount</span>
                   <span className="text-rose-600">{formatCurrency(total)}</span>
                 </div>
-              </div>
-
-              <div className="mb-6">
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Coupon Code
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={couponInput}
-                    onChange={(e) => setCouponInput(e.target.value)}
-                    placeholder="Enter code"
-                    className="flex-1 rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm outline-none transition-colors focus:border-rose-300"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleApplyCoupon}
-                    disabled={isValidatingCoupon || !couponInput.trim()}
-                    className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                  >
-                    {isValidatingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
-                  </button>
-                </div>
-                {appliedCoupon && (
-                  <p className="mt-1.5 text-xs text-green-600">{appliedCoupon.message}</p>
-                )}
               </div>
 
               <ul className="mb-6 space-y-2 text-sm text-gray-700">

@@ -27,6 +27,7 @@ import {
   getBlogPostBySlug,
   getRelatedBlogPosts,
 } from "@/lib/constants/blog";
+import { auth } from "@/lib/auth";
 
 const articleSectionIcons = [
   UserPlus,
@@ -105,6 +106,7 @@ export async function generateMetadata({
 }
 
 export default async function BlogArticlePage({ params }: PageProps) {
+  const session = await auth();
   const { slug } = await params;
   const post = getBlogPostBySlug(slug);
 
@@ -117,7 +119,7 @@ export default async function BlogArticlePage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#fff7fa_56%,#ffffff_100%)]">
-      <LandingNavbar />
+      <LandingNavbar session={session} />
 
       <section className="pt-28 sm:pt-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

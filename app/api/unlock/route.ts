@@ -3,10 +3,6 @@ import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import {
-  getUnlockPricing,
-  isPerProfileChatAmountCompatibilityError,
-} from "@/lib/utils/admin-settings";
 import { hasMutualLike } from "@/lib/utils/matching";
 
 // GET /api/unlock - get all unlocked profiles for current user
@@ -43,7 +39,7 @@ export async function POST(req: NextRequest) {
   let requestedMatchId: string | null = null;
 
   try {
-    const { matchId, couponCode } = await req.json();
+    const { matchId } = await req.json();
     requestedMatchId = typeof matchId === "string" ? matchId : null;
     if (!matchId || typeof matchId !== "string") {
       return NextResponse.json({ error: "matchId is required" }, { status: 400 });
@@ -107,90 +103,27 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const { baseAmount, profileAmount, perProfileChatAmount } =
-      await getUnlockPricing();
-    let subtotalAmount = baseAmount + profileAmount + perProfileChatAmount;
-    let discountRupees = 0;
-    let appliedCouponCode: string | null = null;
-
-    if (couponCode && typeof couponCode === "string") {
-      const normalized = couponCode.trim().toUpperCase();
-      const coupon = await prisma.couponCode.findUnique({
-        where: { code: normalized },
-      });
-
-      if (
-        coupon &&
-        coupon.isActive &&
-        (!coupon.expiresAt || new Date() <= coupon.expiresAt) &&
-        (coupon.maxUses === null || coupon.currentUses < coupon.maxUses) &&
-        subtotalAmount >= coupon.minAmount
-      ) {
-        if (coupon.discountType === "PERCENTAGE") {
-          discountRupees = Math.floor((subtotalAmount * coupon.discountValue) / 100);
-          if (coupon.maxDiscount !== null && discountRupees > coupon.maxDiscount) {
-            discountRupees = coupon.maxDiscount;
-          }
-        } else {
-          discountRupees = Math.floor(coupon.discountValue);
-        }
-
-        if (discountRupees > subtotalAmount) {
-          discountRupees = subtotalAmount;
-        }
-
-        appliedCouponCode = normalized;
-      }
-    }
-
-    const totalAmount = (subtotalAmount - discountRupees) * 100;
+    const settings = await prisma.adminSettings.findUnique({
+      where: { id: "singleton" },
+    });
+    const baseAmount = settings?.baseAmount ?? 500;
+    const profileAmount = settings?.profileAmount ?? 500;
+    const totalAmount = (baseAmount + profileAmount) * 100;
 
     const unlock = await prisma.$transaction(async (tx) => {
-      if (appliedCouponCode) {
-        await tx.couponCode.update({
-          where: { code: appliedCouponCode },
-          data: { currentUses: { increment: 1 } },
-        });
-      }
-
       // Keep the existing payment + unlock data model while Razorpay is disabled.
-      const paymentData = {
-        userId: session.user.id,
-        matchId,
-        razorpayOrderId: `manual_unlock_${randomUUID()}`,
-        amount: totalAmount,
-        currency: "INR",
-        status: "PAID",
-        baseAmount,
-        profileAmount,
-        perProfileChatAmount,
-        couponCode: appliedCouponCode,
-        discountAmount: discountRupees,
-      };
-
-      const payment = await tx.payment
-        .create({
-          data: paymentData,
-          select: {
-            id: true,
-          },
-        })
-        .catch((error) => {
-          if (!isPerProfileChatAmountCompatibilityError(error)) {
-            throw error;
-          }
-
-          // Fallback for legacy DB schema compatibility
-          const { perProfileChatAmount: _ignored, ...legacyPaymentData } =
-            paymentData as any;
-
-          return tx.payment.create({
-            data: legacyPaymentData,
-            select: {
-              id: true,
-            },
-          });
-        });
+      const payment = await tx.payment.create({
+        data: {
+          userId: session.user.id,
+          matchId,
+          razorpayOrderId: `manual_unlock_${randomUUID()}`,
+          amount: totalAmount,
+          currency: "INR",
+          status: "PAID",
+          baseAmount,
+          profileAmount,
+        },
+      });
 
       return tx.unlock.create({
         data: {

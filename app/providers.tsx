@@ -10,7 +10,7 @@ export default function Providers({
   children: React.ReactNode;
 }) {
   return (
-    <SessionProvider basePath="/api/auth">
+    <SessionProvider>
       <AppLoadingProvider>
         {children}
         <Toaster

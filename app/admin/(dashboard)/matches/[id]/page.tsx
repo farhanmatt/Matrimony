@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import AdminDatabaseUnavailableState from "@/components/admin/AdminDatabaseUnavailableState";
+import AdminMatchDetailActions from "@/components/admin/AdminMatchDetailActions";
 import AdminPreviewableImage from "@/components/admin/AdminPreviewableImage";
 import StatusBadge from "@/components/common/StatusBadge";
 import {
@@ -309,21 +310,33 @@ export default async function AdminMatchDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex min-w-0 items-start gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-violet-500 shadow-sm ring-1 ring-violet-100">
-            <HeartHandshake className="h-5 w-5" />
-          </div>
-          <div className="min-w-0">
-            <h1 className="font-display text-2xl font-bold text-gray-900 sm:text-3xl">
-              Match Details
-            </h1>
-            <p className="mt-2 text-sm text-gray-500">
-              Review and connect with your potential match
-            </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <Link
+            href={returnTo}
+            className="mb-4 inline-flex h-11 items-center gap-2 rounded-full border border-gray-200 bg-white px-5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-rose-300 hover:text-rose-600"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Matches
+          </Link>
+          <div className="flex min-w-0 items-start gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-violet-500 shadow-sm ring-1 ring-violet-100">
+              <HeartHandshake className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="font-display text-2xl font-bold text-gray-900 sm:text-3xl">
+                Match Details
+              </h1>
+              <p className="mt-2 text-sm text-gray-500">
+                Review and connect with your potential match
+              </p>
+            </div>
           </div>
         </div>
 
+        <div className="flex items-center gap-3 self-end sm:self-auto">
+          <AdminMatchDetailActions matchId={id} />
+        </div>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">

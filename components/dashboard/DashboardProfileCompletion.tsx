@@ -11,6 +11,7 @@ import {
 
 type CreateProfileDraft = {
   currentStep: number;
+  maxStepReached: number;
   values: Partial<ProfileCompletionSource>;
 };
 

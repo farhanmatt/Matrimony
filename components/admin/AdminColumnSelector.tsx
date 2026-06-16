@@ -83,7 +83,7 @@ export default function AdminColumnSelector({
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="ui-link-shift inline-flex h-12 items-center gap-2 rounded-xl border border-rose-100 bg-white px-4 text-sm font-medium text-gray-700 shadow-[0_10px_24px_rgba(244,63,94,0.06)] transition-all duration-300 hover:border-rose-200 hover:bg-gray-50 hover:shadow-md active:scale-[0.985]"
+        className="inline-flex h-12 items-center gap-2 rounded-xl border border-rose-100 bg-white px-4 text-sm font-medium text-gray-700 shadow-[0_10px_24px_rgba(244,63,94,0.06)] transition-colors hover:border-rose-200 hover:bg-rose-50"
         aria-haspopup="menu"
         aria-expanded={open}
       >
@@ -92,7 +92,7 @@ export default function AdminColumnSelector({
       </button>
 
       {open ? (
-        <div className="ui-modal-pop absolute right-0 top-14 z-20 w-72 overflow-hidden rounded-2xl border border-rose-100 bg-white shadow-xl">
+        <div className="absolute right-0 top-14 z-20 w-72 overflow-hidden rounded-2xl border border-rose-100 bg-white shadow-xl">
           {columnOptions.map((option) => (
             <button
               key={option.key}
@@ -105,14 +105,14 @@ export default function AdminColumnSelector({
                 const safeSelected = nextSelected.length > 0 ? nextSelected : DEFAULT_SELECTED_COLUMNS;
                 updateColumns(safeSelected);
               }}
-              className={`flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-gray-50 ${
+              className={`flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-rose-50 ${
                 activeColumns.includes(option.key)
-                  ? "bg-gray-50 text-gray-900"
+                  ? "bg-rose-50/70 text-gray-900"
                   : "text-gray-700"
               }`}
             >
               {activeColumns.includes(option.key) ? (
-                <CheckSquare className="h-4 w-4 shrink-0 text-gray-500" />
+                <CheckSquare className="h-4 w-4 shrink-0 text-rose-500" />
                 ) : (
                 <Square className="h-4 w-4 shrink-0 text-gray-300" />
                 )}

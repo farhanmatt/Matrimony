@@ -4,18 +4,33 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { CheckSquare, ChevronDown, Columns3, Square } from "lucide-react";
 
+const MATCH_COLUMN_KEYS = ["match", "details", "id", "status", "date", "action"] as const;
+
 const columnOptions = [
   { key: "match", label: "User A" },
   { key: "details", label: "User B" },
+  { key: "id", label: "Match ID" },
   { key: "status", label: "Status" },
   { key: "date", label: "Match Date" },
-  { key: "action", label: "Action" },
 ] as const;
 
-export type AdminMatchColumnKey = (typeof columnOptions)[number]["key"];
+export type AdminMatchColumnKey = (typeof MATCH_COLUMN_KEYS)[number];
 
 interface AdminMatchColumnSelectorProps {
   selectedColumns: AdminMatchColumnKey[];
+}
+
+const STORAGE_KEY = "admin_matches_columns";
+
+function writeSelection(selected: AdminMatchColumnKey[]) {
+  const value = selected.join(",");
+  document.cookie = `${STORAGE_KEY}=${encodeURIComponent(value)}; path=/; max-age=31536000; samesite=lax`;
+  window.localStorage.setItem(STORAGE_KEY, value);
+}
+
+function normalizeColumns(columns: AdminMatchColumnKey[]) {
+  const selectedSet = new Set(columns);
+  return MATCH_COLUMN_KEYS.filter((column) => selectedSet.has(column));
 }
 
 export default function AdminMatchColumnSelector({
@@ -28,8 +43,15 @@ export default function AdminMatchColumnSelector({
   const searchParams = useSearchParams();
 
   const updateColumns = (nextColumns: AdminMatchColumnKey[]) => {
+    const orderedColumns = normalizeColumns(nextColumns);
+    writeSelection(orderedColumns);
     const params = new URLSearchParams(searchParams.toString());
-    params.set("columns", nextColumns.length === 0 ? columnOptions.map((column) => column.key).join(",") : nextColumns.join(","));
+    params.set(
+      "columns",
+      orderedColumns.length === 0
+        ? MATCH_COLUMN_KEYS.join(",")
+        : orderedColumns.join(","),
+    );
     params.delete("page");
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     setOpen(false);
@@ -40,7 +62,7 @@ export default function AdminMatchColumnSelector({
       ? selectedColumns.filter((value) => value !== column)
       : [...selectedColumns, column];
 
-    updateColumns(nextColumns.length === 0 ? columnOptions.map((option) => option.key) : nextColumns);
+    updateColumns(nextColumns.length === 0 ? [...MATCH_COLUMN_KEYS] : nextColumns);
   };
 
   useEffect(() => {

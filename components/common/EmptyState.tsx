@@ -6,6 +6,7 @@ interface EmptyStateProps {
   title: string;
   description?: string;
   action?: { label: string; href: string };
+  className?: string;
 }
 
 const icons = {
@@ -19,20 +20,26 @@ export default function EmptyState({
   title,
   description,
   action,
+  className,
 }: EmptyStateProps) {
   const Icon = icons[icon];
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-      <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mb-5">
-        <Icon className="w-10 h-10 text-rose-300" />
+    <div
+      className={`flex w-full max-w-2xl flex-col items-center rounded-[28px] border border-rose-100 bg-white/95 px-6 py-16 text-center shadow-[0_18px_45px_rgba(15,23,42,0.04)] sm:px-10 ${className ?? ""}`}
+    >
+      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-rose-50 text-rose-300">
+        <Icon className="h-12 w-12" />
       </div>
-      <h3 className="text-lg font-display font-semibold text-gray-900 mb-2">{title}</h3>
+      <h3 className="mt-8 text-2xl font-display font-bold text-gray-900">{title}</h3>
       {description && (
-        <p className="text-gray-500 text-sm max-w-sm leading-relaxed mb-6">{description}</p>
+        <p className="mt-4 max-w-md text-sm leading-7 text-gray-500">{description}</p>
       )}
       {action && (
-        <Link href={action.href} className="btn-primary text-sm py-2.5 px-6">
+        <Link
+          href={action.href}
+          className="mt-8 inline-flex h-12 items-center rounded-full bg-gradient-to-r from-rose-500 to-pink-500 px-6 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(244,63,94,0.25)] transition-transform hover:-translate-y-0.5"
+        >
           {action.label}
         </Link>
       )}

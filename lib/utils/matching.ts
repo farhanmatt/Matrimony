@@ -223,36 +223,91 @@ export async function findUnlockForProfiles(
 }
 
 /**
- * Get stored matches for a profile.
- * Match rows are maintained on like/unlike writes so the read path stays lean.
+ * Get all currently valid mutual matches for a profile.
+ * Stale match rows without unlocks are cleaned up automatically.
  */
 export async function getMatchesForProfile(profileId: string) {
-  return prisma.match.findMany({
+  await syncMatchesFromMutualLikes();
+
+  const matches = await prisma.match.findMany({
     where: {
       OR: [{ profileAId: profileId }, { profileBId: profileId }],
     },
     include: {
       profileA: {
-        include: {
-          photos: {
-            where: { isPrimary: true },
-            take: 1,
-          },
-        },
+        include: { photos: true, user: { select: { email: true } } },
       },
       profileB: {
-        include: {
-          photos: {
-            where: { isPrimary: true },
-            take: 1,
-          },
-        },
+        include: { photos: true, user: { select: { email: true } } },
       },
-      unlocks: {
-        select: { userId: true },
-      },
+      unlocks: true,
     },
     orderBy: { createdAt: "desc" },
   });
-}
 
+  if (matches.length === 0) {
+    return [];
+  }
+
+  const otherProfileIds = Array.from(
+    new Set(
+      matches.map((match) =>
+        match.profileAId === profileId ? match.profileBId : match.profileAId
+      )
+    )
+  );
+
+  const likes = await prisma.like.findMany({
+    where: {
+      OR: [
+        {
+          fromProfileId: profileId,
+          toProfileId: { in: otherProfileIds },
+        },
+        {
+          fromProfileId: { in: otherProfileIds },
+          toProfileId: profileId,
+        },
+      ],
+    },
+    select: {
+      fromProfileId: true,
+      toProfileId: true,
+    },
+  });
+
+  const outgoingLikes = new Set(
+    likes
+      .filter((like) => like.fromProfileId === profileId)
+      .map((like) => like.toProfileId)
+  );
+  const incomingLikes = new Set(
+    likes
+      .filter((like) => like.toProfileId === profileId)
+      .map((like) => like.fromProfileId)
+  );
+
+  const staleUnlockedFreeMatchIds: string[] = [];
+  const activeMatches = matches.filter((match) => {
+    const otherProfileId =
+      match.profileAId === profileId ? match.profileBId : match.profileAId;
+    const isMutual =
+      outgoingLikes.has(otherProfileId) && incomingLikes.has(otherProfileId);
+
+    if (!isMutual && match.unlocks.length === 0) {
+      staleUnlockedFreeMatchIds.push(match.id);
+    }
+
+    return isMutual;
+  });
+
+  if (staleUnlockedFreeMatchIds.length > 0) {
+    await prisma.match.deleteMany({
+      where: {
+        id: { in: staleUnlockedFreeMatchIds },
+      },
+    });
+  }
+
+  return activeMatches;
+}

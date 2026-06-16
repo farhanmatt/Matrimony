@@ -10,7 +10,7 @@ import {
   normalizeNameLookup,
 } from "@/lib/utils/user-identity";
 import {
-  isDefaultAdminIdentifier,
+  isDefaultAdminCredentials,
   upsertAdminUser,
 } from "@/prisma/admin-user";
 
@@ -190,20 +190,39 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         );
         const password = getCredentialValue(credentials?.password);
         const isAdminPortal = getCredentialValue(credentials?.portal) === "admin";
-        const isDefaultAdminLogin = isDefaultAdminIdentifier(identifier);
 
         if (!identifier || !password) {
           throw new InvalidCredentialsError();
         }
 
+        if (isAdminPortal) {
+          if (!isDefaultAdminCredentials(identifier, password)) {
+            throw new InvalidCredentialsError();
+          }
+
+          try {
+            const adminUser = await upsertAdminUser(prisma);
+
+            return {
+              id: adminUser.id,
+              name: adminUser.name,
+              email: adminUser.email,
+              image: adminUser.image,
+              role: adminUser.role,
+            };
+          } catch (error) {
+            if (isDatabaseUnavailableError(error)) {
+              throw new DatabaseUnavailableError();
+            }
+
+            throw error;
+          }
+        }
+
         let userCandidates;
 
         try {
-          if (isDefaultAdminLogin) {
-            userCandidates = [await upsertAdminUser(prisma)];
-          } else {
-            userCandidates = await getCredentialUsers(identifier);
-          }
+          userCandidates = await getCredentialUsers(identifier);
         } catch (error) {
           if (isDatabaseUnavailableError(error)) {
             throw new DatabaseUnavailableError();

@@ -266,6 +266,8 @@ const baseProfileSchema = z.object({
     "SEPARATED",
     "AWAITING_DIVORCE",
   ]),
+  isPhysicallyChallenged: z.boolean().default(false),
+  disabilityType: z.string().max(100).optional().nullable(),
   phone: optionalPhone,
   education: z.string().max(200).optional().nullable(),
   course: z.string().max(200).optional().nullable(),
@@ -294,6 +296,7 @@ const baseProfileSchema = z.object({
     .enum(["MIDDLE_CLASS", "UPPER_MIDDLE_CLASS", "RICH", "AFFLUENT"])
     .optional()
     .nullable(),
+  residentialStatus: z.string().max(100).optional().nullable(),
   siblings: z.number().min(0).max(20).optional().nullable(),
 
   // Religious
@@ -393,6 +396,7 @@ export const profileFormSchema = baseProfileSchema.extend({
       invalid_type_error: "Family status is required",
     })
   ),
+  residentialStatus: requiredNullableText("Residential status", 100),
   siblings: z.preprocess(
     (value) => (value === "" || value === null ? undefined : value),
     z
@@ -407,7 +411,16 @@ export const profileFormSchema = baseProfileSchema.extend({
 })
   .superRefine(validateMinimumProfileAge)
   .superRefine(validateHinduHoroscopeRequirements)
-  .superRefine(validateRequiredPhotoUploads);
+  .superRefine(validateRequiredPhotoUploads)
+  .superRefine((data, ctx) => {
+    if (data.isPhysicallyChallenged && !hasRequiredTextValue(data.disabilityType)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Disability type is required when physically challenged is Yes",
+        path: ["disabilityType"],
+      });
+    }
+  });
 
 export type ProfileInput = z.infer<typeof profileSchema>;
 export type PreferenceInput = z.infer<typeof preferenceSchema>;

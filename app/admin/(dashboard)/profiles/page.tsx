@@ -238,34 +238,6 @@ export default async function AdminProfilesPage({
 
     return `/admin/profiles?${params.toString()}`;
   };
-  const buildPageHref = (nextPage: number) => {
-    const params = new URLSearchParams();
-    const filterParams: Array<[string, string | undefined]> = [
-      ["search", sp.search],
-      ["gender", sp.gender],
-      ["status", sp.status],
-      ["religion", sp.religion],
-      ["maritalStatus", sp.maritalStatus],
-      ["location", sp.location],
-      ["ageMin", sp.ageMin],
-      ["ageMax", sp.ageMax],
-      ["heightMin", sp.heightMin],
-      ["heightMax", sp.heightMax],
-      ["education", sp.education],
-      ["profession", sp.profession],
-      ["income", sp.income],
-      ["view", sp.view],
-      ["limit", sp.limit ?? String(limit)],
-      ["columns", selectedColumns.join(",")],
-      ["page", String(nextPage)],
-    ];
-
-    filterParams.forEach(([key, value]) => {
-      if (value) params.set(key, value);
-    });
-
-    return `?${params.toString()}`;
-  };
   const where: Prisma.ProfileWhereInput = {};
   const andConditions: Prisma.ProfileWhereInput[] = [];
 
@@ -371,64 +343,6 @@ export default async function AdminProfilesPage({
 
     const totalPages = Math.ceil(total / limit);
 
-  const paginationFooter =
-    totalPages > 0 ? (
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <span className="font-medium text-slate-700">{total} total profiles</span>
-
-        <div className="flex flex-wrap items-center justify-end gap-2.5">
-          <AdminProfileStatusQuickLinks
-            items={[
-              {
-                label: "Blocked Profiles",
-                href: buildViewHref("blocked"),
-                active: isBlockedView,
-                icon: "blocked",
-              },
-              {
-                label: "Deleted Profiles",
-                href: buildViewHref("deleted"),
-                active: isDeletedView,
-                icon: "deleted",
-              },
-            ]}
-          />
-
-          <AdminPageSizeSelector value={limit} />
-
-          <div className="flex items-center gap-2">
-            <a
-              href={buildPageHref(Math.max(1, page - 1))}
-              aria-label="Previous page"
-              className={`flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white text-gray-400 transition-colors ${
-                page === 1 ? "pointer-events-none opacity-40" : "hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </a>
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white text-sm font-medium text-gray-700">
-              {page}
-            </div>
-
-            <span className="text-sm text-gray-500">of {totalPages || 1}</span>
-
-            <a
-              href={buildPageHref(Math.min(totalPages || 1, page + 1))}
-              aria-label="Next page"
-              className={`flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white text-gray-400 transition-colors ${
-                page >= totalPages
-                  ? "pointer-events-none opacity-40"
-                  : "hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </a>
-          </div>
-        </div>
-      </div>
-    ) : null;
-
   const profileColumns: Array<{
     key: Exclude<AdminProfileColumnKey, "all">;
     label: string;
@@ -472,25 +386,25 @@ export default async function AdminProfilesPage({
       render: (profile) => (
         <div className="space-y-0.5 text-[12px] text-gray-600">
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-rose-400">
               <UserRound className="h-3 w-3" />
             </span>
             <span className="break-words">{GENDER_LABELS[profile.gender] ?? profile.gender}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-rose-400">
               <Cake className="h-3 w-3" />
             </span>
             <span className="break-words">{calculateAge(profile.dateOfBirth)} years</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-rose-400">
               <Ruler className="h-3 w-3" />
             </span>
             <span className="break-words">{formatHeight(profile.height)}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-rose-400">
               <Heart className="h-3 w-3" />
             </span>
             <span className="break-words">{profile.maritalStatus}</span>
@@ -504,13 +418,13 @@ export default async function AdminProfilesPage({
       render: (profile) => (
         <div className="space-y-0.5 text-[12px] text-gray-600">
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-rose-400">
               <Home className="h-3 w-3" />
             </span>
             <span className="break-words">{profile.religion ?? "Not added"}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-rose-400">
               <ContactRound className="h-3 w-3" />
             </span>
             <span className="break-words">{profile.caste ?? "Not added"}</span>
@@ -524,13 +438,13 @@ export default async function AdminProfilesPage({
       render: (profile) => (
         <div className="space-y-0.5 text-[12px] text-gray-600">
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-rose-400">
               <MapPin className="h-3 w-3" />
             </span>
             <span className="break-words">{profile.city ?? "Not added"}</span>
           </div>
-          <div className="pl-5 break-words text-[12px] text-gray-500">{profile.state ?? "Not added"}</div>
-          <div className="pl-5 break-words text-[12px] text-gray-500">{profile.country ?? "India"}</div>
+          <div className="pl-5 break-words text-[12px] text-rose-500">{profile.state ?? "Not added"}</div>
+          <div className="pl-5 break-words text-[12px] text-rose-500">{profile.country ?? "India"}</div>
         </div>
       ),
     },
@@ -540,24 +454,24 @@ export default async function AdminProfilesPage({
       render: (profile) => (
         <div className="space-y-0.5 text-[12px] text-gray-600">
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-rose-400">
               <BriefcaseBusiness className="h-3 w-3" />
             </span>
-            <span className="break-words font-medium text-[12px] text-gray-900">
+            <span className="break-words font-medium text-[12px] text-rose-700">
               {profile.profession ?? "Not added"}
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-rose-400">
               <GraduationCap className="h-3 w-3" />
             </span>
-            <span className="break-words text-xs text-gray-500">{profile.education ?? "Not added"}</span>
+            <span className="break-words text-xs text-rose-500">{profile.education ?? "Not added"}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-rose-400">
               <BriefcaseBusiness className="h-3 w-3" />
             </span>
-            <span className="break-words text-xs text-gray-500">Income: {profile.income ?? "Not added"}</span>
+            <span className="break-words text-xs text-rose-500">Income: {profile.income ?? "Not added"}</span>
           </div>
         </div>
       ),
@@ -568,16 +482,16 @@ export default async function AdminProfilesPage({
       render: (profile) => (
         <div className="space-y-0.5 text-[12px] text-gray-600">
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-rose-400">
               <Phone className="h-3 w-3" />
             </span>
             <span className="break-words">{profile.phone ?? "Not added"}</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-rose-400">
               <Mail className="h-3 w-3" />
             </span>
-            <span className="break-words text-xs text-gray-500">{profile.user.email}</span>
+            <span className="break-words text-xs text-rose-500">{profile.user.email}</span>
           </div>
         </div>
       ),
@@ -588,20 +502,20 @@ export default async function AdminProfilesPage({
       render: (profile) => (
         <div className="space-y-1 text-[12px] text-gray-600">
           <div className="flex flex-wrap items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-rose-400">
               <Crown className="h-3 w-3" />
             </span>
-            <span className="text-[12px] font-semibold uppercase tracking-wide text-gray-500">Plan Type:</span>
-            <span className="inline-flex w-fit rounded-full bg-gray-100 px-2 py-0.5 text-[12px] font-semibold text-gray-700">
+            <span className="text-[12px] font-semibold uppercase tracking-wide text-rose-500">Plan Type:</span>
+            <span className="inline-flex w-fit rounded-full bg-rose-50 px-2 py-0.5 text-[12px] font-semibold text-rose-700">
               {profile.isPaidProfile ? "Premium" : "Free"}
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-1">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-rose-400">
               <CalendarDays className="h-3 w-3" />
             </span>
-            <span className="text-[12px] font-semibold uppercase tracking-wide text-gray-500">Expiry Date:</span>
-            <span className="text-[12px] text-gray-700">Not available</span>
+            <span className="text-[12px] font-semibold uppercase tracking-wide text-rose-500">Expiry Date:</span>
+            <span className="text-[12px] text-rose-700">Not available</span>
           </div>
         </div>
       ),
@@ -612,12 +526,12 @@ export default async function AdminProfilesPage({
       render: (profile) => (
         <div className="space-y-1">
           <div className="flex items-center gap-1 whitespace-nowrap">
-            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-gray-400">
+            <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-rose-400">
               <ShieldCheck className="h-3 w-3" />
             </span>
             <StatusBadge status={profile.status} />
           </div>
-          <span className="inline-flex w-fit whitespace-nowrap rounded-full bg-gray-100 px-2 py-0.5 text-[12px] font-semibold text-gray-700">
+          <span className="inline-flex w-fit whitespace-nowrap rounded-full bg-rose-50 px-2 py-0.5 text-[12px] font-semibold text-rose-700">
             {profile.isPaidProfile ? "Verified" : "Not Verified"}
           </span>
         </div>
@@ -627,8 +541,8 @@ export default async function AdminProfilesPage({
       key: "joined",
       label: "Joined",
       render: (profile) => (
-        <div className="flex items-center gap-1 whitespace-nowrap text-[12px] text-gray-500">
-          <CalendarDays className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+        <div className="flex items-center gap-1 whitespace-nowrap text-[12px] text-rose-500">
+          <CalendarDays className="h-3.5 w-3.5 shrink-0 text-rose-400" />
           <span>{formatDate(profile.createdAt)}</span>
         </div>
       ),
@@ -707,63 +621,111 @@ export default async function AdminProfilesPage({
   });
 
     return (
-      <div className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col gap-6 overflow-x-hidden overflow-y-auto sm:h-[calc(100dvh-6.5rem)] lg:h-[calc(100dvh-3rem)]">
-        <div className="ui-enter-left shrink-0" style={{ animationDelay: "40ms" }}>
-          {showBackToProfiles ? (
-            <Link
-              href="/admin/profiles"
-              className="ui-link-shift mb-4 inline-flex h-11 items-center gap-2 rounded-full border border-rose-200 bg-white px-5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-300 hover:border-rose-300 hover:bg-rose-50 hover:shadow-md"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Back to Profiles
-            </Link>
-          ) : null}
-          <h1 className="text-2xl font-display font-bold text-slate-900">{pageTitle}</h1>
-          <p className="mt-1 text-sm text-gray-500">{pageDescription}</p>
-        </div>
-
-        <div className="ui-enter-up shrink-0 border-t border-gray-200" style={{ animationDelay: "90ms" }} />
-
-        <div className="ui-enter-scale flex-1 min-h-0" style={{ animationDelay: "140ms" }}>
-          <AdminListCard
-            className="flex-1 min-h-0"
-            bodyClassName="flex min-h-0 flex-col overflow-hidden"
-            toolbar={
-              <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-                <AdminSearchInput
-                  placeholder="Search by name or location..."
-                  className="ui-link-shift flex w-full max-w-[760px] overflow-hidden rounded-xl border border-rose-100 bg-white shadow-[0_10px_24px_rgba(244,63,94,0.06)] transition-all duration-300 hover:border-rose-200 hover:shadow-[0_16px_34px_rgba(244,63,94,0.1)] focus-within:-translate-y-0.5 focus-within:border-rose-200 focus-within:shadow-[0_16px_34px_rgba(244,63,94,0.1)]"
-                />
-
-                <div className="flex items-center gap-3 xl:ml-auto">
-                  <AdminProfileFilters />
-                  <AdminColumnSelector selectedColumns={selectedColumns} />
-                </div>
-              </div>
-            }
+    <div className="flex min-h-[calc(100vh-8rem)] flex-col space-y-6">
+      <div>
+        {showBackToProfiles ? (
+          <Link
+            href="/admin/profiles"
+            className="mb-4 inline-flex h-11 items-center gap-2 rounded-full border border-rose-200 bg-white px-5 text-sm font-medium text-rose-700 shadow-sm transition-colors hover:border-rose-300 hover:bg-rose-50"
           >
-            <AdminSelectableProfilesTable
-              columns={visibleColumns.map((column) => ({
-                key: column.key,
-                label: column.label,
-                width: getColumnWidth(column.key),
-              }))}
-              rows={profileTableRows}
-              listFooter={paginationFooter}
-            />
-          </AdminListCard>
-        </div>
+            <ChevronLeft className="h-4 w-4" />
+            Back to Profiles
+          </Link>
+        ) : null}
+        <h1 className="text-2xl font-display font-bold text-slate-900">{pageTitle}</h1>
+        <p className="mt-1 text-sm text-rose-500">{pageDescription}</p>
       </div>
+
+      <div className="border-t border-rose-100" />
+
+      <AdminListCard
+        className="min-h-0"
+        toolbar={
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+            <AdminSearchInput placeholder="Search by name or location..." />
+
+            <div className="flex items-center gap-3 xl:ml-auto">
+              <AdminProfileFilters />
+              <AdminColumnSelector selectedColumns={selectedColumns} />
+            </div>
+          </div>
+        }
+        summaryLeft={<span className="font-medium text-rose-700">{total} total profiles</span>}
+        summaryRight={
+          totalPages > 0 ? (
+            <div className="flex flex-wrap items-center justify-end gap-2.5">
+              <AdminProfileStatusQuickLinks
+                items={[
+                  {
+                    label: "Blocked Profiles",
+                    href: buildViewHref("blocked"),
+                    active: isBlockedView,
+                    icon: "blocked",
+                  },
+                  {
+                    label: "Deleted Profiles",
+                    href: buildViewHref("deleted"),
+                    active: isDeletedView,
+                    icon: "deleted",
+                  },
+                ]}
+              />
+
+              <AdminPageSizeSelector value={limit} />
+
+              <div className="flex items-center gap-2">
+                  <a
+                    href={`?page=${Math.max(1, page - 1)}${search ? `&search=${search}` : ""}${status ? `&status=${status}` : ""}${view ? `&view=${view}` : ""}&columns=${selectedColumns.join(",")}&limit=${limit}`}
+                    aria-label="Previous page"
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white text-rose-400 transition-colors ${
+                    page === 1 ? "pointer-events-none opacity-40" : "hover:border-rose-300 hover:text-rose-500"
+                  }`}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </a>
+
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white text-sm font-medium text-rose-700">
+                  {page}
+                </div>
+
+                <span className="text-sm text-rose-500">of {totalPages || 1}</span>
+
+                <a
+                  href={`?page=${Math.min(totalPages || 1, page + 1)}${search ? `&search=${search}` : ""}${status ? `&status=${status}` : ""}${view ? `&view=${view}` : ""}&columns=${selectedColumns.join(",")}&limit=${limit}`}
+                  aria-label="Next page"
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white text-rose-400 transition-colors ${
+                    page >= totalPages ? "pointer-events-none opacity-40" : "hover:border-rose-300 hover:text-rose-500"
+                  }`}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </a>
+              </div>
+            </div>
+          ) : null
+        }
+      >
+        <>
+          <AdminSelectableProfilesTable
+            columns={visibleColumns.map((column) => ({
+              key: column.key,
+              label: column.label,
+              width: getColumnWidth(column.key),
+            }))}
+            rows={profileTableRows}
+          />
+        </>
+      </AdminListCard>
+    </div>
     );
   } catch {
     return (
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-display font-bold text-slate-900">Manage Profiles</h1>
-          <p className="mt-1 text-sm text-gray-500">Unable to load profiles right now.</p>
+          <p className="mt-1 text-sm text-rose-500">Unable to load profiles right now.</p>
         </div>
 
-        <div className="border-t border-gray-200" />
+        <div className="border-t border-rose-100" />
 
         <AdminDatabaseUnavailableState
           title="Profiles unavailable"

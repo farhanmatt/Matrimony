@@ -15,6 +15,7 @@ type PaymentTableRow = {
   amount: number;
   baseAmount: number;
   profileAmount: number;
+  profileUnlockAmount: number;
   perProfileChatAmount: number;
   status: string;
   razorpayOrderId: string;
@@ -257,6 +258,7 @@ export default function AdminPaymentsTable({ payments }: AdminPaymentsTableProps
                       <div className="text-sm text-slate-600">
                         <div>Base: {formatCurrency(payment.baseAmount)}</div>
                         <div>Profile: {formatCurrency(payment.profileAmount)}</div>
+                        <div>Unlock: {formatCurrency(payment.profileUnlockAmount)}</div>
                         <div>Chat: {formatCurrency(payment.perProfileChatAmount)}</div>
                       </div>
                     </td>

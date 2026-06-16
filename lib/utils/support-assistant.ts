@@ -25,7 +25,7 @@ export const supportIssueCategories = [
   },
   {
     value: "likes_matches",
-    label: "Likes, Matches & Shortlist",
+    label: "Likes, Matches & Shortlisted Profiles",
     description: "Interest, mutual match, shortlist, or section visibility issues.",
   },
   {
@@ -1198,7 +1198,7 @@ function buildSupportReply(category: SupportIssueCategory, message: string) {
 
   if (category === "likes_matches") {
     if (normalizedMessage.includes("shortlist")) {
-      return "This looks like a shortlist-related question. Shortlist is your saved profile list, and profiles can stay there even after they become a mutual match. If something looks wrong, refresh the Shortlist section and check whether the correct profile appears only once.";
+      return "This looks like a question related to your saved profiles. Shortlisted Profiles is your saved profile list, and profiles can stay there even after they become a mutual match. If something looks wrong, refresh the Shortlisted Profiles section and check whether the correct profile appears only once.";
     }
 
     if (

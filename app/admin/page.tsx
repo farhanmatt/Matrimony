@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
-import type { CSSProperties } from "react";
 import { format, addDays, startOfDay, subDays } from "date-fns";
 import {
   ArrowRight,
@@ -139,8 +138,6 @@ function MetricCard({
   value,
   label,
   trend,
-  className,
-  style,
 }: {
   icon: LucideIcon;
   iconClassName: string;
@@ -148,15 +145,10 @@ function MetricCard({
   value: string;
   label: string;
   trend: TrendState;
-  className?: string;
-  style?: CSSProperties;
 }) {
   return (
-    <div
-      className={`rounded-2xl border border-gray-100 bg-white p-5 shadow-sm ui-card-lift-soft ${className ?? ""}`}
-      style={style}
-    >
-      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ui-icon-lift ${iconBgClassName}`}>
+    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${iconBgClassName}`}>
         <Icon className={`h-5 w-5 ${iconClassName}`} />
       </div>
       <div className="mt-5 text-3xl font-display font-bold text-gray-900">{value}</div>
@@ -292,8 +284,6 @@ function ChartCard({
   fill,
   yTickFormatter,
   range,
-  className,
-  style,
 }: {
   title: string;
   icon: LucideIcon;
@@ -304,17 +294,12 @@ function ChartCard({
   fill: string;
   yTickFormatter: (value: number) => string;
   range: DashboardRangeKey;
-  className?: string;
-  style?: CSSProperties;
 }) {
   return (
-    <div
-      className={`rounded-2xl border border-gray-100 bg-white p-5 shadow-sm ui-card-lift-soft ${className ?? ""}`}
-      style={style}
-    >
+    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className={`flex h-10 w-10 items-center justify-center rounded-2xl ui-icon-lift ${iconBgClassName}`}>
+          <div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${iconBgClassName}`}>
             <Icon className={`h-5 w-5 ${iconClassName}`} />
           </div>
           <h3 className="font-display text-lg font-semibold text-gray-900">{title}</h3>
@@ -344,39 +329,32 @@ function QuickActionCard({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ui-card-lift-soft ui-link-shift"
+      className="group flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-500 transition-colors group-hover:bg-rose-100 ui-icon-lift">
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-500 transition-colors group-hover:bg-rose-100">
         <Icon className="h-5 w-5" />
       </div>
       <div className="min-w-0 flex-1">
         <div className="text-sm font-semibold text-gray-900">{label}</div>
         <div className="text-xs text-gray-500">{description}</div>
       </div>
-      <ArrowRight className="h-4 w-4 text-gray-300 transition-colors group-hover:text-rose-500 ui-arrow-shift" />
+      <ArrowRight className="h-4 w-4 text-gray-300 transition-colors group-hover:text-rose-500" />
     </Link>
   );
 }
 
 function RecentActivityTable({
   items,
-  className,
-  style,
 }: {
   items: ActivityItem[];
-  className?: string;
-  style?: CSSProperties;
 }) {
   return (
-    <div
-      className={`rounded-2xl border border-gray-100 bg-white shadow-sm ui-card-lift-soft ${className ?? ""}`}
-      style={style}
-    >
+    <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
       <div className="flex items-center justify-between gap-4 border-b border-gray-100 px-5 py-4">
         <h3 className="font-display text-lg font-semibold text-gray-900">Recent Activity</h3>
         <Link
           href="/admin/users"
-          className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-rose-300 hover:text-rose-600 ui-link-shift"
+          className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-rose-300 hover:text-rose-600"
         >
           View All
         </Link>
@@ -401,13 +379,13 @@ function RecentActivityTable({
             {items.map((item) => {
               const Icon = item.icon;
               return (
-                <tr key={`${item.title}-${item.createdAt.toISOString()}`} className="group hover:bg-gray-50 transition-colors">
+                <tr key={`${item.title}-${item.createdAt.toISOString()}`} className="group hover:bg-gray-50">
                   <td className="p-0">
                     <Link
                       href={item.href}
-                      className="flex h-full w-full items-center gap-3 px-5 py-4 ui-link-shift"
+                      className="flex h-full w-full items-center gap-3 px-5 py-4"
                     >
-                      <div className={`flex h-9 w-9 items-center justify-center rounded-xl ui-icon-lift ${item.iconBgClassName}`}>
+                      <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${item.iconBgClassName}`}>
                         <Icon className={`h-4 w-4 ${item.iconClassName}`} />
                       </div>
                       <span className="font-medium text-gray-900 transition-colors group-hover:text-rose-600">
@@ -418,7 +396,7 @@ function RecentActivityTable({
                   <td className="p-0">
                     <Link
                       href={item.href}
-                      className="flex h-full w-full items-center px-5 py-4 text-gray-600 transition-colors group-hover:text-gray-900 ui-link-shift"
+                      className="flex h-full w-full items-center px-5 py-4 text-gray-600 transition-colors group-hover:text-gray-900"
                     >
                       {item.detail}
                     </Link>
@@ -426,10 +404,10 @@ function RecentActivityTable({
                   <td className="p-0">
                     <Link
                       href={item.href}
-                      className="flex h-full w-full items-center justify-between gap-3 px-5 py-4 text-gray-500 transition-colors group-hover:text-rose-600 ui-link-shift"
+                      className="flex h-full w-full items-center justify-between gap-3 px-5 py-4 text-gray-500 transition-colors group-hover:text-rose-600"
                     >
                       <span>{format(item.createdAt, "dd MMM yyyy, hh:mm a")}</span>
-                      <ArrowRight className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100 ui-arrow-shift" />
+                      <ArrowRight className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
                     </Link>
                   </td>
                 </tr>
@@ -724,7 +702,7 @@ export default async function AdminDashboardPage({
     return (
       <div className="space-y-6">
         <div className="flex items-start justify-between gap-4">
-          <div className="ui-enter-up" style={{ animationDelay: "40ms", animationFillMode: "forwards" }}>
+          <div>
             <h1 className="text-3xl font-display font-bold text-gray-900">
               Admin Dashboard
             </h1>
@@ -732,20 +710,13 @@ export default async function AdminDashboardPage({
               Overview of platform activity and metrics
             </p>
           </div>
-          <div
-            className="ui-enter-right relative z-40"
-            style={{ animationDelay: "90ms", animationFillMode: "forwards" }}
-          >
-            <AdminNotificationBell notifications={[]} />
-          </div>
+          <AdminNotificationBell notifications={[]} />
         </div>
 
-        <div className="ui-enter-scale" style={{ animationDelay: "140ms", animationFillMode: "forwards" }}>
-          <AdminDatabaseUnavailableState
-            title="Admin dashboard unavailable"
-            description="We couldn't reach the database to load the dashboard metrics, charts, and recent activity."
-          />
-        </div>
+        <AdminDatabaseUnavailableState
+          title="Admin dashboard unavailable"
+          description="We couldn't reach the database to load the dashboard metrics, charts, and recent activity."
+        />
       </div>
     );
   }
@@ -837,23 +808,18 @@ export default async function AdminDashboardPage({
         <div className="max-w-none px-3 py-4 sm:px-4 sm:py-5 lg:px-5 lg:py-6">
           <div className="space-y-8">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="ui-enter-up" style={{ animationDelay: "40ms", animationFillMode: "forwards" }}>
+              <div>
                 <h1 className="text-3xl font-display font-bold text-gray-900">Admin Dashboard</h1>
                 <p className="mt-2 text-sm text-gray-500">
                   Overview of platform activity and metrics
                 </p>
               </div>
 
-              <div
-                className="ui-enter-right relative z-40"
-                style={{ animationDelay: "90ms", animationFillMode: "forwards" }}
-              >
-                <AdminNotificationBell notifications={notificationItems} />
-              </div>
+              <AdminNotificationBell notifications={notificationItems} />
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-              {statCards.map((card, index) => (
+              {statCards.map((card) => (
                 <MetricCard
                   key={card.label}
                   icon={card.icon}
@@ -862,11 +828,6 @@ export default async function AdminDashboardPage({
                   value={card.value}
                   label={card.label}
                   trend={card.trend}
-                  className="ui-enter-scale"
-                  style={{
-                    animationDelay: `${120 + index * 50}ms`,
-                    animationFillMode: "forwards",
-                  }}
                 />
               ))}
             </div>
@@ -882,8 +843,6 @@ export default async function AdminDashboardPage({
                 fill="#60A5FA"
                 yTickFormatter={(value) => `${Math.round(value)}`}
                 range={selectedRange.key}
-                className="ui-enter-left"
-                style={{ animationDelay: "200ms", animationFillMode: "forwards" }}
               />
 
               <ChartCard
@@ -896,37 +855,22 @@ export default async function AdminDashboardPage({
                 fill="#4ADE80"
                 yTickFormatter={(value) => formatCompactRupees(value)}
                 range={selectedRange.key}
-                className="ui-enter-right"
-                style={{ animationDelay: "250ms", animationFillMode: "forwards" }}
               />
             </div>
 
             <div>
-              <div className="ui-enter-up mb-4 flex items-center justify-between gap-4" style={{ animationDelay: "300ms", animationFillMode: "forwards" }}>
+              <div className="mb-4 flex items-center justify-between gap-4">
                 <h2 className="font-display text-xl font-semibold text-gray-900">Quick Actions</h2>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                {quickActions.map((action, index) => (
-                  <div
-                    key={action.href}
-                    className="ui-enter-up"
-                    style={{
-                      animationDelay: `${340 + index * 45}ms`,
-                      animationFillMode: "forwards",
-                    }}
-                  >
-                    <QuickActionCard {...action} />
-                  </div>
+                {quickActions.map((action) => (
+                  <QuickActionCard key={action.href} {...action} />
                 ))}
               </div>
             </div>
 
-            <RecentActivityTable
-              items={recentActivity}
-              className="ui-enter-up"
-              style={{ animationDelay: "430ms", animationFillMode: "forwards" }}
-            />
+            <RecentActivityTable items={recentActivity} />
           </div>
         </div>
       </main>

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Session } from "next-auth";
 import {
   ArrowRight,
   BookOpen,
@@ -290,16 +291,18 @@ interface FullLandingPageProps {
   featuredProfiles?: LandingFeaturedProfile[];
   featuredProfilesUnavailable?: boolean;
   heroImageUrl?: string;
+  session?: Session | null;
 }
 
 export default function FullLandingPage({
   featuredProfiles = [],
   featuredProfilesUnavailable = false,
   heroImageUrl,
+  session,
 }: FullLandingPageProps) {
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#fff9fb_0%,#fff4f7_40%,#ffffff_100%)] text-slate-900">
-      <LandingNavbar />
+      <LandingNavbar session={session} />
 
       <section className="relative overflow-hidden border-b border-rose-100/70 bg-white pt-[76px]">
         <div className="relative w-full pb-24">
@@ -572,74 +575,6 @@ export default function FullLandingPage({
         </div>
       </section>
 
-      <section id="membership-plans" className="py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <LandingReveal delayMs={40} variant="left">
-            <div>
-              <SectionTitle
-                title="Membership Plans"
-                href="/register"
-                linkLabel="View All Plans"
-              />
-            </div>
-          </LandingReveal>
-          <div className="grid gap-5 lg:grid-cols-[1fr_1fr_1fr_0.82fr]">
-            {membershipPlans.map((plan, index) => (
-              <LandingReveal key={plan.name} delayMs={90 + index * 80} variant="scale">
-                <article
-                  className={`landing-surface group relative overflow-hidden rounded-[1.75rem] border border-rose-100 bg-gradient-to-b ${plan.accent} p-6 shadow-[0_14px_34px_rgba(15,23,42,0.05)]`}
-                >
-                  {plan.badge ? (
-                    <div className="absolute right-4 top-4 rounded-full bg-gradient-to-r from-rose-600 to-pink-500 px-3 py-1 text-xs font-semibold text-white">
-                      {plan.badge}
-                    </div>
-                  ) : null}
-                  <div className={`landing-surface-icon flex h-14 w-14 items-center justify-center rounded-2xl ${plan.iconWrap}`}>
-                    <plan.icon className="h-6 w-6" />
-                  </div>
-                  <div className="mt-5 text-2xl font-bold text-slate-900">{plan.name}</div>
-                  <div className="mt-3 flex items-end gap-2">
-                    <div className="text-4xl font-bold text-slate-900">{plan.price}</div>
-                    <div className="pb-1 text-sm text-slate-500">{plan.duration}</div>
-                  </div>
-                  <ul className="mt-6 space-y-3 text-sm text-slate-600">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-3">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    href="/register"
-                    className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(244,63,94,0.2)]"
-                  >
-                    {plan.button}
-                  </Link>
-                </article>
-              </LandingReveal>
-            ))}
-
-            <LandingReveal delayMs={330} variant="right">
-              <aside className="landing-surface rounded-[1.75rem] border border-rose-100 bg-[linear-gradient(180deg,rgba(255,241,242,0.92),rgba(255,255,255,0.95))] p-6 shadow-[0_14px_34px_rgba(15,23,42,0.05)]">
-                <div className="text-lg font-bold text-slate-900">Why Premium Works</div>
-                <ul className="mt-5 space-y-4 text-sm text-slate-600">
-                  {premiumBenefits.map((item) => (
-                    <li key={item} className="flex items-start gap-3">
-                      <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-8 rounded-[1.25rem] bg-white/80 p-4 text-sm font-semibold text-rose-500">
-                  100% Satisfaction Guarantee
-                </div>
-              </aside>
-            </LandingReveal>
-          </div>
-        </div>
-      </section>
-
       <section id="blog" className="py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <LandingReveal delayMs={40} variant="left">
@@ -769,16 +704,18 @@ export default function FullLandingPage({
                 <div key={column.title}>
                   <div className="text-lg font-bold">{column.title}</div>
                   <ul className="mt-4 space-y-3 text-sm text-rose-100/85">
-                    {column.links.map((link) => (
-                      <li key={link.label}>
-                        <Link
-                          href={link.href}
-                          className="transition-colors hover:text-white"
-                        >
-                          {link.label}
-                        </Link>
-                      </li>
-                    ))}
+                    {column.links
+                      .filter((link) => link.label !== "Membership Plans")
+                      .map((link) => (
+                        <li key={link.label}>
+                          <Link
+                            href={link.href}
+                            className="transition-colors hover:text-white"
+                          >
+                            {link.label}
+                          </Link>
+                        </li>
+                      ))}
                   </ul>
                 </div>
               ))}
@@ -800,8 +737,8 @@ export default function FullLandingPage({
             </div>
           </LandingReveal>
 
-          <div className="border-t border-white/10 py-3 text-center text-sm text-rose-100/75">
-            © 2026 Vivah Bandhan. All Rights Reserved.
+          <div className="border-t border-white/10 py-5 text-center text-sm text-rose-100/75">
+            © {new Date().getFullYear()} Vivah Bandhan. All Rights Reserved.
           </div>
         </div>
       </footer>

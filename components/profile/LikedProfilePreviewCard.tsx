@@ -145,6 +145,7 @@ export default function LikedProfilePreviewCard({
     setConfirmOpen(true);
   };
 
+
   const handleMenuToggle = (event: ReactMouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     if (removing) return;
@@ -161,11 +162,11 @@ export default function LikedProfilePreviewCard({
       setMenuOpen(false);
       toast.success(
         nextShortlisted
-          ? "Profile added to shortlist."
-          : "Profile removed from shortlist."
+          ? "Profile added to shortlisted profiles."
+          : "Profile removed from shortlisted profiles."
       );
     } catch {
-      toast.error("Unable to update shortlist.");
+      toast.error("Unable to update shortlisted profiles.");
     }
   };
 

@@ -35,6 +35,7 @@ interface Match {
     course: string | null;
     phone: string | null;
     previewImageUrl?: string | null;
+    photos: { url: string; isPrimary: boolean }[];
   };
   isUnlocked: boolean;
   createdAt: string;

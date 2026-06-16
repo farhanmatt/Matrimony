@@ -19,16 +19,27 @@ interface AdminPaymentColumnSelectorProps {
   selectedColumns: AdminPaymentColumnKey[];
 }
 
+const STORAGE_KEY = "admin_payments_columns";
+
+function writeSelection(selected: AdminPaymentColumnKey[]) {
+  const value = selected.join(",");
+  document.cookie = `${STORAGE_KEY}=${encodeURIComponent(value)}; path=/; max-age=31536000; samesite=lax`;
+  window.localStorage.setItem(STORAGE_KEY, value);
+}
+
 export default function AdminPaymentColumnSelector({
   selectedColumns,
 }: AdminPaymentColumnSelectorProps) {
   const [open, setOpen] = useState(false);
+  const [activeColumns, setActiveColumns] = useState(selectedColumns);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const updateColumns = (nextColumns: AdminPaymentColumnKey[]) => {
+    setActiveColumns(nextColumns);
+    writeSelection(nextColumns);
     const params = new URLSearchParams(searchParams.toString());
     params.set("columns", nextColumns.length === 0 ? columnOptions.map((column) => column.key).join(",") : nextColumns.join(","));
     params.delete("column");
@@ -38,12 +49,16 @@ export default function AdminPaymentColumnSelector({
   };
 
   const toggleColumn = (column: AdminPaymentColumnKey) => {
-    const nextColumns = selectedColumns.includes(column)
-      ? selectedColumns.filter((value) => value !== column)
-      : [...selectedColumns, column];
+    const nextColumns = activeColumns.includes(column)
+      ? activeColumns.filter((value) => value !== column)
+      : [...activeColumns, column];
 
     updateColumns(nextColumns.length === 0 ? columnOptions.map((option) => option.key) : nextColumns);
   };
+
+  useEffect(() => {
+    setActiveColumns(selectedColumns);
+  }, [selectedColumns]);
 
   useEffect(() => {
     if (!open) return;
@@ -82,7 +97,7 @@ export default function AdminPaymentColumnSelector({
               className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 transition-colors hover:bg-rose-50"
             >
               <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center text-rose-500">
-                {selectedColumns.includes(option.key)
+                {activeColumns.includes(option.key)
                   ? <CheckSquare className="h-4 w-4" />
                   : <Square className="h-4 w-4" />
                 }

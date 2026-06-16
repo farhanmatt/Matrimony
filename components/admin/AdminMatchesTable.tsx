@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Check, CheckSquare, Copy, Eye, MoreVertical, Trash2, Square } from "lucide-react";
+import { Check, CheckSquare, Copy, Eye, MoreVertical, Trash2, Square, X, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/helpers";
 
@@ -16,6 +16,7 @@ type TableColumn = {
 
 type TableRow = {
   id: string;
+  displayId?: string;
   href: string;
   cells: ReactNode[];
 };
@@ -64,6 +65,11 @@ export default function AdminMatchesTable({ columns, rows, listFooter }: AdminMa
   const bulkPanelRef = useRef<HTMLDivElement | null>(null);
   const actionTriggerRef = useRef<HTMLButtonElement | null>(null);
   const actionMenuRef = useRef<HTMLDivElement | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmTitle, setConfirmTitle] = useState("");
+  const [confirmMessage, setConfirmMessage] = useState("");
+  const [confirmAction, setConfirmAction] = useState<() => Promise<void>>(() => async () => {});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
   const selectedCount = selectedIds.length;
   const allSelected = visibleRows.length > 0 && selectedCount === visibleRows.length;
@@ -207,37 +213,45 @@ export default function AdminMatchesTable({ columns, rows, listFooter }: AdminMa
   const runBulkDelete = async () => {
     if (bulkLoading || selectedIds.length === 0) return;
 
-    const confirmed = window.confirm(
-      `Remove ${selectedIds.length} selected match${selectedIds.length === 1 ? "" : "es"}? This cannot be undone.`,
-    );
-    if (!confirmed) return;
+    setConfirmTitle(`Delete ${selectedIds.length} selected match${selectedIds.length === 1 ? "" : "es"}?`);
+    setConfirmMessage("Are you sure you want to delete the selected matches? This action cannot be undone.");
+    setConfirmAction(() => async () => {
+      setBulkLoading(true);
+      setIsSubmitting(true);
+      try {
+        const res = await fetch("/api/admin/matches", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ matchIds: selectedIds }),
+        });
 
-    setBulkLoading(true);
+        if (!res.ok) {
+          const responseBody = await res.text();
+          console.error("Admin matches bulk delete API failed.", {
+            status: res.status,
+            statusText: res.statusText,
+            body: responseBody,
+          });
+          toast.error("Failed to delete matches");
+          return;
+        }
 
-    try {
-      const res = await fetch("/api/admin/matches", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matchIds: selectedIds }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        toast.error(data.error ?? "Failed to delete matches");
-        return;
+        const data = (await res.json().catch(() => ({}))) as { deleted?: number };
+        setVisibleRows((current) => current.filter((row) => !selectedIds.includes(row.id)));
+        setSelectedIds([]);
+        toast.success(`Deleted ${data.deleted ?? selectedIds.length} matches`);
+        router.refresh();
+      } catch (error) {
+        console.error("Admin matches bulk delete request failed.", error);
+        toast.error("Something went wrong");
+      } finally {
+        setBulkLoading(false);
+        setBulkOpen(false);
+        setIsSubmitting(false);
+        setConfirmOpen(false);
       }
-
-      const data = (await res.json().catch(() => ({}))) as { deleted?: number };
-      setVisibleRows((current) => current.filter((row) => !selectedIds.includes(row.id)));
-      setSelectedIds([]);
-      toast.success(`Removed ${data.deleted ?? selectedIds.length} matches`);
-      router.refresh();
-    } catch {
-      toast.error("Something went wrong");
-    } finally {
-      setBulkLoading(false);
-      setBulkOpen(false);
-    }
+    });
+    setConfirmOpen(true);
   };
 
   const handleCopyMatchId = async (matchId: string) => {
@@ -252,31 +266,42 @@ export default function AdminMatchesTable({ columns, rows, listFooter }: AdminMa
   };
 
   const handleDeleteMatch = async (matchId: string) => {
-    const confirmed = window.confirm("Remove this match? This cannot be undone.");
-    if (!confirmed) return;
+    setConfirmTitle("Delete this match?");
+    setConfirmMessage("Are you sure you want to delete this match? This action cannot be undone.");
+    setConfirmAction(() => async () => {
+      setIsSubmitting(true);
+      try {
+        const res = await fetch("/api/admin/matches", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ matchIds: [matchId] }),
+        });
 
-    try {
-      const res = await fetch("/api/admin/matches", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matchIds: [matchId] }),
-      });
+        if (!res.ok) {
+          const responseBody = await res.text();
+          console.error("Admin match delete API failed.", {
+            status: res.status,
+            statusText: res.statusText,
+            body: responseBody,
+          });
+          toast.error("Failed to delete match");
+          return;
+        }
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        toast.error(data.error ?? "Failed to delete match");
-        return;
+        toast.success("Match deleted");
+        setVisibleRows((current) => current.filter((row) => row.id !== matchId));
+        router.refresh();
+        router.push("/admin/matches/deleted");
+      } catch (error) {
+        console.error("Admin match delete request failed.", error);
+        toast.error("Something went wrong");
+      } finally {
+        setIsSubmitting(false);
+        setOpenActionRowId(null);
+        setConfirmOpen(false);
       }
-
-      toast.success("Match removed");
-      setVisibleRows((current) => current.filter((row) => row.id !== matchId));
-      router.refresh();
-      router.push("/admin/matches/deleted");
-    } catch {
-      toast.error("Something went wrong");
-    } finally {
-      setOpenActionRowId(null);
-    }
+    });
+    setConfirmOpen(true);
   };
 
   return (
@@ -383,12 +408,12 @@ export default function AdminMatchesTable({ columns, rows, listFooter }: AdminMa
                                     </button>
                                     <button
                                       type="button"
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        handleCopyMatchId(row.id);
-                                      }}
-                                      className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-rose-50"
-                                    >
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                handleCopyMatchId(row.displayId ?? row.id);
+                              }}
+                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-rose-50"
+                            >
                                       <Copy className="h-4 w-4 text-slate-500" />
                                       Copy Match ID
                                     </button>
@@ -401,7 +426,7 @@ export default function AdminMatchesTable({ columns, rows, listFooter }: AdminMa
                                       className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-rose-700 transition-colors hover:bg-rose-50"
                                     >
                                       <Trash2 className="h-4 w-4 text-rose-500" />
-                                      Remove match
+                                      Delete match
                                     </button>
                                   </div>,
                                   document.body,
@@ -470,7 +495,7 @@ export default function AdminMatchesTable({ columns, rows, listFooter }: AdminMa
                     className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-rose-50"
                   >
                     <Trash2 className="h-4 w-4 text-rose-500" />
-                    Remove selected
+                    Delete selected
                   </button>
                   <button
                     type="button"
@@ -495,6 +520,72 @@ export default function AdminMatchesTable({ columns, rows, listFooter }: AdminMa
         </div>
       </div>
 
+      {confirmOpen && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/50 px-4 py-6 backdrop-blur-[2px]"
+              onClick={(event) => {
+                if (event.target === event.currentTarget && !isSubmitting) {
+                  setConfirmOpen(false);
+                }
+              }}
+            >
+              <div className="relative w-full max-w-md rounded-[28px] border border-rose-100 bg-white p-6 shadow-[0_28px_80px_rgba(15,23,42,0.22)] sm:p-7">
+                <button
+                  type="button"
+                  onClick={() => setConfirmOpen(false)}
+                  className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-400 transition-colors hover:border-rose-200 hover:text-rose-500"
+                  aria-label="Close dialog"
+                  disabled={isSubmitting}
+                >
+                  <X className="h-4.5 w-4.5" />
+                </button>
+
+                <div className="mb-6 flex flex-col items-center text-center">
+                  <div className="mb-4 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+                    <AlertTriangle className="h-6 w-6" />
+                  </div>
+                  <h3 className="font-display text-[1.4rem] font-bold text-slate-900">
+                    {confirmTitle}
+                  </h3>
+                  <p className="mt-3 text-[15px] leading-7 text-slate-500">
+                    {confirmMessage}
+                  </p>
+                </div>
+
+                <div className="flex gap-3 sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmOpen(false)}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center rounded-[16px] border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={confirmAction}
+                    disabled={isSubmitting}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-75"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span className="h-4.5 w-4.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="h-4.5 w-4.5" />
+                        Delete
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

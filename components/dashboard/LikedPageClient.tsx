@@ -415,7 +415,7 @@ export default function LikedPageClient({
 
   const highlightStats = [
     {
-      label: isShortlistView ? "Shortlisted" : "Interests",
+      label: isShortlistView ? "Shortlisted Profiles" : "Interests",
       value: visibleLikes.length,
       icon: isShortlistView ? Bookmark : Heart,
       iconClass: "bg-rose-100 text-rose-500",
@@ -452,7 +452,7 @@ export default function LikedPageClient({
               <PageIcon className="h-4.5 w-4.5" />
             </div>
             <h1 className="font-display text-[1.65rem] font-bold tracking-tight text-slate-900">
-              {isShortlistView ? "Shortlist" : "Interests"}
+              {isShortlistView ? "Shortlisted Profiles" : "Interests"}
             </h1>
           </div>
           <p className="text-[13px] text-slate-600">

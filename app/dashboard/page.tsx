@@ -627,8 +627,16 @@ export default async function DashboardPage() {
               <h1 className="font-display text-[1.15rem] font-bold leading-tight text-gray-900 sm:text-[1.45rem] sm:whitespace-nowrap lg:text-[1.6rem]">
                 Let&apos;s find your <span className="text-rose-600">perfect match</span>
               </h1>
-              <p className="mt-3 max-w-none text-[15px] leading-7 text-gray-700 sm:whitespace-nowrap">
-                you&apos;re just a step away from finding your life partner
+              <p className="mt-3 max-w-[28rem] text-[14px] leading-relaxed text-gray-700">
+                {profile ? (
+                  "Explore Your Life Partner"
+                ) : (
+                  <>
+                    Creating or updating your profile accurately will help us provide
+                    better profile recommendations for you and other members. Please
+                    take your time and fill in the details carefully.
+                  </>
+                )}
               </p>
 
               <div className="mt-5 flex flex-wrap gap-3">
@@ -975,74 +983,7 @@ export default async function DashboardPage() {
             initialCompletion={profileCompletion}
           />
         </div>
-
-        <section
-          className="ui-enter-right ui-card-lift-soft overflow-hidden rounded-[14px] border border-rose-100 bg-gradient-to-br from-white via-rose-50 to-pink-100 p-5 shadow-sm"
-          style={{ animationDelay: "270ms", animationFillMode: "forwards" }}
-        >
-          <div className="flex items-center gap-3">
-            <div className="ui-icon-lift flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-amber-500 shadow-sm">
-              <Crown className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="font-display text-lg font-bold leading-tight text-rose-600">
-                Go Premium
-              </h2>
-              <p className="text-[13px] text-gray-600">Unlock more benefits today.</p>
-            </div>
-          </div>
-
-          <ul className="mt-5 space-y-3 text-[13px] text-gray-600">
-            <li className="flex items-center gap-2">
-              <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500" />
-              Contact unlimited profiles
-            </li>
-            <li className="flex items-center gap-2">
-              <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500" />
-              See who viewed your profile
-            </li>
-            <li className="flex items-center gap-2">
-              <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500" />
-              Priority customer support
-            </li>
-          </ul>
-
-          <button
-            type="button"
-            className="ui-link-shift mt-6 inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-[13px] font-semibold text-white shadow-lg shadow-rose-200 transition-all hover:-translate-y-0.5 hover:shadow-xl"
-          >
-            Upgrade Now
-          </button>
-        </section>
-
-        <section
-          className="ui-enter-right ui-card-lift-soft rounded-[14px] border border-gray-100 bg-white p-5 shadow-sm"
-          style={{ animationDelay: "350ms", animationFillMode: "forwards" }}
-        >
-          <div className="flex items-center gap-3">
-            <div className="ui-icon-lift flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
-              <LifeBuoy className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="font-display text-lg font-bold leading-tight text-gray-900">
-                Need Help?
-              </h2>
-              <p className="text-[13px] text-gray-500">
-                We are here to support you at every step.
-              </p>
-            </div>
-          </div>
-
-          <Link
-            href="/dashboard/support"
-            className="ui-link-shift mt-6 inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-200 px-5 py-3 text-[13px] font-semibold text-rose-600 transition-colors hover:bg-rose-50"
-          >
-            <MessageCircle className="h-4 w-4" />
-            Contact Support
-          </Link>
-        </section>
       </aside>
     </div>
   );
 }
-

@@ -4,7 +4,6 @@ import { format } from "date-fns";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { syncMatchesFromMutualLikes } from "@/lib/utils/matching";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import AdminListCard from "@/components/admin/AdminListCard";
@@ -16,40 +15,34 @@ import AdminMatchColumnSelector, {
   type AdminMatchColumnKey,
 } from "@/components/admin/AdminMatchColumnSelector";
 import AdminMatchStatusQuickLinks from "@/components/admin/AdminMatchStatusQuickLinks";
+import AdminPreviewableImage from "@/components/admin/AdminPreviewableImage";
 import AdminMatchesTable from "@/components/admin/AdminMatchesTable";
-import { HeartHandshake, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getInitials } from "@/lib/utils/helpers";
 
 export const metadata: Metadata = {
   title: "Match Management - Admin",
 };
 
-const MATCH_COLUMN_KEYS = ["match", "details", "status", "date", "action"] as const;
-const DEFAULT_MATCH_COLUMN_KEYS: AdminMatchColumnKey[] = [
-  "match",
-  "details",
-  "status",
-  "date",
-  "action",
-];
+const MATCH_COLUMN_KEYS = ["match", "details", "id", "status", "date", "action"] as const;
+const DEFAULT_MATCH_COLUMN_KEYS: AdminMatchColumnKey[] = ["match", "details", "status", "date", "action"];
+
+type MatchProfile = {
+  id: string;
+  fullName: string;
+  gender: string;
+  city: string | null;
+  location: string | null;
+  state: string | null;
+  profileImage: string | null;
+  photos: { url: string }[];
+};
 
 type MatchRow = {
   id: string;
-  profileA: {
-    id: string;
-    fullName: string;
-    gender: string;
-    city: string | null;
-    location: string | null;
-    state: string | null;
-  };
-  profileB: {
-    id: string;
-    fullName: string;
-    gender: string;
-    city: string | null;
-    location: string | null;
-    state: string | null;
-  };
+  displayId: string;
+  profileA: MatchProfile;
+  profileB: MatchProfile;
   unlocks: { id: string }[];
   createdAt: Date;
 };
@@ -59,15 +52,49 @@ function fieldValue(value: string | null | undefined) {
   return value;
 }
 
+function getProfileLocation(profile: Pick<MatchProfile, "city" | "location" | "state">) {
+  return profile.city ?? profile.location ?? profile.state;
+}
+
+function getProfileImage(profile: Pick<MatchProfile, "profileImage" | "photos">) {
+  return profile.profileImage ?? profile.photos[0]?.url ?? null;
+}
+
+function buildMatchCode(createdAt: Date, sequence: number) {
+  return `MAT-${createdAt.getFullYear()}-${String(sequence).padStart(6, "0")}`;
+}
+
+function renderProfileAvatar(profile: MatchProfile, name: string) {
+  const imageUrl = getProfileImage(profile);
+
+  if (imageUrl) {
+    return (
+      <AdminPreviewableImage
+        src={imageUrl}
+        alt={name}
+        className="relative block h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-rose-100 via-white to-pink-100 shadow-sm ring-1 ring-slate-100 cursor-zoom-in"
+        imageClassName="object-cover object-[50%_15%]"
+        sizes="40px"
+      />
+    );
+  }
+
+  return (
+    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-rose-100 via-white to-pink-100 shadow-sm ring-1 ring-slate-100">
+      <div className="flex h-full w-full items-center justify-center bg-slate-50 text-[10px] font-semibold text-slate-500">
+        {getInitials(name)}
+      </div>
+    </div>
+  );
+}
+
 function parseMatchColumns(raw: string | undefined): AdminMatchColumnKey[] {
   if (!raw) return [...DEFAULT_MATCH_COLUMN_KEYS];
 
   const selected = raw
     .split(",")
     .map((value) => value.trim())
-    .filter((value): value is AdminMatchColumnKey =>
-      (MATCH_COLUMN_KEYS as readonly string[]).includes(value)
-    );
+    .filter((value): value is AdminMatchColumnKey => (MATCH_COLUMN_KEYS as readonly string[]).includes(value));
 
   return selected.length > 0 ? selected : [...DEFAULT_MATCH_COLUMN_KEYS];
 }
@@ -170,15 +197,21 @@ export default async function AdminMatchesPage({
   }
 
   try {
-    await syncMatchesFromMutualLikes();
-
-    const [matches, total] = await Promise.all([
+    const [allMatches, matches, total] = await Promise.all([
+      prisma.match.findMany({
+        select: {
+          id: true,
+          createdAt: true,
+        },
+      }),
       prisma.match.findMany({
         where,
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
-        include: {
+        select: {
+          id: true,
+          createdAt: true,
           profileA: {
             select: {
               id: true,
@@ -187,6 +220,12 @@ export default async function AdminMatchesPage({
               city: true,
               location: true,
               state: true,
+              profileImage: true,
+              photos: {
+                where: { isPrimary: true },
+                take: 1,
+                select: { url: true },
+              },
             },
           },
           profileB: {
@@ -197,6 +236,12 @@ export default async function AdminMatchesPage({
               city: true,
               location: true,
               state: true,
+              profileImage: true,
+              photos: {
+                where: { isPrimary: true },
+                take: 1,
+                select: { url: true },
+              },
             },
           },
           unlocks: {
@@ -206,6 +251,21 @@ export default async function AdminMatchesPage({
       }),
       prisma.match.count({ where }),
     ]);
+
+    allMatches.sort((a, b) => {
+      const diff = a.createdAt.getTime() - b.createdAt.getTime();
+      return diff !== 0 ? diff : a.id.localeCompare(b.id);
+    });
+
+    const yearCounters = new Map<number, number>();
+    const matchCodeById = new Map<string, string>();
+
+    for (const match of allMatches) {
+      const year = match.createdAt.getFullYear();
+      const nextSequence = (yearCounters.get(year) ?? 0) + 1;
+      yearCounters.set(year, nextSequence);
+      matchCodeById.set(match.id, buildMatchCode(match.createdAt, nextSequence));
+    }
 
     const totalPages = Math.ceil(total / limit);
     const listReturnHref = buildPageHref({
@@ -217,160 +277,105 @@ export default async function AdminMatchesPage({
       columns: visibleColumns,
       limit,
     });
-    const paginationFooter =
-      totalPages > 0 ? (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <span className="font-medium text-slate-700">{total} total matches</span>
-
-          <div className="flex flex-wrap items-center justify-end gap-2.5">
-            <AdminMatchStatusQuickLinks
-              items={[]}
-              deletedMatchesHref="/admin/matches/deleted"
-            />
-
-            <AdminPageSizeSelector value={limit} />
-
-            <div className="flex items-center gap-2">
-              <a
-                href={buildPageHref({
-                  page: Math.max(1, page - 1),
-                  search,
-                  unlockStatus,
-                  dateFrom,
-                  dateTo,
-                  columns: visibleColumns,
-                  limit,
-                })}
-                aria-label="Previous page"
-                className={`flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition-colors ${
-                  page === 1 ? "pointer-events-none opacity-40" : "hover:border-rose-300 hover:text-rose-500"
-                }`}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </a>
-
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700">
-                {page}
-              </div>
-
-              <span className="text-sm text-gray-500">of {totalPages || 1}</span>
-
-              <a
-                href={buildPageHref({
-                  page: Math.min(totalPages || 1, page + 1),
-                  search,
-                  unlockStatus,
-                  dateFrom,
-                  dateTo,
-                  columns: visibleColumns,
-                  limit,
-                })}
-                aria-label="Next page"
-                className={`flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition-colors ${
-                  page >= totalPages ? "pointer-events-none opacity-40" : "hover:border-rose-300 hover:text-rose-500"
-                }`}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </a>
-            </div>
-          </div>
-        </div>
-      ) : null;
 
     const rows = matches.map((match) => {
-    const row = match as MatchRow;
-    const href = `/admin/matches/${row.id}?returnTo=${encodeURIComponent(listReturnHref)}`;
+      const row = match as MatchRow;
+      const displayId = matchCodeById.get(row.id) ?? row.id;
+      const href = `/admin/matches/${row.id}?returnTo=${encodeURIComponent(listReturnHref)}`;
 
-    const cells: ReactNode[] = visibleColumns.map((column) => {
-      if (column === "match") {
-        return (
-          <div key={column} className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/row:-translate-y-0.5 group-hover/row:shadow-sm">
-              <HeartHandshake className="h-4.5 w-4.5" />
-            </div>
-            <div>
-              <div className="font-semibold text-slate-900">
-                {row.profileA.fullName}
-              </div>
-              <div className="text-xs text-slate-500">
-                {fieldValue(row.profileA.gender)} · {fieldValue(row.profileA.city ?? row.profileA.location ?? row.profileA.state)}
-              </div>
-            </div>
-          </div>
-        );
-      }
+      const cells: ReactNode[] = visibleColumns.map((column) => {
+        if (column === "id") {
+          return (
+            <span key={column} className="font-mono text-xs font-semibold text-slate-700">
+              {displayId}
+            </span>
+          );
+        }
 
-      if (column === "details") {
-        return (
-          <div key={column} className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/row:-translate-y-0.5 group-hover/row:shadow-sm">
-              <HeartHandshake className="h-4.5 w-4.5" />
-            </div>
-            <div>
-              <div className="font-semibold text-slate-900">
-                {row.profileB.fullName}
-              </div>
-              <div className="text-xs text-slate-500">
-                {fieldValue(row.profileB.gender)} · {fieldValue(row.profileB.city ?? row.profileB.location ?? row.profileB.state)}
+        if (column === "match") {
+          return (
+            <div key={column} className="flex items-center gap-3">
+              {renderProfileAvatar(row.profileA, row.profileA.fullName)}
+              <div>
+                <div className="font-semibold text-slate-900">{row.profileA.fullName}</div>
+                <div className="text-xs text-slate-500">
+                  {fieldValue(row.profileA.gender)} · {fieldValue(getProfileLocation(row.profileA))}
+                </div>
               </div>
             </div>
-          </div>
-        );
-      }
+          );
+        }
 
-      if (column === "status") {
-        return (
-          <span
-            key={column}
-            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-              row.unlocks.length > 0
-                ? "bg-emerald-50 text-emerald-700"
-                : "bg-amber-50 text-amber-700"
-            }`}
-          >
-            {row.unlocks.length > 0 ? "Unlocked" : "No unlocks"}
-          </span>
-        );
-      }
+        if (column === "details") {
+          return (
+            <div key={column} className="flex items-center gap-3">
+              {renderProfileAvatar(row.profileB, row.profileB.fullName)}
+              <div>
+                <div className="font-semibold text-slate-900">{row.profileB.fullName}</div>
+                <div className="text-xs text-slate-500">
+                  {fieldValue(row.profileB.gender)} · {fieldValue(getProfileLocation(row.profileB))}
+                </div>
+              </div>
+            </div>
+          );
+        }
 
-      if (column === "action") {
-        return (
-          <span key={column} className="inline-flex items-center gap-2 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/row:-translate-y-0.5 group-hover/row:border-rose-200 group-hover/row:bg-white">
-            View match details
-            <ChevronRight className="h-3.5 w-3.5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/row:translate-x-1" />
-          </span>
-        );
-      }
+        if (column === "status") {
+          return (
+            <span
+              key={column}
+              className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                row.unlocks.length > 0 ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+              }`}
+            >
+              {row.unlocks.length > 0 ? "Unlocked" : "No unlocks"}
+            </span>
+          );
+        }
 
-      return <span key={column}>{format(row.createdAt, "dd MMM yyyy, hh:mm a")}</span>;
+        if (column === "action") {
+          return (
+            <span
+              key={column}
+              className="inline-flex items-center gap-2 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700"
+            >
+              View match details
+              <ChevronRight className="h-3.5 w-3.5" />
+            </span>
+          );
+        }
+
+        return <span key={column}>{format(row.createdAt, "dd MMM yyyy, hh:mm a")}</span>;
+      });
+
+      return { id: row.id, displayId, href, cells };
     });
 
-    return { id: row.id, href, cells };
-  });
-
     const columnLabels: Record<AdminMatchColumnKey, string> = {
-    match: "User A",
-    details: "User B",
-    status: "Status",
-    date: "Match Date",
-    action: "Action",
-  };
+      id: "Match ID",
+      match: "User A",
+      details: "User B",
+      status: "Status",
+      date: "Match Date",
+      action: "Action",
+    };
 
     const columnWidths: Record<AdminMatchColumnKey, string> = {
-    match: "30%",
-    details: "28%",
-    status: "14%",
-    date: "16%",
-    action: "12%",
-  };
+      id: "14%",
+      match: "28%",
+      details: "26%",
+      status: "14%",
+      date: "16%",
+      action: "12%",
+    };
 
     return (
-      <div className="flex h-[calc(100dvh-6rem)] min-h-0 flex-col gap-6 overflow-hidden sm:h-[calc(100dvh-6.5rem)] lg:h-[calc(100dvh-3rem)]">
-        <div className="ui-enter-left shrink-0" style={{ animationDelay: "40ms" }}>
+      <div className="flex min-h-[calc(100vh-8rem)] flex-col space-y-6">
+        <div>
           {showBackToMatches ? (
             <Link
               href="/admin/matches"
-              className="ui-link-shift mb-4 inline-flex h-11 items-center gap-2 rounded-full border border-gray-200 bg-white px-5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-300 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md"
+              className="mb-4 inline-flex h-11 items-center gap-2 rounded-full border border-gray-200 bg-white px-5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
             >
               <ChevronLeft className="h-4 w-4" />
               Back to Matches
@@ -382,55 +387,86 @@ export default async function AdminMatchesPage({
           </p>
         </div>
 
-        <div className="ui-enter-up shrink-0 border-t border-gray-200" style={{ animationDelay: "90ms" }} />
+        <AdminListCard
+          className="min-h-0"
+          toolbar={
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+              <AdminSearchInput placeholder="Search by name or location..." />
 
-        <div className="ui-enter-scale flex-1 min-h-0" style={{ animationDelay: "140ms" }}>
-          <AdminListCard
-            className="flex-1 min-h-0"
-            bodyClassName="flex min-h-0 flex-col overflow-hidden"
-            toolbar={
-              <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-                <AdminSearchInput
-                  placeholder="Search by name or location..."
-                  className="ui-link-shift flex w-full max-w-[760px] overflow-hidden rounded-xl border border-rose-100 bg-white shadow-[0_10px_24px_rgba(244,63,94,0.06)] transition-all duration-300 hover:border-rose-200 hover:shadow-[0_16px_34px_rgba(244,63,94,0.1)] focus-within:-translate-y-0.5 focus-within:border-rose-200 focus-within:shadow-[0_16px_34px_rgba(244,63,94,0.1)]"
-                />
+              <div className="flex items-center gap-3 xl:ml-auto">
+                <AdminMatchFilters />
+                <AdminMatchColumnSelector selectedColumns={visibleColumns} />
+              </div>
+            </div>
+          }
+          summaryLeft={<span className="font-medium text-gray-700">{total} total matches</span>}
+          summaryRight={
+            totalPages > 0 ? (
+              <div className="flex flex-wrap items-center justify-end gap-2.5">
+                <AdminMatchStatusQuickLinks items={[]} deletedMatchesHref="/admin/matches/deleted" />
 
-                <div className="flex items-center gap-3 xl:ml-auto">
-                  <AdminMatchFilters />
-                  <AdminMatchColumnSelector selectedColumns={visibleColumns} />
+                <AdminPageSizeSelector value={limit} />
+
+                <div className="flex items-center gap-2">
+                  <a
+                    href={buildPageHref({
+                      page: Math.max(1, page - 1),
+                      search,
+                      unlockStatus,
+                      dateFrom,
+                      dateTo,
+                      columns: visibleColumns,
+                      limit,
+                    })}
+                    aria-label="Previous page"
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition-colors ${
+                      page === 1 ? "pointer-events-none opacity-40" : "hover:border-rose-300 hover:text-rose-500"
+                    }`}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </a>
+
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700">
+                    {page}
+                  </div>
+
+                  <span className="text-sm text-gray-500">of {totalPages || 1}</span>
+
+                  <a
+                    href={buildPageHref({
+                      page: Math.min(totalPages || 1, page + 1),
+                      search,
+                      unlockStatus,
+                      dateFrom,
+                      dateTo,
+                      columns: visibleColumns,
+                      limit,
+                    })}
+                    aria-label="Next page"
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 transition-colors ${
+                      page >= totalPages ? "pointer-events-none opacity-40" : "hover:border-rose-300 hover:text-rose-500"
+                    }`}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </a>
                 </div>
               </div>
-            }
-          >
-            <AdminMatchesTable
-              columns={visibleColumns.map((column) => ({
-                key: column,
-                label: columnLabels[column],
-                width: columnWidths[column],
-              }))}
-              rows={rows}
-              listFooter={paginationFooter}
-            />
-          </AdminListCard>
-        </div>
+            ) : null
+          }
+        >
+          <AdminMatchesTable
+            columns={visibleColumns.map((column) => ({
+              key: column,
+              label: columnLabels[column],
+              width: columnWidths[column],
+            }))}
+            rows={rows}
+          />
+        </AdminListCard>
       </div>
     );
-  } catch {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-gray-900">Match Management</h1>
-          <p className="mt-1 text-sm text-gray-500">Unable to load matches right now.</p>
-        </div>
-
-        <div className="border-t border-gray-200" />
-
-        <AdminDatabaseUnavailableState
-          title="Matches unavailable"
-          description="We couldn't reach the database to load the match list."
-        />
-      </div>
-    );
+  } catch (error) {
+    console.error("Failed to load match management page data.", error);
+    throw error;
   }
 }
-
