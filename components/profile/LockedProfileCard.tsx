@@ -31,9 +31,9 @@ export default function LockedProfileCard({
   perProfileChatAmount,
   onUnlock,
 }: LockedProfileCardProps) {
-  const primaryPhoto = profile.photos.find((p) => p.isPrimary)?.url ?? profile.photos[0]?.url;
+  const primaryPhoto = profile.photos?.find((p) => p.isPrimary)?.url ?? profile.photos?.[0]?.url;
   const age = calculateAge(profile.dateOfBirth);
-  const total = baseAmount + profileUnlockAmount + perProfileChatAmount;
+  const total = baseAmount + profileUnlockAmount;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-rose-100 overflow-hidden">

@@ -63,8 +63,8 @@ export default function ProfileCard({
   }, [isLiked]);
 
   const primaryPhoto =
-    profile.photos.find((p) => p.isPrimary)?.url ??
-    profile.photos[0]?.url ??
+    profile.photos?.find((p) => p.isPrimary)?.url ??
+    profile.photos?.[0]?.url ??
     profile.profileImage ??
     null;
   const age = calculateAge(profile.dateOfBirth);

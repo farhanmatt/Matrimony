@@ -9,12 +9,14 @@ export const REGISTRATION_OTP_SESSION_TTL_MINUTES = 30;
 export const REGISTRATION_OTP_CODE_TTL_MINUTES = 2;
 export const REGISTRATION_OTP_MAX_ATTEMPTS = 5;
 
+
+
 const REGISTRATION_OTP_SESSION_TTL_MS =
   REGISTRATION_OTP_SESSION_TTL_MINUTES * 60 * 1000;
 const REGISTRATION_OTP_CODE_TTL_MS =
   REGISTRATION_OTP_CODE_TTL_MINUTES * 60 * 1000;
 
-function sha256(value: string) {
+export function sha256(value: string) {
   return crypto.createHash("sha256").update(value).digest("hex");
 }
 

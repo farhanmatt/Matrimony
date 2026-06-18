@@ -369,7 +369,7 @@ async function getDashboardHomeData(userId: string) {
         },
       }),
       getMatchesForProfile(profile.id),
-      prisma.unlock.count({ where: { userId } }),
+      prisma.unlock.count({ where: { userId, type: "PROFILE" } }),
       prisma.profile.findMany({
         where: {
           status: "ACTIVE",

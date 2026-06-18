@@ -93,8 +93,20 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
   });
 
+  const settings = await prisma.adminSettings.findUnique({
+    where: { id: "singleton" },
+    select: { baseAmount: true, profileAmount: true, perProfileChatAmount: true },
+  });
+
   return NextResponse.json({
     data: likes.map(serializeLikedProfileCard),
+    pricing: settings
+      ? {
+          baseAmount: settings.baseAmount,
+          profileAmount: settings.profileAmount,
+          perProfileChatAmount: settings.perProfileChatAmount,
+        }
+      : undefined,
   });
 }
 

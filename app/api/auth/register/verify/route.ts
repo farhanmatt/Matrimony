@@ -6,6 +6,7 @@ import {
   getPendingRegistrationFromCookies,
   REGISTRATION_OTP_COOKIE_NAME,
   REGISTRATION_OTP_MAX_ATTEMPTS,
+  sha256,
 } from "@/lib/registration-otp";
 import { prisma } from "@/lib/prisma";
 import { normalizeNameLookup } from "@/lib/utils/user-identity";
@@ -75,10 +76,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isCodeValid = await bcrypt.compare(
-      validatedData.data.code,
-      pendingRegistration.verificationCodeHash
-    );
+    const isCodeValid =
+      validatedData.data.code === pendingRegistration.verificationCodeHash;
+
 
     if (!isCodeValid) {
       const nextAttemptCount = pendingRegistration.verificationAttempts + 1;

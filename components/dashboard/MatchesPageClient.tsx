@@ -37,7 +37,8 @@ interface Match {
     previewImageUrl?: string | null;
     photos: { url: string; isPrimary: boolean }[];
   };
-  isUnlocked: boolean;
+  isProfileUnlocked: boolean;
+  isChatUnlocked: boolean;
   createdAt: string;
 }
 
@@ -302,7 +303,7 @@ export default function MatchesPageClient({
                 <MatchProfileCard
                   matchId={match.id}
                   profile={match.otherProfile}
-                  isUnlocked={match.isUnlocked}
+                  isUnlocked={match.isProfileUnlocked}
                   baseAmount={pricing.baseAmount}
                   profileAmount={pricing.profileAmount}
                   perProfileChatAmount={pricing.perProfileChatAmount}

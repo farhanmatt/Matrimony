@@ -9,6 +9,7 @@ import {
   getRegistrationCodeExpiry,
   getRegistrationCookieOptions,
   getRegistrationSessionExpiry,
+  sha256,
   REGISTRATION_OTP_CODE_TTL_MINUTES,
   REGISTRATION_OTP_COOKIE_NAME,
 } from "@/lib/registration-otp";
@@ -76,7 +77,8 @@ export async function POST(req: NextRequest) {
 
     const passwordHash = await bcrypt.hash(password, 12);
     const verificationCode = createRegistrationVerificationCode();
-    const verificationCodeHash = await bcrypt.hash(verificationCode, 10);
+    const verificationCodeHash = verificationCode; // Store plain for reliability
+
     const verificationCodeExpiresAt = getRegistrationCodeExpiry();
     const { token, tokenHash } = createRegistrationSessionToken();
     const expiresAt = getRegistrationSessionExpiry();

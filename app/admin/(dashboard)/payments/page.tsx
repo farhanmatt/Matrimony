@@ -158,6 +158,8 @@ export default async function AdminPaymentsPage({
         amount: true,
         baseAmount: true,
         profileAmount: true,
+        profileUnlockAmount: true,
+        perProfileChatAmount: true,
         status: true,
         razorpayOrderId: true,
         createdAt: true,
@@ -207,6 +209,8 @@ export default async function AdminPaymentsPage({
         <div className="text-sm text-gray-600">
           <div>Base: {formatCurrency(payment.baseAmount)}</div>
           <div>Profile: {formatCurrency(payment.profileAmount)}</div>
+          <div>Unlock: {formatCurrency(payment.profileUnlockAmount)}</div>
+          <div>Chat: {formatCurrency(payment.perProfileChatAmount)}</div>
         </div>
       ),
     },
@@ -317,8 +321,8 @@ export default async function AdminPaymentsPage({
                 amount: row.amount,
                 baseAmount: row.baseAmount,
                 profileAmount: row.profileAmount,
-                profileUnlockAmount: row.profileAmount,
-                perProfileChatAmount: 0,
+                profileUnlockAmount: row.profileUnlockAmount,
+                perProfileChatAmount: row.perProfileChatAmount,
                 status: row.status,
                 razorpayOrderId: row.razorpayOrderId,
                 createdAt: row.createdAt,

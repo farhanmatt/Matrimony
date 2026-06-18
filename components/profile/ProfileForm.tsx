@@ -53,6 +53,12 @@ import {
   writeStoredBrowseFilters,
 } from "@/lib/utils/browse-filters";
 import { MARITAL_STATUS_LABELS } from "@/lib/utils/helpers";
+import {
+  loadCreateProfileDraft,
+  saveCreateProfileDraft,
+  clearCreateProfileDraft,
+  type CreateProfileDraft,
+} from "@/lib/utils/profile-draft";
 
 const genderOptions = ["MALE", "FEMALE", "OTHER"] as const;
 const nationalityOptions = ["Indian", "NRI", "Expat"] as const;
@@ -379,26 +385,6 @@ const createProfileSteps: CreateStep[] = [
   },
 ];
 
-interface ProfileFormProps {
-  defaultValues?: Partial<ProfileFormInput>;
-  isEdit?: boolean;
-  profileUserId?: string | null;
-}
-
-type CreateProfileDraft = {
-  currentStep: number;
-  maxStepReached: number;
-  values: Partial<ProfileFormInput>;
-};
-
-type PincodeLookupState = {
-  pincode: string;
-  status: "idle" | "loading" | "success" | "invalid" | "error";
-  message?: string;
-  state?: string;
-  city?: string;
-};
-
 type CreatedProfileSuccess = {
   fullName: string;
   profileUserId: string;
@@ -418,7 +404,19 @@ const emptyPreference: PreferenceInput = {
   language: null,
 };
 
-const CREATE_PROFILE_DRAFT_STORAGE_KEY = "vivah-bandhan-create-profile-draft";
+interface ProfileFormProps {
+  defaultValues?: Partial<ProfileFormInput>;
+  isEdit?: boolean;
+  profileUserId?: string | null;
+}
+
+type PincodeLookupState = {
+  pincode: string;
+  status: "idle" | "loading" | "success" | "invalid" | "error";
+  message?: string;
+  state?: string;
+  city?: string;
+};
 
 type SearchableOptionItem = {
   kind: "custom" | "option";
@@ -981,41 +979,6 @@ function scrollToTop() {
   }
 }
 
-function loadCreateProfileDraft() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  try {
-    const rawDraft = window.localStorage.getItem(CREATE_PROFILE_DRAFT_STORAGE_KEY);
-    if (!rawDraft) {
-      return null;
-    }
-
-    return JSON.parse(rawDraft) as CreateProfileDraft;
-  } catch {
-    return null;
-  }
-}
-
-function saveCreateProfileDraft(draft: CreateProfileDraft) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(
-    CREATE_PROFILE_DRAFT_STORAGE_KEY,
-    JSON.stringify(draft)
-  );
-}
-
-function clearCreateProfileDraft() {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.removeItem(CREATE_PROFILE_DRAFT_STORAGE_KEY);
-}
 
 function getProfileFormDefaults(defaultValues?: Partial<ProfileFormInput>) {
   return {
@@ -1304,7 +1267,7 @@ export default function ProfileForm({
   profileUserId = null,
 }: ProfileFormProps) {
   const router = useRouter();
-  const { update } = useSession();
+  const { data: session, update } = useSession();
   const [currentStep, setCurrentStep] = useState(0);
   const [maxStepReached, setMaxStepReached] = useState(0);
   const [isCreateDraftHydrated, setIsCreateDraftHydrated] = useState(isEdit);
@@ -1349,12 +1312,12 @@ export default function ProfileForm({
   }, [defaultValues, reset]);
 
   useEffect(() => {
-    if (isEdit) {
-      setIsCreateDraftHydrated(true);
+    if (isEdit || !session?.user?.id) {
+      if (isEdit) setIsCreateDraftHydrated(true);
       return;
     }
 
-    const savedDraft = loadCreateProfileDraft();
+    const savedDraft = loadCreateProfileDraft(session.user.id);
     if (savedDraft) {
       setIncomeSelectValue(getAnnualIncomeSelectValue(savedDraft.values.income));
       reset(getProfileFormDefaults(savedDraft.values));
@@ -1362,7 +1325,7 @@ export default function ProfileForm({
       setMaxStepReached(Math.max(savedDraft.maxStepReached ?? 0, savedDraft.currentStep, 0));
     }
     setIsCreateDraftHydrated(true);
-  }, [isEdit, reset]);
+  }, [isEdit, reset, session?.user?.id]);
 
   useEffect(() => {
     if (currentStep > maxStepReached) {
@@ -1375,12 +1338,12 @@ export default function ProfileForm({
       return;
     }
 
-    saveCreateProfileDraft({
+    saveCreateProfileDraft(session?.user?.id, {
       currentStep,
       maxStepReached,
       values: getValues(),
     });
-  }, [currentStep, getValues, isCreateDraftHydrated, isEdit, maxStepReached]);
+  }, [currentStep, getValues, isCreateDraftHydrated, isEdit, maxStepReached, session?.user?.id]);
 
   useEffect(() => {
     if (isEdit || !isCreateDraftHydrated) {
@@ -1388,7 +1351,7 @@ export default function ProfileForm({
     }
 
     const subscription = watch((values) => {
-      saveCreateProfileDraft({
+      saveCreateProfileDraft(session?.user?.id, {
         currentStep,
         maxStepReached,
         values: values as Partial<ProfileFormInput>,
@@ -1398,7 +1361,7 @@ export default function ProfileForm({
     return () => {
       subscription.unsubscribe();
     };
-  }, [currentStep, isCreateDraftHydrated, isEdit, watch]);
+  }, [currentStep, isCreateDraftHydrated, isEdit, watch, session?.user?.id, maxStepReached]);
 
   const inputClass = isEdit
     ? "w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
@@ -1888,7 +1851,7 @@ export default function ProfileForm({
       return;
     }
 
-    saveCreateProfileDraft({
+    saveCreateProfileDraft(session?.user?.id, {
       currentStep,
       maxStepReached,
       values: getValues(),
@@ -1967,7 +1930,7 @@ export default function ProfileForm({
         ? json.profile.profileUserId
         : "";
 
-    clearCreateProfileDraft();
+    clearCreateProfileDraft(session?.user?.id);
     setCreatedProfileSuccess({
       fullName:
         typeof json.profile?.fullName === "string" && json.profile.fullName.trim()

@@ -8,37 +8,17 @@ import {
   type ProfileCompletionResult,
   type ProfileCompletionSource,
 } from "@/lib/utils/profileCompletion";
+import { useSession } from "next-auth/react";
+import { loadCreateProfileDraft } from "@/lib/utils/profile-draft";
 
-type CreateProfileDraft = {
-  currentStep: number;
-  maxStepReached: number;
-  values: Partial<ProfileCompletionSource>;
-};
-
-const CREATE_PROFILE_DRAFT_STORAGE_KEY = "vivah-bandhan-create-profile-draft";
-
-function loadCreateProfileDraft() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  try {
-    const rawDraft = window.localStorage.getItem(CREATE_PROFILE_DRAFT_STORAGE_KEY);
-    if (!rawDraft) {
-      return null;
-    }
-
-    return JSON.parse(rawDraft) as CreateProfileDraft;
-  } catch {
-    return null;
-  }
-}
 
 function useDashboardProfileCompletion(
   initialCompletion: ProfileCompletionResult,
   hasPersistedProfile: boolean
 ) {
   const [completion, setCompletion] = useState(initialCompletion);
+
+  const { data: session } = useSession();
 
   useEffect(() => {
     if (hasPersistedProfile) {
@@ -47,7 +27,7 @@ function useDashboardProfileCompletion(
     }
 
     const syncDraftCompletion = () => {
-      const draft = loadCreateProfileDraft();
+      const draft = loadCreateProfileDraft(session?.user?.id);
 
       if (!draft?.values) {
         setCompletion(initialCompletion);
@@ -55,7 +35,7 @@ function useDashboardProfileCompletion(
       }
 
       setCompletion(
-        getProfileCompletion(draft.values, { hasPersistedProfile: false })
+        getProfileCompletion(draft.values as ProfileCompletionSource, { hasPersistedProfile: false })
       );
     };
 
@@ -65,7 +45,7 @@ function useDashboardProfileCompletion(
     return () => {
       window.removeEventListener("focus", syncDraftCompletion);
     };
-  }, [hasPersistedProfile, initialCompletion]);
+  }, [hasPersistedProfile, initialCompletion, session?.user?.id]);
 
   return completion;
 }

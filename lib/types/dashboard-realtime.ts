@@ -28,6 +28,14 @@ export type DashboardRealtimeEvent =
       messageId: string;
       fromProfileId: string;
       toProfileId: string;
+    }
+  | {
+      type: "status_updated";
+      createdAt: string;
+      conversationId: string;
+      status: "PENDING" | "ACCEPTED" | "REJECTED";
+      fromProfileId: string;
+      toProfileId: string;
     };
 
 export const DASHBOARD_REALTIME_EVENT_NAME = "dashboard-realtime-event";

@@ -74,8 +74,8 @@ export default function UnlockedProfileCard({
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const primaryPhoto =
-    profile.photos.find((photo) => photo.isPrimary)?.url ??
-    profile.photos[0]?.url ??
+    profile.photos?.find((photo) => photo.isPrimary)?.url ??
+    profile.photos?.[0]?.url ??
     null;
   const age = calculateAge(profile.dateOfBirth);
   const profileHref = `/dashboard/profile/${profile.id}?source=unlocked`;

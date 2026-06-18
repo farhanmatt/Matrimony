@@ -6,6 +6,7 @@ import {
   profilePreviewCardSelect,
   serializeProfilePreviewCard,
 } from "@/lib/server/liked-profile-preview";
+import { findOrCreateMatch } from "@/lib/utils/matching";
 
 type ShortlistProfileRecord = Prisma.ProfileGetPayload<{
   select: typeof profilePreviewCardSelect;
@@ -51,6 +52,15 @@ export async function POST(req: NextRequest) {
         { status: 403 }
       );
     }
+
+    // Ensure Match records exist for all shortlisted profiles so they can be unlocked/chatted
+    await Promise.all(
+      profileIds.map((profileId) =>
+        findOrCreateMatch(ownProfile.id, profileId).catch((err) =>
+          console.error(`Error syncing match for shortlisted profile ${profileId}:`, err)
+        )
+      )
+    );
 
     const profiles = (await prisma.profile.findMany({
       where: {

@@ -43,7 +43,7 @@ async function seedCoupons() {
       maxUses: null,
       minAmount: 500,
       isActive: true,
-      expiresAt: null,
+      expiresAt: new Date("2099-12-31T23:59:59Z"),
     },
     {
       code: "EXPIRED10",

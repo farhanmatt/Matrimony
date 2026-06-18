@@ -1,5 +1,7 @@
 "use client";
 
+"use client";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -16,6 +18,7 @@ import {
   Image,
   Shield,
   HeartHandshake,
+  Ticket,
 } from "lucide-react";
 import { cn } from "@/lib/utils/helpers";
 import { useEffect, useState } from "react";
@@ -28,7 +31,8 @@ const adminNav = [
   { href: "/admin/matches", icon: HeartHandshake, label: "Match Management" },
   { href: "/admin/payments", icon: CreditCard, label: "Payments" },
   { href: "/admin/settings", icon: Settings, label: "Pricing Settings" },
-  { href: "/admin/landing", icon: Image, label: "Landing Banner" },
+  { href: "/admin/coupons", icon: Ticket, label: "Coupon Offers" },
+  { href: "/admin/landing", icon: Image, label: "Landing Banner & Logo" },
 ];
 
 function AdminSidebarContent({
@@ -75,13 +79,13 @@ function AdminSidebarContent({
 
   return (
     <>
-      <div className="flex h-full flex-col overflow-y-auto bg-gradient-to-b from-rose-50 via-white to-rose-50">
-        <div className="relative border-b border-rose-100 px-4 py-5">
-          <Link href="/admin" className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-pink-500 shadow-sm">
-              <Shield className="h-4.5 w-4.5 text-white" />
+      <div className="flex h-full flex-col overflow-hidden bg-gradient-to-b from-rose-50 via-white to-rose-50">
+        <div className="relative border-b border-rose-100 px-4 py-3">
+          <Link href="/admin" className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-pink-500 shadow-sm">
+              <Shield className="h-4 w-4 text-white" />
             </div>
-            <span className="font-display text-lg font-bold text-gray-900">Admin Panel</span>
+            <span className="font-display text-base font-bold text-gray-900">Admin Panel</span>
           </Link>
           {onClose && (
             <button onClick={onClose} className="absolute right-4 top-4 text-gray-400 transition-colors hover:text-rose-600 lg:hidden">
@@ -90,12 +94,12 @@ function AdminSidebarContent({
           )}
         </div>
 
-        <div className="border-b border-rose-100 px-4 py-4">
-          <p className="text-sm font-semibold text-gray-900">{user.name}</p>
-          <p className="mt-1 text-xs text-gray-500">{user.email}</p>
+        <div className="border-b border-rose-100 px-4 py-2.5">
+          <p className="text-[13px] font-semibold text-gray-900 truncate">{user.name}</p>
+          <p className="mt-0.5 text-xs text-gray-500 truncate">{user.email}</p>
         </div>
 
-        <nav className="flex-1 px-3 py-4">
+        <nav className="flex-1 px-3 py-2 overflow-hidden">
           {adminNav.map((item) => {
             const isActive =
               item.href === "/admin"
@@ -107,23 +111,23 @@ function AdminSidebarContent({
                 href={item.href}
                 onClick={onClose}
                 className={cn(
-                  "mb-2 flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-medium transition-all last:mb-0",
+                  "mb-1 flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-medium transition-all last:mb-0",
                   isActive
-                    ? "bg-gradient-to-r from-rose-600 to-pink-500 text-white shadow-[0_12px_24px_rgba(244,63,94,0.18)]"
+                    ? "bg-gradient-to-r from-rose-600 to-pink-500 text-white shadow-md"
                     : "text-gray-600 hover:bg-rose-50 hover:text-rose-600"
                 )}
               >
-                <item.icon className="h-4.5 w-4.5 shrink-0" />
+                <item.icon className="h-4 w-4 shrink-0" />
                 {item.label}
               </Link>
             );
           })}
         </nav>
 
-        <div className="space-y-2 border-t border-rose-100 px-3 py-4">
+        <div className="space-y-1 border-t border-rose-100 px-3 py-2.5">
           <Link
             href="/"
-            className="flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm text-gray-600 transition-all hover:bg-rose-50 hover:text-rose-600"
+            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] text-gray-600 transition-all hover:bg-rose-50 hover:text-rose-600"
           >
             <Heart className="h-4 w-4 shrink-0" />
             Back to Site
@@ -131,7 +135,7 @@ function AdminSidebarContent({
           <button
             type="button"
             onClick={() => setLogoutConfirmOpen(true)}
-            className="flex w-full items-center gap-3 rounded-2xl px-3.5 py-3 text-sm text-gray-600 transition-all hover:bg-rose-50 hover:text-rose-600"
+            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] text-gray-600 transition-all hover:bg-rose-50 hover:text-rose-600"
           >
             <LogOut className="h-4 w-4 shrink-0" />
             Logout

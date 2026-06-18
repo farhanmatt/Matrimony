@@ -306,7 +306,7 @@ export default function FullLandingPage({
 
       <section className="relative overflow-hidden border-b border-rose-100/70 bg-white pt-[76px]">
         <div className="relative w-full pb-24">
-          <div className="relative overflow-hidden px-6 py-8 sm:px-8 lg:aspect-[1600/639] lg:min-h-0 lg:px-10 lg:py-8">
+          <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] lg:aspect-[1600/639]">
             <LandingHeroBanner initialHeroImageUrl={heroImageUrl ?? "/main.jpeg"} />
           </div>
 

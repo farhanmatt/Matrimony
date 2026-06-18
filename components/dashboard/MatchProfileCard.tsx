@@ -70,10 +70,10 @@ export default function MatchProfileCard({
     profile.course || profile.education || "Education details not added";
   const primaryPhoto =
     profile.profileImage ??
-    profile.photos.find((photo) => photo.isPrimary)?.url ??
-    profile.photos[0]?.url ??
+    profile.photos?.find((photo) => photo.isPrimary)?.url ??
+    profile.photos?.[0]?.url ??
     null;
-  const totalAmount = baseAmount + profileAmount + perProfileChatAmount;
+  const totalAmount = baseAmount + profileAmount;
 
   useEffect(() => {
     if (!isMenuOpen) {

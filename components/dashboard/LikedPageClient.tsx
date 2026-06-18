@@ -58,7 +58,8 @@ type ShortlistProfilePreview = LikedProfile["toProfile"];
 
 interface MatchSummary {
   id: string;
-  isUnlocked?: boolean;
+  isProfileUnlocked?: boolean;
+  isChatUnlocked?: boolean;
   otherProfile: {
     id: string;
   };
@@ -79,10 +80,16 @@ function areStringArraysEqual(first: string[], second: string[]) {
 export default function LikedPageClient({
   initialLikes,
   initialMatches,
+  initialPricing,
   viewMode = "interests",
 }: {
   initialLikes: LikedProfile[];
   initialMatches: MatchSummary[];
+  initialPricing?: {
+    baseAmount: number;
+    profileAmount: number;
+    perProfileChatAmount: number;
+  };
   viewMode?: "interests" | "shortlist";
 }) {
   const { data: session } = useSession();
@@ -99,6 +106,7 @@ export default function LikedPageClient({
   >([]);
   const [loadingShortlistOnlyProfiles, setLoadingShortlistOnlyProfiles] =
     useState(false);
+  const [pricing, setPricing] = useState(initialPricing);
   const isShortlistView = viewMode === "shortlist";
 
   useEffect(() => {
@@ -139,6 +147,10 @@ export default function LikedPageClient({
 
         setLikes(likesData.data ?? []);
         setMatches(matchesData.data ?? []);
+        const pricingInfo = likesData.pricing || matchesData.pricing;
+        if (pricingInfo) {
+          setPricing(pricingInfo);
+        }
       } catch (error) {
         if (showError) {
           toast.error(
@@ -359,28 +371,52 @@ export default function LikedPageClient({
   const availableLikes = likedFeedItems.filter(
     (like) => !matchedProfileIdSet.has(like.toProfile.id)
   );
-  const shortlistFeedItems = [
-    ...likedFeedItems.filter((like) =>
-      shortlistedProfileIdSet.has(like.toProfile.id)
-    ),
-    ...shortlistOnlyItems,
-  ].sort(
-    (first, second) => {
-      if (sortOrder === "oldest") {
-        return (
-          new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime()
-        );
-      }
+  const matchFeedItems: VisibleLikedProfile[] = matches.map((match) => ({
+    id: `match:${match.id}`,
+    createdAt: (match as any).createdAt ?? new Date().toISOString(),
+    toProfile: {
+      ...match.otherProfile,
+      // Provide missing fields for the card if necessary
+      dateOfBirth: (match as any).otherProfile?.dateOfBirth ?? new Date().toISOString(),
+      height: (match as any).otherProfile?.height ?? null,
+      maritalStatus: (match as any).otherProfile?.maritalStatus ?? "Never Married",
+      education: (match as any).otherProfile?.education ?? null,
+      profession: (match as any).otherProfile?.profession ?? null,
+      city: (match as any).otherProfile?.city ?? null,
+      state: (match as any).otherProfile?.state ?? null,
+      religion: (match as any).otherProfile?.religion ?? null,
+    } as any,
+    allowUnlike: false,
+    shortlistSource: shortlistMetadata[match.otherProfile.id]?.source ?? "interest",
+  }));
 
-      if (sortOrder === "name") {
-        return first.toProfile.fullName.localeCompare(second.toProfile.fullName);
-      }
-
+  const shortlistFeedItems = Array.from(
+    new Map(
+      [
+        ...likedFeedItems.filter((like) =>
+          shortlistedProfileIdSet.has(like.toProfile.id)
+        ),
+        ...matchFeedItems.filter((match) =>
+          shortlistedProfileIdSet.has(match.toProfile.id)
+        ),
+        ...shortlistOnlyItems,
+      ].map((item) => [item.toProfile.id, item])
+    ).values()
+  ).sort((first, second) => {
+    if (sortOrder === "oldest") {
       return (
-        new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime()
+        new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime()
       );
     }
-  );
+
+    if (sortOrder === "name") {
+      return first.toProfile.fullName.localeCompare(second.toProfile.fullName);
+    }
+
+    return (
+      new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime()
+    );
+  });
   const shortlistedLikes = shortlistFeedItems.filter((like) =>
     shortlistedProfileIdSet.has(like.toProfile.id)
   );
@@ -640,25 +676,33 @@ export default function LikedPageClient({
           ) : (
             <>
               <section className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                {visibleLikes.map((like, index) => (
-                  <div
-                    key={like.id}
-                    className="ui-enter-scale"
-                    style={{
-                      animationDelay: `${120 + (index % 10) * 55}ms`,
-                      animationFillMode: "forwards",
-                    }}
-                  >
-                    <LikedProfilePreviewCard
-                      likedAt={like.createdAt}
-                      profile={like.toProfile}
-                      shortlistUserId={shortlistUserId}
-                      showChatAction={isShortlistView}
-                      allowUnlike={like.allowUnlike}
-                      onUnlike={handleUnlike}
-                    />
-                  </div>
-                ))}
+                {visibleLikes.map((like, index) => {
+                  const matchInfo = matches.find(m => m.otherProfile.id === like.toProfile.id);
+
+                  return (
+                    <div
+                      key={like.id}
+                      className="ui-enter-scale"
+                      style={{
+                        animationDelay: `${120 + (index % 10) * 55}ms`,
+                        animationFillMode: "forwards",
+                      }}
+                    >
+                      <LikedProfilePreviewCard
+                        likedAt={like.createdAt}
+                        profile={like.toProfile}
+                        shortlistUserId={shortlistUserId}
+                        showChatAction={isShortlistView}
+                        isUnlocked={matchInfo?.isChatUnlocked}
+                        matchId={matchInfo?.id}
+                        pricing={pricing}
+                        allowUnlike={like.allowUnlike}
+                        onUnlike={handleUnlike}
+                        onUnlockSuccess={() => fetchData()}
+                      />
+                    </div>
+                  );
+                })}
               </section>
 
               <section

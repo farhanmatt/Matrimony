@@ -6,55 +6,64 @@ export const FALLBACK_ADMIN_SETTINGS = {
   baseAmount: 500,
   profileAmount: 500,
   perProfileChatAmount: 0,
+  isChatPaymentEnabled: true,
   heroImageUrl: "/main.jpeg",
   logoImageUrl: "",
 };
 
 type AdminSettingsSnapshot = typeof FALLBACK_ADMIN_SETTINGS;
 
-function clientSupportsPerProfileChatAmount() {
-  return Object.values(Prisma.AdminSettingsScalarFieldEnum).includes(
-    "perProfileChatAmount"
-  );
+function clientSupportsChatPaymentSettings() {
+  const fields = Object.values(Prisma.AdminSettingsScalarFieldEnum);
+  return fields.includes("perProfileChatAmount") && fields.includes("isChatPaymentEnabled");
 }
 
 async function getLegacyAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot> {
-  const legacySettings = await prisma.adminSettings.findUnique({
-    where: { id: "singleton" },
-    select: {
-      id: true,
-      baseAmount: true,
-      profileAmount: true,
-      heroImageUrl: true,
-      logoImageUrl: true,
-    },
-  });
+  try {
+    const legacySettings = await prisma.adminSettings.findUnique({
+      where: { id: "singleton" },
+      select: {
+        id: true,
+        baseAmount: true,
+        profileAmount: true,
+        heroImageUrl: true,
+        logoImageUrl: true,
+      },
+    });
 
-  return legacySettings
-    ? {
-        ...legacySettings,
-        perProfileChatAmount: 0,
-      }
-    : FALLBACK_ADMIN_SETTINGS;
+    return legacySettings
+      ? {
+          ...legacySettings,
+          perProfileChatAmount: 0,
+          isChatPaymentEnabled: true,
+        }
+      : FALLBACK_ADMIN_SETTINGS;
+  } catch (error) {
+    console.error("Failed to fetch legacy admin settings:", error);
+    return FALLBACK_ADMIN_SETTINGS;
+  }
 }
 
-function errorMentionsPerProfileChatAmount(error: unknown) {
-  return error instanceof Error && error.message.includes("perProfileChatAmount");
+function errorMentionsNewFields(error: unknown) {
+  return (
+    error instanceof Error &&
+    (error.message.includes("perProfileChatAmount") || error.message.includes("isChatPaymentEnabled"))
+  );
 }
 
-export function isPerProfileChatAmountCompatibilityError(error: unknown) {
+export function isCompatibilityError(error: unknown) {
   if (
     error instanceof Prisma.PrismaClientValidationError ||
     error instanceof Prisma.PrismaClientKnownRequestError
   ) {
-    return errorMentionsPerProfileChatAmount(error);
+    return errorMentionsNewFields(error);
   }
 
-  return errorMentionsPerProfileChatAmount(error);
+  return errorMentionsNewFields(error);
 }
 
 export async function getAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot> {
-  if (!clientSupportsPerProfileChatAmount()) {
+  if (!clientSupportsChatPaymentSettings()) {
     return getLegacyAdminSettingsSnapshot();
   }
 
@@ -66,6 +75,7 @@ export async function getAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot>
         baseAmount: true,
         profileAmount: true,
         perProfileChatAmount: true,
+        isChatPaymentEnabled: true,
         heroImageUrl: true,
         logoImageUrl: true,
       },
@@ -73,11 +83,12 @@ export async function getAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot>
 
     return settings ?? FALLBACK_ADMIN_SETTINGS;
   } catch (error) {
-    if (!isPerProfileChatAmountCompatibilityError(error)) {
-      throw error;
+    if (isCompatibilityError(error)) {
+      return getLegacyAdminSettingsSnapshot();
     }
 
-    return getLegacyAdminSettingsSnapshot();
+    console.error("Failed to fetch admin settings:", error);
+    return FALLBACK_ADMIN_SETTINGS;
   }
 }
 
@@ -88,5 +99,6 @@ export async function getUnlockPricing() {
     baseAmount: settings.baseAmount,
     profileAmount: settings.profileAmount,
     perProfileChatAmount: settings.perProfileChatAmount,
+    isChatPaymentEnabled: settings.isChatPaymentEnabled,
   };
 }
