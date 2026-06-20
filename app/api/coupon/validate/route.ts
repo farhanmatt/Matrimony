@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { code, totalAmount } = await req.json();
+    const { code, totalAmount, unlockType = "PROFILE" } = await req.json();
 
     if (!code || typeof code !== "string") {
       return NextResponse.json(
@@ -50,6 +50,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         valid: false,
         error: "This coupon code has reached its usage limit.",
+      });
+    }
+
+    const isValidForType = 
+      coupon.couponFor === "BOTH" || 
+      (unlockType === "PROFILE" && coupon.couponFor === "PROFILE_UNLOCK") ||
+      (unlockType === "CHAT" && coupon.couponFor === "CHAT_UNLOCK");
+
+    if (!isValidForType) {
+      return NextResponse.json({
+        valid: false,
+        error: `This coupon is not valid for ${unlockType === "CHAT" ? "chat" : "profile"} unlocks.`,
       });
     }
 

@@ -8,12 +8,13 @@ export default async function ShortlistPage() {
     return null;
   }
 
-  const { likes, matches } = await getLikedPageData(session.user.id);
+  const { likes, matches, pricing } = await getLikedPageData(session.user.id);
 
   return (
     <LikedPageClient
       initialLikes={likes}
       initialMatches={matches}
+      initialPricing={pricing}
       viewMode="shortlist"
     />
   );

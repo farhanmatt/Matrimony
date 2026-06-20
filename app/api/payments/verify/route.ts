@@ -46,23 +46,41 @@ export async function POST(req: NextRequest) {
     }
 
     // Update payment + create unlock in a transaction
-    await prisma.$transaction([
-      prisma.payment.update({
+    await prisma.$transaction(async (tx) => {
+      // 1. Update payment status
+      await tx.payment.update({
         where: { razorpayOrderId: razorpay_order_id },
         data: {
           razorpayPaymentId: razorpay_payment_id,
           razorpaySignature: razorpay_signature,
           status: "PAID",
         },
-      }),
-      prisma.unlock.create({
+      });
+
+      // 2. Increment coupon usage if applied
+      if (payment.couponCode) {
+        const coupon = await tx.couponCode.update({
+          where: { code: payment.couponCode },
+          data: { currentUses: { increment: 1 } },
+        });
+
+        if (coupon.maxUses !== null && coupon.currentUses > coupon.maxUses) {
+          throw new Error("usage_limit_reached");
+        }
+      }
+
+      // 3. Create unlock record with correct type
+      const requestedType = payment.perProfileChatAmount > 0 ? "CHAT" : "PROFILE";
+
+      await tx.unlock.create({
         data: {
           userId: session.user.id,
           matchId: payment.matchId,
           paymentId: payment.id,
+          type: requestedType,
         },
-      }),
-    ]);
+      });
+    });
 
     return NextResponse.json({
       success: true,

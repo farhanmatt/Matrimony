@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bell, Check, Heart, Loader2, MapPin, MessageCircle, X } from "lucide-react";
+import PaymentModal from "@/components/payment/PaymentModal";
 import { toast } from "sonner";
 import { useAutoRefresh } from "@/lib/hooks/useAutoRefresh";
 import { getInitials } from "@/lib/utils/helpers";
@@ -312,6 +313,13 @@ export default function NotificationBell({
   const [pendingMessageNotifications, setPendingMessageNotifications] = useState<
     PendingMessageNotification[]
   >([]);
+  const [chatPaymentDetails, setChatPaymentDetails] = useState<{
+    matchId: string;
+    targetProfileId: string;
+    profileName: string;
+    pricing: { baseAmount: number; profileAmount: number; perProfileChatAmount: number };
+    notificationItem: DashboardNotificationItem;
+  } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -517,8 +525,6 @@ export default function NotificationBell({
       }
 
       const actorProfileId = item.actorProfileId;
-      const alreadyShortlisted = shortlistedProfileIds.includes(actorProfileId);
-      let shortlistUpdated = false;
 
       setPendingActorProfileIds((currentIds) =>
         currentIds.includes(actorProfileId)
@@ -527,48 +533,58 @@ export default function NotificationBell({
       );
 
       try {
-        setShortlistedProfileId(
-          actorProfileId,
-          true,
-          shortlistUserId,
-          alreadyShortlisted
-            ? undefined
-            : {
-                savedAt: item.createdAt,
-                source: "message",
-              }
-        );
-        shortlistUpdated = true;
+        const alreadyShortlisted = shortlistedProfileIds.includes(actorProfileId);
+        if (!alreadyShortlisted) {
+          setShortlistedProfileId(
+            actorProfileId,
+            true,
+            shortlistUserId,
+            { savedAt: item.createdAt, source: "message" }
+          );
+          toast.success("Profile added to shortlist.");
+        }
 
-        await dismissMessageNotifications(actorProfileId, "accept");
-        removeNotificationsForActor(actorProfileId);
-        toast.success(
-          alreadyShortlisted
-            ? "Message accepted and notification cleared."
-            : "Profile added to shortlist."
-        );
-        void refreshNotifications();
+        const chatRes = await fetch(`/api/chat/${actorProfileId}`);
+        const chatData = await chatRes.json();
+
+        if (!chatRes.ok || !chatData.data) {
+          throw new Error("Could not load chat details.");
+        }
+
+        const { isUnlocked, matchId, pricing, status } = chatData.data;
+
+        if (isUnlocked || !pricing?.isChatPaymentEnabled) {
+          if (status === "PENDING") {
+            await fetch(`/api/chat/${actorProfileId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "ACCEPT" })
+            });
+          }
+          await dismissMessageNotifications(actorProfileId, "accept");
+          removeNotificationsForActor(actorProfileId);
+          toast.success("Message accepted and notification cleared.");
+          void refreshNotifications();
+          window.location.href = `/dashboard/chat/${actorProfileId}`;
+        } else {
+          setChatPaymentDetails({
+            matchId,
+            targetProfileId: actorProfileId,
+            profileName: item.actorName,
+            pricing,
+            notificationItem: item,
+          });
+        }
       } catch (error) {
-        toast.error(
-          shortlistUpdated
-            ? "Profile added to shortlist, but the notification could not be cleared."
-            : error instanceof Error
-              ? error.message
-              : "Unable to update shortlist right now."
-        );
+        toast.error("Failed to process chat request.");
+        console.error(error);
       } finally {
         setPendingActorProfileIds((currentIds) =>
           currentIds.filter((id) => id !== actorProfileId)
         );
       }
     },
-    [
-      dismissMessageNotifications,
-      refreshNotifications,
-      removeNotificationsForActor,
-      shortlistUserId,
-      shortlistedProfileIds,
-    ]
+    [shortlistUserId, shortlistedProfileIds, dismissMessageNotifications, removeNotificationsForActor, refreshNotifications]
   );
 
   const handleReject = useCallback(
@@ -956,6 +972,28 @@ export default function NotificationBell({
           )}
         </div>
       ) : null}
+
+      {chatPaymentDetails && (
+        <PaymentModal
+          matchId={chatPaymentDetails.matchId}
+          targetProfileId={chatPaymentDetails.targetProfileId}
+          profileName={chatPaymentDetails.profileName}
+          baseAmount={chatPaymentDetails.pricing.baseAmount}
+          profileAmount={chatPaymentDetails.pricing.profileAmount}
+          perProfileChatAmount={chatPaymentDetails.pricing.perProfileChatAmount}
+          type="CHAT"
+          onClose={() => setChatPaymentDetails(null)}
+          onSuccess={async () => {
+            const item = chatPaymentDetails.notificationItem;
+            await dismissMessageNotifications(item.actorProfileId, "accept");
+            removeNotificationsForActor(item.actorProfileId);
+            toast.success("Chat unlocked successfully.");
+            void refreshNotifications();
+            setChatPaymentDetails(null);
+            window.location.href = `/dashboard/chat/${item.actorProfileId}`;
+          }}
+        />
+      )}
     </div>
   );
 }

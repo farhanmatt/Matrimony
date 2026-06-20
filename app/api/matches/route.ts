@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getProtectedMatchProfileImageUrl } from "@/lib/server/match-profile-preview";
+import { serializeProfilePreviewCard } from "@/lib/server/liked-profile-preview";
 import { getMatchesForProfile } from "@/lib/utils/matching";
 
 // GET /api/matches — get all mutual matches for current user
@@ -23,24 +24,67 @@ export async function GET(req: NextRequest) {
   const matches = await getMatchesForProfile(ownProfile.id);
   const summaryOnly = new URL(req.url).searchParams.get("summary") === "1";
 
-  if (summaryOnly) {
-    return NextResponse.json({
-      data: matches.map((match) => ({
-        id: match.id,
-        createdAt: match.createdAt.toISOString(),
-        isUnlocked: match.unlocks.some((unlock) => unlock.userId === session.user.id),
-        otherProfile: {
-          id: match.profileAId === ownProfile.id ? match.profileB.id : match.profileA.id,
-        },
-      })),
+  const settings = await prisma.adminSettings.findUnique({
+    where: { id: "singleton" },
+    select: { baseAmount: true, profileAmount: true, perProfileChatAmount: true },
+  });
+
+  let filteredMatches = matches;
+  if (!summaryOnly) {
+    const otherProfileIds = matches.map((match) =>
+      match.profileAId === ownProfile.id ? match.profileBId : match.profileAId
+    );
+    const likes = await prisma.like.findMany({
+      where: {
+        OR: [
+          { fromProfileId: ownProfile.id, toProfileId: { in: otherProfileIds } },
+          { fromProfileId: { in: otherProfileIds }, toProfileId: ownProfile.id },
+        ],
+      },
+      select: { fromProfileId: true, toProfileId: true },
+    });
+
+    const outgoing = new Set(likes.filter(l => l.fromProfileId === ownProfile.id).map(l => l.toProfileId));
+    const incoming = new Set(likes.filter(l => l.toProfileId === ownProfile.id).map(l => l.fromProfileId));
+
+    filteredMatches = matches.filter((match) => {
+      const otherProfileId = match.profileAId === ownProfile.id ? match.profileBId : match.profileAId;
+      return outgoing.has(otherProfileId) && incoming.has(otherProfileId);
     });
   }
 
-  const pendingMatches = matches.reduce<
+  if (summaryOnly) {
+    return NextResponse.json({
+      data: matches.map((match) => {
+        const otherProfile = match.profileAId === ownProfile.id ? match.profileB : match.profileA;
+        return {
+          id: match.id,
+          createdAt: match.createdAt.toISOString(),
+          isProfileUnlocked: match.unlocks.some(
+            (unlock) => unlock.userId === session.user.id && unlock.type === "PROFILE"
+          ),
+          isChatUnlocked: match.unlocks.some(
+            (unlock) => unlock.userId === session.user.id && unlock.type === "CHAT"
+          ),
+          otherProfile: serializeProfilePreviewCard(otherProfile as any),
+        };
+      }),
+      pricing: settings
+        ? {
+            baseAmount: settings.baseAmount,
+            profileAmount: settings.profileAmount,
+            perProfileChatAmount: settings.perProfileChatAmount,
+          }
+        : undefined,
+    });
+  }
+
+  const pendingMatches = filteredMatches.reduce<
     Array<{
       id: string;
       createdAt: string;
-      isUnlocked: false;
+      isProfileUnlocked: false;
+      isChatUnlocked: boolean;
       otherProfile: {
         id: string;
         fullName: string;
@@ -55,12 +99,19 @@ export async function GET(req: NextRequest) {
         education: string | null;
         course: string | null;
         phone: null;
-        previewImageUrl: string | null;
+        profileImage: string | null;
+        photos: { url: string; isPrimary: boolean }[];
       };
     }>
   >((items, match) => {
-    const isUnlocked = match.unlocks.some((unlock) => unlock.userId === session.user.id);
-    if (isUnlocked) {
+    const isProfileUnlocked = match.unlocks.some(
+      (unlock) => unlock.userId === session.user.id && unlock.type === "PROFILE"
+    );
+    const isChatUnlocked = match.unlocks.some(
+      (unlock) => unlock.userId === session.user.id && unlock.type === "CHAT"
+    );
+
+    if (isProfileUnlocked) {
       return items;
     }
 
@@ -70,7 +121,8 @@ export async function GET(req: NextRequest) {
     items.push({
       id: match.id,
       createdAt: match.createdAt.toISOString(),
-      isUnlocked: false,
+      isProfileUnlocked: false,
+      isChatUnlocked,
       otherProfile: {
         id: otherProfile.id,
         fullName: otherProfile.fullName,
@@ -85,7 +137,8 @@ export async function GET(req: NextRequest) {
         education: otherProfile.education,
         course: otherProfile.course,
         phone: null,
-        previewImageUrl: getProtectedMatchProfileImageUrl(otherProfile),
+        profileImage: getProtectedMatchProfileImageUrl(otherProfile),
+        photos: [],
       },
     });
 
@@ -94,6 +147,14 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     data: pendingMatches,
-    unlockedMatchesCount: matches.length - pendingMatches.length,
+    unlockedMatchesCount: filteredMatches.length - pendingMatches.length,
+    isSummary: summaryOnly,
+    pricing: settings
+      ? {
+          baseAmount: settings.baseAmount,
+          profileAmount: settings.profileAmount,
+          perProfileChatAmount: settings.perProfileChatAmount,
+        }
+      : undefined,
   });
 }

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { resolveAllowedImageSrc } from "@/lib/utils/image";
+import { cn } from "@/lib/utils/helpers";
 
 type LandingHeroBannerProps = {
   initialHeroImageUrl: string;
@@ -13,60 +14,71 @@ const DEFAULT_HERO_IMAGE = "/main.jpeg";
 export default function LandingHeroBanner({
   initialHeroImageUrl,
 }: LandingHeroBannerProps) {
-  const [heroImageUrl, setHeroImageUrl] = useState(() =>
-    resolveAllowedImageSrc(initialHeroImageUrl, DEFAULT_HERO_IMAGE) ?? DEFAULT_HERO_IMAGE,
-  );
+  const [heroImages, setHeroImages] = useState<string[]>(() => {
+    const images = initialHeroImageUrl ? initialHeroImageUrl.split(",") : [DEFAULT_HERO_IMAGE];
+    return images.map(img => resolveAllowedImageSrc(img, DEFAULT_HERO_IMAGE) ?? DEFAULT_HERO_IMAGE);
+  });
+  
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    setHeroImageUrl(
-      resolveAllowedImageSrc(initialHeroImageUrl, DEFAULT_HERO_IMAGE) ?? DEFAULT_HERO_IMAGE,
-    );
+    const images = initialHeroImageUrl ? initialHeroImageUrl.split(",") : [DEFAULT_HERO_IMAGE];
+    setHeroImages(images.map(img => resolveAllowedImageSrc(img, DEFAULT_HERO_IMAGE) ?? DEFAULT_HERO_IMAGE));
+    setActiveIndex(0);
   }, [initialHeroImageUrl]);
 
   useEffect(() => {
-    const handleHeroUpdate = (event: Event) => {
-      const customEvent = event as CustomEvent<{ heroImageUrl?: string }>;
-      const nextValue = customEvent.detail?.heroImageUrl ?? "";
-      setHeroImageUrl(resolveAllowedImageSrc(nextValue, DEFAULT_HERO_IMAGE) ?? DEFAULT_HERO_IMAGE);
-    };
+    if (heroImages.length <= 1) return;
 
-    window.addEventListener("branding-hero-updated", handleHeroUpdate);
-    return () => window.removeEventListener("branding-hero-updated", handleHeroUpdate);
-  }, []);
+    const interval = setInterval(() => {
+      setActiveIndex((current) => (current + 1) % heroImages.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [heroImages.length]);
 
   return (
-    <>
-      <div className="absolute inset-0 hidden overflow-hidden lg:block">
-        <Image
-          src={heroImageUrl}
-          alt="Happy couple"
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="(max-width: 1024px) 100vw, 100vw"
-          onError={() =>
-            setHeroImageUrl((current) =>
-              current === DEFAULT_HERO_IMAGE ? current : DEFAULT_HERO_IMAGE
-            )
-          }
-        />
+    <div className="relative h-full w-full">
+      <div className="absolute inset-0 overflow-hidden bg-transparent">
+        {heroImages.map((src, index) => (
+          <div
+            key={`${src}-${index}`}
+            className={cn(
+              "absolute inset-0 transition-opacity duration-1000 ease-in-out",
+              activeIndex === index ? "opacity-100" : "opacity-0"
+            )}
+          >
+            <Image
+              src={src}
+              alt={`Happy couple slide ${index + 1}`}
+              fill
+              priority={index === 0}
+              className="object-cover object-center"
+              sizes="100vw"
+              unoptimized={src.startsWith("blob:")}
+            />
+          </div>
+        ))}
       </div>
 
-      <div className="relative min-h-[18rem] w-full overflow-hidden rounded-[2rem] border border-white/80 bg-white shadow-[0_20px_45px_rgba(15,23,42,0.08)] sm:min-h-[22rem] lg:hidden">
-        <Image
-          src={heroImageUrl}
-          alt="Happy couple"
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="100vw"
-          onError={() =>
-            setHeroImageUrl((current) =>
-              current === DEFAULT_HERO_IMAGE ? current : DEFAULT_HERO_IMAGE
-            )
-          }
-        />
-      </div>
-    </>
+      {/* Navigation Dots */}
+      {heroImages.length > 1 && (
+        <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2">
+          {heroImages.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveIndex(i)}
+              className={cn(
+                "h-2 rounded-full transition-all duration-300",
+                activeIndex === i 
+                  ? "w-8 bg-white shadow-[0_0_12px_rgba(255,255,255,0.5)]" 
+                  : "w-2 bg-white/40 hover:bg-white/60"
+              )}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

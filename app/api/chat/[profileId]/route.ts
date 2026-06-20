@@ -15,6 +15,7 @@ import {
   findConversationForProfiles,
   getOrCreateConversation,
 } from "@/lib/utils/chat";
+import { getAdminSettingsSnapshot } from "@/lib/utils/admin-settings";
 
 type RouteContext = {
   params: Promise<{ profileId: string }>;
@@ -26,6 +27,8 @@ const chatMessageSelect = {
   id: true,
   content: true,
   isRead: true,
+  isSystemMessage: true,
+  systemAction: true,
   createdAt: true,
   updatedAt: true,
   senderProfileId: true,
@@ -65,7 +68,7 @@ async function resolveChatAccess(targetProfileId: string, userId: string) {
   const [ownProfile, targetProfile] = await Promise.all([
     prisma.profile.findUnique({
       where: { userId },
-      select: { id: true, fullName: true },
+      select: { id: true, fullName: true, userId: true },
     }),
     prisma.profile.findUnique({
       where: { id: targetProfileId },
@@ -160,6 +163,44 @@ export async function GET(
     });
   }
 
+  const pair = {
+    profileAId: ownProfile.id < targetProfile.id ? ownProfile.id : targetProfile.id,
+    profileBId: ownProfile.id < targetProfile.id ? targetProfile.id : ownProfile.id,
+  };
+
+  let match;
+  try {
+    match = await prisma.match.upsert({
+      where: { profileAId_profileBId: pair },
+      update: {},
+      create: pair,
+      include: {
+        unlocks: {
+          where: { userId: session.user.id, type: "CHAT" },
+        },
+      },
+    });
+  } catch (error: any) {
+    // Handle race condition where another request created the match between where and create
+    if (error.code === "P2002") {
+      match = await prisma.match.findUnique({
+        where: { profileAId_profileBId: pair },
+        include: {
+          unlocks: {
+            where: { userId: session.user.id, type: "CHAT" },
+          },
+        },
+      });
+      if (!match) throw error;
+    } else {
+      throw error;
+    }
+  }
+
+  const settings = await getAdminSettingsSnapshot();
+  const isUnlockedDefault = Boolean(match.unlocks.length);
+  const isUnlocked = !settings.isChatPaymentEnabled || isUnlockedDefault || conversation?.status === "ACCEPTED";
+
   const messages = conversation
     ? await prisma.chatMessage.findMany({
         where: { conversationId: conversation.id },
@@ -171,7 +212,17 @@ export async function GET(
   return NextResponse.json({
     data: {
       conversationId: conversation?.id ?? null,
+      status: conversation?.status ?? "PENDING",
+      initiatorProfileId: conversation?.initiatorProfileId ?? null,
+      isUnlocked,
+      matchId: match?.id ?? null,
       viewerProfileId: ownProfile.id,
+      pricing: {
+        baseAmount: settings.baseAmount,
+        profileAmount: settings.profileAmount,
+        perProfileChatAmount: settings.perProfileChatAmount,
+        isChatPaymentEnabled: settings.isChatPaymentEnabled,
+      },
       targetProfile: {
         id: targetProfile.id,
         fullName: targetProfile.fullName,
@@ -208,6 +259,28 @@ export async function POST(
   const { ownProfile, targetProfile } = access;
   await markChatProfileActiveAndBroadcast(ownProfile.id);
 
+  // Enforce chat unlock payment check
+  const settings = await getAdminSettingsSnapshot();
+  if (settings.isChatPaymentEnabled) {
+    const pair = {
+      profileAId: ownProfile.id < targetProfile.id ? ownProfile.id : targetProfile.id,
+      profileBId: ownProfile.id < targetProfile.id ? targetProfile.id : ownProfile.id,
+    };
+    const match = await prisma.match.findUnique({
+      where: { profileAId_profileBId: pair },
+      include: {
+        unlocks: {
+          where: { userId: session.user.id, type: "CHAT" },
+        },
+      },
+    });
+    const conversation = await findConversationForProfiles(ownProfile.id, targetProfile.id);
+    const isUnlocked = Boolean(match?.unlocks.length) || conversation?.status === "ACCEPTED";
+    if (!isUnlocked) {
+      return NextResponse.json({ error: "Chat is locked. Payment required." }, { status: 402 });
+    }
+  }
+
   try {
     const { content, replyToMessageId } = await req.json();
     const messageContent = typeof content === "string" ? content.trim() : "";
@@ -230,8 +303,10 @@ export async function POST(
 
     const conversation = await getOrCreateConversation(
       ownProfile.id,
-      targetProfile.id
+      targetProfile.id,
+      ownProfile.id
     );
+    
     const replyTarget = normalizedReplyToMessageId
       ? await prisma.chatMessage.findFirst({
           where: {
@@ -282,6 +357,8 @@ export async function POST(
     return NextResponse.json({
       data: {
         conversationId: conversation.id,
+        status: conversation.status,
+        initiatorProfileId: conversation.initiatorProfileId,
         message,
       },
     });
@@ -289,6 +366,98 @@ export async function POST(
     console.error("Send chat message error:", error);
     return NextResponse.json(
       { error: "Failed to send message" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(
+  req: NextRequest,
+  context: RouteContext
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { profileId } = await context.params;
+  const access = await resolveChatAccess(profileId, session.user.id);
+
+  if ("error" in access) {
+    return access.error;
+  }
+
+  const { ownProfile, targetProfile } = access;
+
+  try {
+    const { action } = await req.json(); // "ACCEPT" or "REJECT"
+
+    const conversation = await findConversationForProfiles(
+      ownProfile.id,
+      targetProfile.id
+    );
+
+    if (!conversation) {
+      return NextResponse.json(
+        { error: "Conversation not found" },
+        { status: 404 }
+      );
+    }
+
+    if (conversation.initiatorProfileId === ownProfile.id) {
+      return NextResponse.json(
+        { error: "Only the recipient can accept or reject the chat request" },
+        { status: 403 }
+      );
+    }
+
+    const newStatus = action === "ACCEPT" ? "ACCEPTED" : "REJECTED";
+
+    const updatedConversation = await prisma.$transaction(async (tx) => {
+      const conv = await tx.chatConversation.update({
+        where: { id: conversation.id },
+        data: { 
+          status: newStatus,
+          updatedAt: new Date(),
+        },
+      });
+
+      // Add a system message
+      await tx.chatMessage.create({
+        data: {
+          conversationId: conv.id,
+          senderProfileId: ownProfile.id,
+          isSystemMessage: true,
+          systemAction: action === "ACCEPT" ? "REQUEST_ACCEPTED" : "REQUEST_REJECTED",
+          content: action === "ACCEPT" 
+            ? `${ownProfile.fullName} accepted the chat request.` 
+            : `${ownProfile.fullName} declined the chat request.`,
+        }
+      });
+
+      return conv;
+    });
+
+    publishUserNotification(targetProfile.userId, {
+      type: "status_updated",
+      status: newStatus,
+      createdAt: updatedConversation.updatedAt.toISOString(),
+      conversationId: updatedConversation.id,
+      fromProfileId: ownProfile.id,
+      toProfileId: targetProfile.id,
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        status: updatedConversation.status,
+      }
+    });
+
+  } catch (error) {
+    console.error("Update chat status error:", error);
+    return NextResponse.json(
+      { error: "Failed to update chat status" },
       { status: 500 }
     );
   }

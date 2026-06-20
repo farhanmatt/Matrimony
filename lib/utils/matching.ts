@@ -64,13 +64,22 @@ export async function syncMatchesFromMutualLikes() {
   }
 
   const results = await Promise.all(
-    Array.from(mutualPairs.values()).map((pair) =>
-      prisma.match.upsert({
-        where: { profileAId_profileBId: pair },
-        update: {},
-        create: pair,
-      })
-    )
+    Array.from(mutualPairs.values()).map(async (pair) => {
+      try {
+        return await prisma.match.upsert({
+          where: { profileAId_profileBId: pair },
+          update: {},
+          create: pair,
+        });
+      } catch (error: any) {
+        if (error.code === "P2002") {
+          return await prisma.match.findUnique({
+            where: { profileAId_profileBId: pair },
+          });
+        }
+        throw error;
+      }
+    })
   );
 
   return results.length;
@@ -140,11 +149,18 @@ export async function likeProfile(
     toProfileId
   );
 
-  await prisma.match.upsert({
-    where: { profileAId_profileBId: { profileAId, profileBId } },
-    update: {},
-    create: { profileAId, profileBId },
-  });
+  try {
+    await prisma.match.upsert({
+      where: { profileAId_profileBId: { profileAId, profileBId } },
+      update: {},
+      create: { profileAId, profileBId },
+    });
+  } catch (error: any) {
+    if (error.code !== "P2002") {
+      throw error;
+    }
+    // If it's P2002, the match already exists, which is what we want
+  }
 
   return { liked: true, matched: true, created };
 }
@@ -193,7 +209,8 @@ export async function findMatch(profileAId: string, profileBId: string) {
 export async function findUnlockForProfiles(
   userId: string,
   viewerProfileId: string,
-  targetProfileId: string
+  targetProfileId: string,
+  type?: "PROFILE" | "CHAT"
 ) {
   if (viewerProfileId === targetProfileId) {
     return null;
@@ -214,10 +231,12 @@ export async function findUnlockForProfiles(
           },
         ],
       },
+      ...(type ? { type } : {}),
     },
     select: {
       id: true,
       matchId: true,
+      type: true,
     },
   });
 }
@@ -226,8 +245,62 @@ export async function findUnlockForProfiles(
  * Get all currently valid mutual matches for a profile.
  * Stale match rows without unlocks are cleaned up automatically.
  */
+export async function syncMatchesFromConversations() {
+  const conversations = await prisma.chatConversation.findMany({
+    select: {
+      profileAId: true,
+      profileBId: true,
+    },
+  });
+
+  if (conversations.length === 0) return 0;
+
+  const results = await Promise.all(
+    conversations.map(async (conv) => {
+      const pair = { profileAId: conv.profileAId, profileBId: conv.profileBId };
+      try {
+        return await prisma.match.upsert({
+          where: { profileAId_profileBId: pair },
+          update: {},
+          create: pair,
+        });
+      } catch (error: any) {
+        if (error.code === "P2002") {
+          return prisma.match.findUnique({
+            where: { profileAId_profileBId: pair },
+          });
+        }
+        throw error;
+      }
+    })
+  );
+
+  return results.length;
+}
+
+export async function findOrCreateMatch(profileAId: string, profileBId: string) {
+  const pair = normalizeMatchPair(profileAId, profileBId);
+  try {
+    return await prisma.match.upsert({
+      where: { profileAId_profileBId: pair },
+      update: {},
+      create: pair,
+    });
+  } catch (error: any) {
+    if (error.code === "P2002") {
+      return prisma.match.findUnique({
+        where: { profileAId_profileBId: pair },
+      });
+    }
+    throw error;
+  }
+}
+
+
+
 export async function getMatchesForProfile(profileId: string) {
   await syncMatchesFromMutualLikes();
+  await syncMatchesFromConversations();
 
   const matches = await prisma.match.findMany({
     where: {
@@ -287,18 +360,37 @@ export async function getMatchesForProfile(profileId: string) {
       .map((like) => like.fromProfileId)
   );
 
+  const conversations = await prisma.chatConversation.findMany({
+    where: {
+      OR: [{ profileAId: profileId }, { profileBId: profileId }],
+    },
+    select: {
+      profileAId: true,
+      profileBId: true,
+    },
+  });
+
+  const conversationProfileIds = new Set(
+    conversations.flatMap((c) => [c.profileAId, c.profileBId])
+  );
+
   const staleUnlockedFreeMatchIds: string[] = [];
   const activeMatches = matches.filter((match) => {
     const otherProfileId =
       match.profileAId === profileId ? match.profileBId : match.profileAId;
+
     const isMutual =
       outgoingLikes.has(otherProfileId) && incomingLikes.has(otherProfileId);
 
-    if (!isMutual && match.unlocks.length === 0) {
+    const hasConversation = conversationProfileIds.has(otherProfileId);
+
+    const hasUnlock = match.unlocks.length > 0;
+
+    if (!isMutual && !hasConversation && !hasUnlock) {
       staleUnlockedFreeMatchIds.push(match.id);
     }
 
-    return isMutual;
+    return isMutual || hasConversation || hasUnlock;
   });
 
   if (staleUnlockedFreeMatchIds.length > 0) {

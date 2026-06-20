@@ -22,11 +22,19 @@ import {
   readShortlistedProfileIds,
   setShortlistedProfileId,
 } from "@/lib/utils/shortlist";
+import PaymentModal from "@/components/payment/PaymentModal";
 
 interface LikedProfilePreviewCardProps {
   likedAt: string;
   shortlistUserId?: string | null;
   showChatAction?: boolean;
+  isUnlocked?: boolean;
+  matchId?: string;
+  pricing?: {
+    baseAmount: number;
+    profileAmount: number;
+    perProfileChatAmount: number;
+  };
   allowUnlike?: boolean;
   profile: {
     id: string;
@@ -45,15 +53,20 @@ interface LikedProfilePreviewCardProps {
     previewImageUrl: string | null;
   };
   onUnlike?: (profileId: string) => void;
+  onUnlockSuccess?: () => void;
 }
 
 export default function LikedProfilePreviewCard({
   likedAt,
   shortlistUserId,
   showChatAction = false,
+  isUnlocked = false,
+  matchId,
+  pricing,
   allowUnlike = true,
   profile,
   onUnlike,
+  onUnlockSuccess,
 }: LikedProfilePreviewCardProps) {
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -61,6 +74,7 @@ export default function LikedProfilePreviewCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [shortlisted, setShortlisted] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   useEffect(() => {
     setShortlisted(readShortlistedProfileIds(shortlistUserId).includes(profile.id));
@@ -172,6 +186,14 @@ export default function LikedProfilePreviewCard({
 
   const handleChatClick = (event: ReactMouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
+    if (!isUnlocked) {
+      if (!pricing) {
+        toast.error("Unlock information not available for this chat.");
+        return;
+      }
+      setShowPaymentModal(true);
+      return;
+    }
     router.push(`/dashboard/chat/${profile.id}`);
   };
 
@@ -278,7 +300,11 @@ export default function LikedProfilePreviewCard({
               <button
                 type="button"
                 onClick={handleChatClick}
-                className="ui-link-shift inline-flex h-10 w-10 items-center justify-center rounded-full border border-rose-200 bg-rose-50 text-rose-500 transition-colors hover:border-rose-300 hover:bg-rose-100"
+                className={`ui-link-shift inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors ${
+                  isUnlocked 
+                    ? "border-rose-200 bg-rose-50 text-rose-500 hover:border-rose-300 hover:bg-rose-100" 
+                    : "border-slate-200 bg-slate-50 text-slate-400 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500"
+                }`}
                 aria-label={`Chat with ${profile.fullName}`}
               >
                 <MessageCircle className="h-4.5 w-4.5" />
@@ -323,7 +349,7 @@ export default function LikedProfilePreviewCard({
                 type="button"
                 onClick={() => void handleUnlike()}
                 disabled={removing}
-                className="ui-link-shift inline-flex flex-1 items-center justify-center rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(244,63,94,0.2)] transition-all hover:shadow-[0_18px_36px_rgba(244,63,94,0.24)] disabled:cursor-not-allowed disabled:opacity-70"
+                className="ui-link-shift inline-flex flex-1 items-center justify-center rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_30_rgba(244,63,94,0.24)] transition-all hover:shadow-[0_18px_36px_rgba(244,63,94,0.24)] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {removing ? "Removing..." : "Yes"}
               </button>
@@ -331,6 +357,23 @@ export default function LikedProfilePreviewCard({
           </div>
         </div>
       ) : null}
+
+      {showPaymentModal && pricing && (
+        <PaymentModal
+          matchId={matchId}
+          targetProfileId={profile.id}
+          profileName={profile.fullName}
+          baseAmount={pricing.baseAmount}
+          profileAmount={pricing.profileAmount}
+          perProfileChatAmount={pricing.perProfileChatAmount}
+          type="CHAT"
+          onClose={() => setShowPaymentModal(false)}
+          onSuccess={() => {
+            // Force immediate navigation
+            window.location.href = `/dashboard/chat/${profile.id}`;
+          }}
+        />
+      )}
     </>
   );
 }

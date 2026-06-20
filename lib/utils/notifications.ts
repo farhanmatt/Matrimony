@@ -425,7 +425,7 @@ export async function dismissUnreadMessageNotificationsForUser(
   const [ownProfile, senderProfile] = await Promise.all([
     prisma.profile.findUnique({
       where: { userId },
-      select: { id: true },
+      select: { id: true, fullName: true },
     }),
     prisma.profile.findUnique({
       where: { id: senderProfileId },
@@ -470,6 +470,37 @@ export async function dismissUnreadMessageNotificationsForUser(
           updatedCount: result.count,
           rejectionNotificationCreated: false,
         };
+      }
+
+      const pair = ownProfile.id < senderProfile.id
+        ? { profileAId: ownProfile.id, profileBId: senderProfile.id }
+        : { profileAId: senderProfile.id, profileBId: ownProfile.id };
+
+      await tx.chatConversation.updateMany({
+        where: {
+          ...pair,
+          status: "PENDING",
+        },
+        data: {
+          status: "REJECTED",
+          updatedAt: new Date(),
+        },
+      });
+
+      const conv = await tx.chatConversation.findFirst({
+        where: pair,
+      });
+
+      if (conv) {
+        await tx.chatMessage.create({
+          data: {
+            conversationId: conv.id,
+            senderProfileId: ownProfile.id,
+            isSystemMessage: true,
+            systemAction: "REQUEST_REJECTED",
+            content: `${ownProfile.fullName} declined the chat request.`,
+          },
+        });
       }
 
       await createProfileNotification(

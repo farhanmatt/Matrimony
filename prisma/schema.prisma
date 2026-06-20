@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
@@ -56,20 +56,26 @@ enum ProfileNotificationKind {
   MESSAGE_REQUEST_REJECTED
 }
 
+enum ChatStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 // ─── Auth / Users ────────────────────────────────────────────────────────────
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  nameLookup    String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  role          Role      @default(USER)
-  hasSeenDashboardIntro Boolean @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                    String    @id @default(cuid())
+  name                  String?
+  nameLookup            String?
+  email                 String    @unique
+  emailVerified         DateTime?
+  image                 String?
+  password              String?
+  role                  Role      @default(USER)
+  hasSeenDashboardIntro Boolean   @default(false)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   accounts              Account[]
   sessions              Session[]
@@ -122,17 +128,17 @@ model VerificationToken {
 }
 
 model PasswordResetRequest {
-  id                       String   @id @default(cuid())
-  userId                   String
-  email                    String
-  sessionTokenHash         String   @unique
-  pendingPasswordHash      String?
-  verificationCodeHash     String?
+  id                        String    @id @default(cuid())
+  userId                    String
+  email                     String
+  sessionTokenHash          String    @unique
+  pendingPasswordHash       String?
+  verificationCodeHash      String?
   verificationCodeExpiresAt DateTime?
-  verificationAttempts     Int      @default(0)
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
-  expiresAt                DateTime
+  verificationAttempts      Int       @default(0)
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+  expiresAt                 DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -142,20 +148,20 @@ model PasswordResetRequest {
 }
 
 model PendingRegistration {
-  id                         String   @id @default(cuid())
-  email                      String   @unique
-  name                       String
-  nameLookup                 String?
-  passwordHash               String
-  profile                    Json?
-  preference                 Json?
-  sessionTokenHash           String   @unique
-  verificationCodeHash       String
-  verificationCodeExpiresAt  DateTime
-  verificationAttempts       Int      @default(0)
-  createdAt                  DateTime @default(now())
-  updatedAt                  DateTime @updatedAt
-  expiresAt                  DateTime
+  id                        String   @id @default(cuid())
+  email                     String   @unique
+  name                      String
+  nameLookup                String?
+  passwordHash              String
+  profile                   Json?
+  preference                Json?
+  sessionTokenHash          String   @unique
+  verificationCodeHash      String
+  verificationCodeExpiresAt DateTime
+  verificationAttempts      Int      @default(0)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+  expiresAt                 DateTime
 
   @@index([email])
   @@index([expiresAt])
@@ -163,56 +169,55 @@ model PendingRegistration {
 
 // ─── Profile ─────────────────────────────────────────────────────────────────
 
-
 model Profile {
-  id     String        @id @default(cuid())
-  userId String        @unique
-  profileUserId String? @unique
-  status ProfileStatus @default(DRAFT)
+  id            String        @id @default(cuid())
+  userId        String        @unique
+  profileUserId String?       @unique
+  status        ProfileStatus @default(DRAFT)
 
   // Personal
-  fullName      String
-  gender        Gender
-  dateOfBirth   DateTime
-  height        Float?        // in cm
-  nationality   String?
-  maritalStatus MaritalStatus @default(NEVER_MARRIED)
-  isPhysicallyChallenged Boolean @default(false)
-  disabilityType String?
-  phone         String?
-  education     String?       // Higher education
-  course        String?
-  profession    String?       // Occupation
-  employedIn    String?
-  income        String?       // Annual income
-  location      String?
+  fullName               String
+  gender                 Gender
+  dateOfBirth            DateTime
+  height                 Float? // in cm
+  nationality            String?
+  maritalStatus          MaritalStatus @default(NEVER_MARRIED)
+  isPhysicallyChallenged Boolean       @default(false)
+  disabilityType         String?
+  phone                  String?
+  education              String? // Higher education
+  course                 String?
+  profession             String? // Occupation
+  employedIn             String?
+  income                 String? // Annual income
+  location               String?
 
   // Address
-  houseNumber   String?
-  streetName    String?
-  city          String?
-  state         String?
-  pincode       String?
-  country       String        @default("India")
-  bio           String?       @db.Text
+  houseNumber String?
+  streetName  String?
+  city        String?
+  state       String?
+  pincode     String?
+  country     String  @default("India")
+  bio         String? @db.Text
 
   // Family
-  fatherName  String?
-  motherName  String?
-  familyType  FamilyType?
-  familyStatus FamilyStatus?
+  fatherName        String?
+  motherName        String?
+  familyType        FamilyType?
+  familyStatus      FamilyStatus?
   residentialStatus String?
-  siblings    Int?
+  siblings          Int?
 
   // Religious / Cultural
-  religion  String?
-  caste     String?
-  subCaste  String?
-  language  String?
-  star      String? // Nakshatra
-  rasi      String? // Zodiac sign / Rasi
-  dosham    String?
-  timeOfBirth String?
+  religion     String?
+  caste        String?
+  subCaste     String?
+  language     String?
+  star         String? // Nakshatra
+  rasi         String? // Zodiac sign / Rasi
+  dosham       String?
+  timeOfBirth  String?
   placeOfBirth String?
 
   // Lifestyle
@@ -232,16 +237,16 @@ model Profile {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  photos      ProfilePhoto[]
-  preference  Preference?
-  likesSent   Like[]        @relation("LikeFrom")
-  likesReceived Like[]      @relation("LikeTo")
-  matchesAsA  Match[]       @relation("MatchProfileA")
-  matchesAsB  Match[]       @relation("MatchProfileB")
-  chatConversationsAsA ChatConversation[] @relation("ChatConversationProfileA")
-  chatConversationsAsB ChatConversation[] @relation("ChatConversationProfileB")
-  sentChatMessages ChatMessage[] @relation("ChatMessageSender")
+  user                  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photos                ProfilePhoto[]
+  preference            Preference?
+  likesSent             Like[]                @relation("LikeFrom")
+  likesReceived         Like[]                @relation("LikeTo")
+  matchesAsA            Match[]               @relation("MatchProfileA")
+  matchesAsB            Match[]               @relation("MatchProfileB")
+  chatConversationsAsA  ChatConversation[]    @relation("ChatConversationProfileA")
+  chatConversationsAsB  ChatConversation[]    @relation("ChatConversationProfileB")
+  sentChatMessages      ChatMessage[]         @relation("ChatMessageSender")
   receivedNotifications ProfileNotification[] @relation("ProfileNotificationRecipient")
   authoredNotifications ProfileNotification[] @relation("ProfileNotificationActor")
 
@@ -261,12 +266,12 @@ model ProfileUserIdSequence {
 }
 
 model ProfilePhoto {
-  id         String   @id @default(cuid())
-  profileId  String
-  url        String
-  publicId   String   // Cloudinary public ID
-  isPrimary  Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  profileId String
+  url       String
+  publicId  String // Cloudinary public ID
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
 
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
@@ -279,17 +284,17 @@ model Preference {
   id        String @id @default(cuid())
   profileId String @unique
 
-  ageMin      Int?
-  ageMax      Int?
-  heightMin   Float?
-  heightMax   Float?
-  religion    String?
-  caste       String?
-  education   String?
-  profession  String?
-  location    String?
+  ageMin        Int?
+  ageMax        Int?
+  heightMin     Float?
+  heightMax     Float?
+  religion      String?
+  caste         String?
+  education     String?
+  profession    String?
+  location      String?
   maritalStatus String?
-  language    String?
+  language      String?
 
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 }
@@ -327,12 +332,14 @@ model Match {
 }
 
 model ChatConversation {
-  id            String   @id @default(cuid())
-  profileAId    String
-  profileBId    String
-  lastMessageAt DateTime @default(now())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                 String     @id @default(cuid())
+  profileAId         String
+  profileBId         String
+  initiatorProfileId String
+  status             ChatStatus @default(PENDING)
+  lastMessageAt      DateTime   @default(now())
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
 
   profileA Profile       @relation("ChatConversationProfileA", fields: [profileAId], references: [id], onDelete: Cascade)
   profileB Profile       @relation("ChatConversationProfileB", fields: [profileBId], references: [id], onDelete: Cascade)
@@ -345,14 +352,16 @@ model ChatConversation {
 }
 
 model ChatMessage {
-  id              String   @id @default(cuid())
-  conversationId  String
-  senderProfileId String
+  id               String   @id @default(cuid())
+  conversationId   String
+  senderProfileId  String
   replyToMessageId String?
-  content         String   @db.Text
-  isRead          Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  content          String   @db.Text
+  isRead           Boolean  @default(false)
+  isSystemMessage  Boolean  @default(false)
+  systemAction     String? // e.g. "REQUEST_ACCEPTED", "REQUEST_REJECTED"
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   senderProfile  Profile          @relation("ChatMessageSender", fields: [senderProfileId], references: [id], onDelete: Cascade)
@@ -379,23 +388,23 @@ model ProfileNotification {
 }
 
 model DeletedMatch {
-  id              String   @id @default(cuid())
-  matchId         String   @unique
-  profileAId      String
-  profileBId      String
-  profileAName    String
-  profileAGender  String
-  profileACity    String?
+  id               String   @id @default(cuid())
+  matchId          String   @unique
+  profileAId       String
+  profileBId       String
+  profileAName     String
+  profileAGender   String
+  profileACity     String?
   profileALocation String?
-  profileAState   String?
-  profileBName    String
-  profileBGender  String
-  profileBCity    String?
+  profileAState    String?
+  profileBName     String
+  profileBGender   String
+  profileBCity     String?
   profileBLocation String?
-  profileBState   String?
-  unlockCount     Int      @default(0)
-  matchCreatedAt  DateTime
-  deletedAt       DateTime @default(now())
+  profileBState    String?
+  unlockCount      Int      @default(0)
+  matchCreatedAt   DateTime
+  deletedAt        DateTime @default(now())
 
   @@index([deletedAt])
   @@index([matchId])
@@ -404,25 +413,25 @@ model DeletedMatch {
 // ─── Payments & Unlocks ───────────────────────────────────────────────────────
 
 model Payment {
-  id                 String   @id @default(cuid())
-  userId             String
-  matchId            String
-  razorpayOrderId    String   @unique
-  razorpayPaymentId  String?  @unique
-  razorpaySignature  String?
-  amount             Int      // in paise (₹1 = 100 paise)
-  currency           String   @default("INR")
-  status             String   @default("CREATED") // CREATED | PAID | FAILED
-  baseAmount         Int
-  profileAmount      Int
-  profileUnlockAmount Int    @default(500)
-  perProfileChatAmount Int   @default(0)
-  couponCode         String?
-  discountAmount     Int      @default(0) // discount in rupees
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                   String   @id @default(cuid())
+  userId               String
+  matchId              String
+  razorpayOrderId      String   @unique
+  razorpayPaymentId    String?  @unique
+  razorpaySignature    String?
+  amount               Int // in paise (₹1 = 100 paise)
+  currency             String   @default("INR")
+  status               String   @default("CREATED") // CREATED | PAID | FAILED
+  baseAmount           Int
+  profileAmount        Int
+  profileUnlockAmount  Int      @default(500)
+  perProfileChatAmount Int      @default(0)
+  couponCode           String?
+  discountAmount       Int      @default(0) // discount in rupees
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   unlock Unlock?
 
   @@index([userId])
@@ -430,18 +439,24 @@ model Payment {
   @@index([razorpayOrderId])
 }
 
+enum UnlockType {
+  PROFILE
+  CHAT
+}
+
 model Unlock {
-  id        String   @id @default(cuid())
+  id        String     @id @default(cuid())
   userId    String
   matchId   String
-  paymentId String   @unique
-  createdAt DateTime @default(now())
+  paymentId String     @unique
+  type      UnlockType @default(PROFILE)
+  createdAt DateTime   @default(now())
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   match   Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
   payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, matchId])
+  @@unique([userId, matchId, type])
   @@index([userId])
   @@index([matchId])
 }
@@ -449,32 +464,40 @@ model Unlock {
 // ─── Admin Settings ───────────────────────────────────────────────────────────
 
 model AdminSettings {
-  id            String @id @default("singleton")
-  baseAmount    Int    @default(500)    // in rupees
-  profileAmount Int    @default(500)    // in rupees
-  profileUnlockAmount Int @default(500)  // in rupees
-  perProfileChatAmount Int @default(0)   // in rupees
-  heroImageUrl  String @default("/main.jpeg")
-  logoImageUrl  String @default("")
-  updatedAt     DateTime @updatedAt
+  id                   String   @id @default("singleton")
+  baseAmount           Int      @default(500) // in rupees
+  profileAmount        Int      @default(500) // in rupees
+  profileUnlockAmount  Int      @default(500) // in rupees
+  perProfileChatAmount Int      @default(0) // in rupees
+  isChatPaymentEnabled Boolean  @default(true)
+  heroImageUrl         String   @default("/main.jpeg")
+  logoImageUrl         String   @default("")
+  updatedAt            DateTime @updatedAt
 }
 
 // ─── Coupon Codes ─────────────────────────────────────────────────────────────
 
+enum CouponFor {
+  PROFILE_UNLOCK
+  CHAT_UNLOCK
+  BOTH
+}
+
 model CouponCode {
-  id              String   @id @default(cuid())
-  code            String   @unique
-  description     String?
-  discountType    String   @default("PERCENTAGE") // PERCENTAGE or FIXED
-  discountValue   Float    // percentage (e.g. 20 = 20%) or fixed amount in rupees
-  maxUses         Int?     // null = unlimited
-  currentUses     Int      @default(0)
-  minAmount       Int      @default(0) // minimum order amount to apply coupon
-  maxDiscount     Int?     // maximum discount amount (for percentage coupons)
-  isActive        Boolean  @default(true)
-  expiresAt       DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id            String    @id @default(cuid())
+  code          String    @unique
+  couponFor     CouponFor @default(BOTH)
+  description   String?
+  discountType  String    @default("PERCENTAGE") // PERCENTAGE or FIXED
+  discountValue Float // percentage (e.g. 20 = 20%) or fixed amount in rupees
+  maxUses       Int? // null = unlimited
+  currentUses   Int       @default(0)
+  minAmount     Int       @default(0)
+  maxDiscount   Int?
+  isActive      Boolean   @default(true)
+  expiresAt     DateTime
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([code])
   @@index([isActive])

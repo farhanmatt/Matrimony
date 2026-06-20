@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { FormEvent, KeyboardEvent as ReactKeyboardEvent } from "react";
 import {
   startTransition,
@@ -14,7 +15,9 @@ import { format } from "date-fns";
 import {
   ArrowLeft,
   Check,
+  CheckCircle,
   Loader2,
+  Lock,
   MapPin,
   MessageCircle,
   MoreVertical,
@@ -34,11 +37,14 @@ import {
   DASHBOARD_REALTIME_EVENT_NAME,
   type DashboardRealtimeEvent,
 } from "@/lib/types/dashboard-realtime";
+import PaymentModal from "@/components/payment/PaymentModal";
 
 interface ChatMessage {
   id: string;
   content: string;
   isRead: boolean;
+  isSystemMessage?: boolean;
+  systemAction?: string | null;
   createdAt: string;
   updatedAt: string;
   senderProfileId: string;
@@ -52,6 +58,10 @@ interface ChatMessage {
 
 interface ChatPayload {
   conversationId: string | null;
+  status: "PENDING" | "ACCEPTED" | "REJECTED" | null;
+  initiatorProfileId: string | null;
+  isUnlocked: boolean;
+  matchId: string | null;
   viewerProfileId: string;
   targetProfile: {
     id: string;
@@ -63,6 +73,11 @@ interface ChatPayload {
     lastActiveAt: string | null;
   };
   messages: ChatMessage[];
+  pricing?: {
+    baseAmount: number;
+    profileAmount: number;
+    perProfileChatAmount: number;
+  };
 }
 
 interface ProfileChatSessionProps {
@@ -72,6 +87,8 @@ interface ProfileChatSessionProps {
 type UpsertMessageResponse = {
   data?: {
     conversationId: string;
+    status: "PENDING" | "ACCEPTED" | "REJECTED";
+    initiatorProfileId: string;
     message: ChatMessage;
   };
   error?: string;
@@ -86,27 +103,16 @@ type DeleteMessageResponse = {
 };
 
 const QUICK_EMOJIS = [
-  "\u{1F600}",
-  "\u{1F60A}",
-  "\u{1F609}",
-  "\u{1F60D}",
-  "\u{1F970}",
-  "\u{1F618}",
-  "\u{1F917}",
-  "\u{1F64F}",
-  "\u{1F44D}",
-  "\u{1F44F}",
-  "\u{1F64C}",
-  "\u{1F496}",
-  "\u{2764}\u{FE0F}",
-  "\u{2728}",
-  "\u{1F389}",
+  "\u{1F600}", "\u{1F60A}", "\u{1F609}", "\u{1F60D}", "\u{1F970}",
+  "\u{1F618}", "\u{1F917}", "\u{1F64F}", "\u{1F44D}", "\u{1F44F}",
+  "\u{1F64C}", "\u{1F496}", "\u{2764}\u{FE0F}", "\u{2728}", "\u{1F389}",
   "\u{1F339}",
 ];
 
 export default function ProfileChatSession({
   profileId,
 }: ProfileChatSessionProps) {
+  const router = useRouter();
   const [chat, setChat] = useState<ChatPayload | null>(null);
   const [targetPresence, setTargetPresence] = useState<{
     isOnline: boolean;
@@ -116,25 +122,19 @@ export default function ProfileChatSession({
   const [draft, setDraft] = useState("");
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [pendingMessageActionId, setPendingMessageActionId] = useState<string | null>(
-    null
-  );
-  const [pendingMessageAction, setPendingMessageAction] = useState<
-    "edit" | "delete" | null
-  >(null);
+  const [handshaking, setHandshaking] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  
+  const [pendingMessageActionId, setPendingMessageActionId] = useState<string | null>(null);
+  const [pendingMessageAction, setPendingMessageAction] = useState<"edit" | "delete" | null>(null);
   const [openMessageMenuId, setOpenMessageMenuId] = useState<string | null>(null);
-  const [activeReplyActionMessageId, setActiveReplyActionMessageId] = useState<
-    string | null
-  >(null);
+  const [activeReplyActionMessageId, setActiveReplyActionMessageId] = useState<string | null>(null);
   const [replyingMessageId, setReplyingMessageId] = useState<string | null>(null);
-  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(
-    null
-  );
+  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
-  const [animatedOutgoingMessageId, setAnimatedOutgoingMessageId] = useState<
-    string | null
-  >(null);
+  const [animatedOutgoingMessageId, setAnimatedOutgoingMessageId] = useState<string | null>(null);
+  
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const emojiPickerRef = useRef<HTMLDivElement | null>(null);
@@ -150,10 +150,12 @@ export default function ProfileChatSession({
     : null;
   const trimmedDraft = draft.trim();
   const hasDraft = trimmedDraft.length > 0;
-  const hasEditedDraft = editingMessage
-    ? trimmedDraft !== editingMessage.content.trim()
-    : true;
+  const hasEditedDraft = editingMessage ? trimmedDraft !== editingMessage.content.trim() : true;
   const canSubmitDraft = hasDraft && hasEditedDraft && !submitting;
+
+  const isPending = chat?.status === "PENDING";
+  const isInitiator = chat?.initiatorProfileId === chat?.viewerProfileId;
+  const isRecipient = chat?.initiatorProfileId && chat?.initiatorProfileId !== chat?.viewerProfileId;
 
   const loadChat = useCallback(
     async ({
@@ -183,6 +185,11 @@ export default function ProfileChatSession({
             lastActiveAt: data.data?.targetProfile?.lastActiveAt ?? null,
           });
           setChat(data.data);
+          
+          if (data.data?.status === "REJECTED") {
+            toast.error("This chat request was declined.");
+            router.push("/dashboard/shortlist");
+          }
         });
       } catch (error) {
         if (showError) {
@@ -196,8 +203,39 @@ export default function ProfileChatSession({
         }
       }
     },
-    [profileId]
+    [profileId, router]
   );
+
+  const handleHandshake = async (action: "ACCEPT" | "REJECT") => {
+    if (handshaking) return;
+    setHandshaking(true);
+
+    try {
+      const response = await fetch(`/api/chat/${profileId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Failed to update chat status");
+      }
+
+      if (action === "REJECT") {
+        toast.success("Chat request declined.");
+        router.push("/dashboard/shortlist");
+        return;
+      }
+
+      toast.success("Chat request accepted.");
+      await loadChat({ showLoading: false });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Handshake failed");
+    } finally {
+      setHandshaking(false);
+    }
+  };
 
   const refreshPresence = useCallback(async () => {
     try {
@@ -253,6 +291,15 @@ export default function ProfileChatSession({
             lastActiveAt: detail.lastActiveAt,
           });
         });
+        return;
+      }
+
+      if (detail.type === "status_updated") {
+        if (detail.conversationId !== chat.conversationId) {
+          return;
+        }
+
+        void loadChat({ showLoading: false, showError: false });
         return;
       }
 
@@ -583,6 +630,11 @@ export default function ProfileChatSession({
       return;
     }
 
+    if (!chat.isUnlocked) {
+      setShowPaymentModal(true);
+      return;
+    }
+
     if (editingMessage) {
       if (!hasEditedDraft) {
         cancelEditingMessage();
@@ -712,6 +764,7 @@ export default function ProfileChatSession({
             ? {
                 ...current,
                 conversationId: data.data?.conversationId ?? current.conversationId,
+                status: data.data?.status ?? current.status,
                 messages: current.messages.map((message) =>
                   message.id === optimisticMessageId ? data.data!.message : message
                 ),
@@ -866,10 +919,10 @@ export default function ProfileChatSession({
             Retry
           </button>
           <Link
-            href="/dashboard/liked"
+            href="/dashboard/shortlist"
             className="ui-link-shift inline-flex items-center justify-center rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(244,63,94,0.2)]"
           >
-            Back to Interests
+            Back to Shortlist
           </Link>
         </div>
       </div>
@@ -881,6 +934,9 @@ export default function ProfileChatSession({
     lastActiveAt: chat.targetProfile.lastActiveAt,
   };
 
+  const showHandshakeOverlay = isPending && isRecipient;
+  const showWaitingIndicator = isPending && isInitiator;
+
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div
@@ -888,11 +944,11 @@ export default function ProfileChatSession({
         style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
       >
         <Link
-          href="/dashboard/liked"
+          href="/dashboard/shortlist"
           className="ui-link-shift inline-flex items-center gap-2 text-[15px] font-medium text-slate-600 transition-colors hover:text-rose-600"
         >
           <ArrowLeft className="ui-arrow-shift h-4 w-4" />
-          Back to Interests
+          Back to Shortlist
         </Link>
       </div>
 
@@ -970,7 +1026,7 @@ export default function ProfileChatSession({
         </aside>
 
         <section
-          className="ui-enter-right flex h-[420px] min-h-0 flex-col overflow-hidden rounded-[28px] border border-rose-100/80 bg-white shadow-[0_20px_52px_rgba(15,23,42,0.06)] sm:h-[460px] xl:h-[520px]"
+          className="ui-enter-right relative flex h-[420px] min-h-0 flex-col overflow-hidden rounded-[28px] border border-rose-100/80 bg-white shadow-[0_20px_52px_rgba(15,23,42,0.06)] sm:h-[460px] xl:h-[520px]"
           style={{ animationDelay: "170ms", animationFillMode: "forwards" }}
         >
           <div className="border-b border-rose-100/70 px-5 py-4">
@@ -983,7 +1039,7 @@ export default function ProfileChatSession({
           </div>
 
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-[linear-gradient(180deg,rgba(255,250,251,0.82)_0%,rgba(255,255,255,1)_100%)] px-5 py-5">
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-[linear-gradient(180deg,rgba(255,250,251,0.82)_0%,rgba(255,255,255,1)_100%)] px-5 py-5 pb-8">
               {chat.messages.length === 0 ? (
                 <div className="ui-enter-up flex h-full min-h-[340px] flex-col items-center justify-center text-center">
                   <div className="ui-soft-float flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
@@ -999,6 +1055,16 @@ export default function ProfileChatSession({
                 </div>
               ) : (
                 chat.messages.map((message) => {
+                  if (message.isSystemMessage) {
+                    return (
+                      <div key={message.id} className="flex justify-center py-2">
+                        <div className="rounded-full bg-slate-100 px-4 py-1.5 text-xs font-semibold text-slate-500">
+                          {message.content}
+                        </div>
+                      </div>
+                    );
+                  }
+
                   const isOwnMessage =
                     message.senderProfileId === chat.viewerProfileId;
                   const isReplyActionOpen =
@@ -1198,6 +1264,73 @@ export default function ProfileChatSession({
               <div ref={bottomRef} />
             </div>
 
+            {/* Handshake Overlays */}
+            {showHandshakeOverlay && (
+              <div className="absolute inset-0 z-40 flex items-center justify-center bg-white/70 backdrop-blur-[2px]">
+                <div className="mx-4 w-full max-w-sm rounded-3xl border border-rose-100 bg-white p-6 text-center shadow-2xl">
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+                    <MessageCircle className="h-7 w-7" />
+                  </div>
+                  <h3 className="font-display text-xl font-bold text-slate-900">
+                    New Chat Request
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                    {chat.targetProfile.fullName} wants to start a chat with you. 
+                    Accept to begin messaging.
+                  </p>
+                  <div className="mt-6 flex flex-col gap-3">
+                    <button
+                      onClick={() => handleHandshake("ACCEPT")}
+                      disabled={handshaking}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-6 py-3 text-sm font-bold text-white shadow-[0_12px_24px_rgba(244,63,94,0.2)] transition-transform hover:-translate-y-0.5 disabled:opacity-60"
+                    >
+                      {handshaking ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+                      Accept Request
+                    </button>
+                    <button
+                      onClick={() => handleHandshake("REJECT")}
+                      disabled={handshaking}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-6 py-3 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-60"
+                    >
+                      {handshaking ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {showWaitingIndicator && (
+              <div className="border-b border-rose-100/50 bg-rose-50/30 px-5 py-2.5">
+                <div className="flex items-center justify-center gap-3 text-xs font-semibold text-rose-600">
+                  <Loader2 className="h-4 w-4 animate-spin text-rose-400" />
+                  Waiting for {chat.targetProfile.fullName.split(" ")[0]} to accept your chat request
+                </div>
+              </div>
+            )}
+
+            {!chat.isUnlocked && !isPending && (
+              <div className="absolute inset-0 z-40 flex items-center justify-center bg-white/70 backdrop-blur-[2px]">
+                <div className="mx-4 w-full max-w-sm rounded-3xl border border-rose-100 bg-white p-6 text-center shadow-2xl">
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+                    <Lock className="h-7 w-7" />
+                  </div>
+                  <h3 className="font-display text-xl font-bold text-slate-900">
+                    Chat Locked
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                    You need to unlock this conversation to send and view messages.
+                  </p>
+                  <button
+                    onClick={() => setShowPaymentModal(true)}
+                    className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-6 py-3 text-sm font-bold text-white shadow-[0_12px_24px_rgba(244,63,94,0.2)] transition-transform hover:-translate-y-0.5"
+                  >
+                    Unlock Chat Now
+                  </button>
+                </div>
+              </div>
+            )}
+
             <form
               onSubmit={handleSubmit}
               className="border-t border-rose-100/70 bg-white px-5 py-3"
@@ -1330,6 +1463,22 @@ export default function ProfileChatSession({
           </div>
         </section>
       </section>
+
+      {showPaymentModal && chat.matchId && chat.pricing && (
+        <PaymentModal
+          matchId={chat.matchId}
+          profileName={chat.targetProfile.fullName}
+          baseAmount={chat.pricing.baseAmount}
+          profileAmount={chat.pricing.profileAmount}
+          perProfileChatAmount={chat.pricing.perProfileChatAmount}
+          type="CHAT"
+          onClose={() => setShowPaymentModal(false)}
+          onSuccess={async () => {
+             setShowPaymentModal(false);
+             await loadChat({ showLoading: false });
+          }}
+        />
+      )}
     </div>
   );
 }

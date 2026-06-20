@@ -3,6 +3,7 @@ import { getProtectedMatchProfileImageUrl } from "@/lib/server/match-profile-pre
 import {
   likedProfileCardSelect,
   serializeLikedProfileCard,
+  serializeProfilePreviewCard,
 } from "@/lib/server/liked-profile-preview";
 import { getAdminSettingsSnapshot } from "@/lib/utils/admin-settings";
 import { getMatchesForProfile } from "@/lib/utils/matching";
@@ -66,15 +67,28 @@ export async function getLikedPageData(userId: string) {
     getMatchesForProfile(ownProfile.id),
   ]);
 
+  const settings = await getAdminSettingsSnapshot();
+
   return {
     likes: likes.map(serializeLikedProfileCard),
-    matches: matches.map((match) => ({
-      id: match.id,
-      isUnlocked: match.unlocks.some((unlock) => unlock.userId === userId),
-      otherProfile: {
-        id: match.profileAId === ownProfile.id ? match.profileB.id : match.profileA.id,
-      },
-    })),
+    matches: matches.map((match) => {
+      const otherProfile = match.profileAId === ownProfile.id ? match.profileB : match.profileA;
+      return {
+        id: match.id,
+        isProfileUnlocked: match.unlocks.some(
+          (unlock) => unlock.userId === userId && unlock.type === "PROFILE"
+        ),
+        isChatUnlocked: match.unlocks.some(
+          (unlock) => unlock.userId === userId && unlock.type === "CHAT"
+        ),
+        otherProfile: serializeProfilePreviewCard(otherProfile as any),
+      };
+    }),
+    pricing: {
+      baseAmount: settings.baseAmount,
+      profileAmount: settings.profileAmount,
+      perProfileChatAmount: settings.perProfileChatAmount,
+    },
   };
 }
 
@@ -99,11 +113,33 @@ export async function getMatchesPageData(userId: string) {
   }
 
   const matches = await getMatchesForProfile(ownProfile.id);
-  const pendingMatches = matches.reduce<
+  const otherProfileIds = matches.map((match) =>
+    match.profileAId === ownProfile.id ? match.profileBId : match.profileAId
+  );
+  const likes = await prisma.like.findMany({
+    where: {
+      OR: [
+        { fromProfileId: ownProfile.id, toProfileId: { in: otherProfileIds } },
+        { fromProfileId: { in: otherProfileIds }, toProfileId: ownProfile.id },
+      ],
+    },
+    select: { fromProfileId: true, toProfileId: true },
+  });
+
+  const outgoing = new Set(likes.filter(l => l.fromProfileId === ownProfile.id).map(l => l.toProfileId));
+  const incoming = new Set(likes.filter(l => l.toProfileId === ownProfile.id).map(l => l.fromProfileId));
+
+  const filteredMatches = matches.filter((match) => {
+    const otherProfileId = match.profileAId === ownProfile.id ? match.profileBId : match.profileAId;
+    return outgoing.has(otherProfileId) && incoming.has(otherProfileId);
+  });
+
+  const pendingMatches = filteredMatches.reduce<
     Array<{
       id: string;
       createdAt: string;
-      isUnlocked: false;
+      isProfileUnlocked: false;
+      isChatUnlocked: boolean;
       otherProfile: {
         id: string;
         fullName: string;
@@ -122,8 +158,14 @@ export async function getMatchesPageData(userId: string) {
       };
     }>
   >((items, match) => {
-    const isUnlocked = match.unlocks.some((unlock) => unlock.userId === userId);
-    if (isUnlocked) {
+    const isProfileUnlocked = match.unlocks.some(
+      (unlock) => unlock.userId === userId && unlock.type === "PROFILE"
+    );
+    const isChatUnlocked = match.unlocks.some(
+      (unlock) => unlock.userId === userId && unlock.type === "CHAT"
+    );
+
+    if (isProfileUnlocked) {
       return items;
     }
 
@@ -133,7 +175,8 @@ export async function getMatchesPageData(userId: string) {
     items.push({
       id: match.id,
       createdAt: match.createdAt.toISOString(),
-      isUnlocked: false,
+      isProfileUnlocked: false,
+      isChatUnlocked,
       otherProfile: {
         id: otherProfile.id,
         fullName: otherProfile.fullName,
@@ -157,7 +200,7 @@ export async function getMatchesPageData(userId: string) {
 
   return {
     matches: pendingMatches,
-    unlockedMatchesCount: matches.length - pendingMatches.length,
+    unlockedMatchesCount: filteredMatches.length - pendingMatches.length,
     pricing: {
       baseAmount: settings.baseAmount,
       profileAmount: settings.profileAmount,
@@ -180,7 +223,10 @@ export async function getUnlockedPageData(userId: string) {
   }
 
   const unlocks = await prisma.unlock.findMany({
-    where: { userId },
+    where: { 
+      userId,
+      type: "PROFILE"
+    },
     include: {
       payment: { select: { amount: true, createdAt: true } },
       match: {

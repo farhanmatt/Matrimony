@@ -66,14 +66,45 @@ export async function canStartChatForProfiles(
 
 export async function getOrCreateConversation(
   viewerProfileId: string,
-  targetProfileId: string
+  targetProfileId: string,
+  initiatorProfileId: string
 ) {
   const prisma = getPrismaClient();
   const pair = normalizeConversationPair(viewerProfileId, targetProfileId);
 
-  return prisma.chatConversation.upsert({
-    where: { profileAId_profileBId: pair },
-    update: {},
-    create: pair,
-  });
+  try {
+    const conversation = await prisma.chatConversation.upsert({
+      where: { profileAId_profileBId: pair },
+      update: {},
+      create: {
+        ...pair,
+        initiatorProfileId,
+      },
+    });
+
+    // Also ensure a Match record exists for this pair to support unlocking
+    await prisma.match.upsert({
+      where: { profileAId_profileBId: pair },
+      update: {},
+      create: pair,
+    });
+
+    return conversation;
+  } catch (error: any) {
+    if (error.code === "P2002") {
+      const existing = await prisma.chatConversation.findUnique({
+        where: { profileAId_profileBId: pair },
+      });
+      if (existing) {
+        // Still ensure match exists even if conversation already did
+        await prisma.match.upsert({
+          where: { profileAId_profileBId: pair },
+          update: {},
+          create: pair,
+        }).catch(() => {}); // Ignore errors if match also existed
+        return existing;
+      }
+    }
+    throw error;
+  }
 }

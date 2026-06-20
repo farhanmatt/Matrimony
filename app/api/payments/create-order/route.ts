@@ -12,7 +12,9 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { matchId } = await req.json();
+    const { matchId, type = "PROFILE" } = await req.json();
+    const requestedType = type === "CHAT" ? "CHAT" : "PROFILE";
+
     if (!matchId) {
       return NextResponse.json({ error: "matchId is required" }, { status: 400 });
     }
@@ -41,7 +43,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Match not found" }, { status: 404 });
     }
 
-    if (!(await hasMutualLike(match.profileAId, match.profileBId))) {
+    if (requestedType === "PROFILE" && !(await hasMutualLike(match.profileAId, match.profileBId))) {
       return NextResponse.json(
         { error: "This match is no longer active" },
         { status: 409 }
@@ -51,13 +53,13 @@ export async function POST(req: NextRequest) {
     // Check if already unlocked
     const existingUnlock = await prisma.unlock.findUnique({
       where: {
-        userId_matchId: { userId: session.user.id, matchId },
+        userId_matchId_type: { userId: session.user.id, matchId, type: requestedType },
       },
     });
 
     if (existingUnlock) {
       return NextResponse.json(
-        { error: "This profile is already unlocked" },
+        { error: `This ${requestedType === "CHAT" ? "chat" : "profile"} is already unlocked` },
         { status: 409 }
       );
     }
@@ -68,17 +70,21 @@ export async function POST(req: NextRequest) {
     });
     const baseAmount = settings?.baseAmount ?? 500;
     const profileAmount = settings?.profileAmount ?? 500;
-    const totalAmount = (baseAmount + profileAmount) * 100; // paise
+    const perProfileChatAmount = settings?.perProfileChatAmount ?? 0;
+    const totalAmount = requestedType === "CHAT"
+      ? perProfileChatAmount * 100
+      : (baseAmount + profileAmount) * 100; // paise
 
     // Create Razorpay order
     const razorpay = getRazorpay();
     const order = await razorpay.orders.create({
       amount: totalAmount,
       currency: "INR",
-      receipt: `receipt_${matchId}_${Date.now()}`,
+      receipt: `receipt_${requestedType.toLowerCase()}_${matchId}_${Date.now()}`,
       notes: {
         matchId,
         userId: session.user.id,
+        type: requestedType,
       },
     });
 
@@ -89,8 +95,9 @@ export async function POST(req: NextRequest) {
         matchId,
         razorpayOrderId: order.id,
         amount: totalAmount,
-        baseAmount,
-        profileAmount,
+        baseAmount: requestedType === "PROFILE" ? baseAmount : 0,
+        profileAmount: requestedType === "PROFILE" ? profileAmount : 0,
+        perProfileChatAmount: requestedType === "CHAT" ? perProfileChatAmount : 0,
         status: "CREATED",
       },
     });
@@ -99,8 +106,9 @@ export async function POST(req: NextRequest) {
       orderId: order.id,
       amount: totalAmount,
       currency: "INR",
-      baseAmount,
-      profileAmount,
+      baseAmount: requestedType === "PROFILE" ? baseAmount : 0,
+      profileAmount: requestedType === "PROFILE" ? profileAmount : 0,
+      perProfileChatAmount: requestedType === "CHAT" ? perProfileChatAmount : 0,
       keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
     });
   } catch (error) {
