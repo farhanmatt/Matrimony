@@ -20,8 +20,8 @@ export default async function EditProfilePage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const profile = await prisma.profile.findUnique({
-    where: { userId: session.user.id },
+  const profile = await prisma.profile.findFirst({
+    where: { userId: session.user.id, status: "ACTIVE" },
     include: { photos: true, preference: true },
   });
 

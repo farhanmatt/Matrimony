@@ -202,6 +202,25 @@ export function writeShortlistedProfileIds(
   persistShortlistState(normalizedProfileIds, nextMetadata, normalizedUserId);
 }
 
+export function clearShortlistedProfileIds(userId?: string | null) {
+  const normalizedUserId = userId?.trim();
+  if (typeof window === "undefined" || !normalizedUserId) {
+    return;
+  }
+
+  try {
+    window.localStorage.removeItem(getShortlistStorageKey(normalizedUserId));
+    window.localStorage.removeItem(getShortlistMetadataStorageKey(normalizedUserId));
+    window.dispatchEvent(
+      new CustomEvent(SHORTLIST_UPDATED_EVENT, {
+        detail: { profileIds: [], userId: normalizedUserId, metadata: {} },
+      })
+    );
+  } catch {
+    // Ignore storage failures
+  }
+}
+
 export function setShortlistedProfileId(
   profileId: string,
   shortlisted: boolean,

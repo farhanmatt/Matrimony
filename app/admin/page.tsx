@@ -24,6 +24,8 @@ import {
   getDashboardRangeConfig,
   type DashboardRangeKey,
 } from "@/lib/constants/admin-dashboard";
+import AdminPageTransition from "@/components/admin/AdminPageTransition";
+
 
 export const metadata: Metadata = { title: "Admin Dashboard" };
 
@@ -353,7 +355,7 @@ function RecentActivityTable({
       <div className="flex items-center justify-between gap-4 border-b border-gray-100 px-5 py-4">
         <h3 className="font-display text-lg font-semibold text-gray-900">Recent Activity</h3>
         <Link
-          href="/admin/users"
+          href="/admin/notifications"
           className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-rose-300 hover:text-rose-600"
         >
           View All
@@ -806,7 +808,7 @@ export default async function AdminDashboardPage({
       <AdminSidebar />
       <main className="min-h-screen pt-16 lg:ml-56 lg:pt-0">
         <div className="max-w-none px-3 py-4 sm:px-4 sm:py-5 lg:px-5 lg:py-6">
-          <div className="space-y-8">
+          <AdminPageTransition className="space-y-8">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <h1 className="text-3xl font-display font-bold text-gray-900">Admin Dashboard</h1>
@@ -871,7 +873,7 @@ export default async function AdminDashboardPage({
             </div>
 
             <RecentActivityTable items={recentActivity} />
-          </div>
+          </AdminPageTransition>
         </div>
       </main>
     </div>

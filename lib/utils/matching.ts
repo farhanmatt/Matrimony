@@ -305,6 +305,8 @@ export async function getMatchesForProfile(profileId: string) {
   const matches = await prisma.match.findMany({
     where: {
       OR: [{ profileAId: profileId }, { profileBId: profileId }],
+      profileA: { status: "ACTIVE" },
+      profileB: { status: "ACTIVE" },
     },
     include: {
       profileA: {

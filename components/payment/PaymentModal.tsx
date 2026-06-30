@@ -178,9 +178,9 @@ export default function PaymentModal({
         onClick={handleModalClose}
       />
 
-      <div className="relative flex w-full max-w-[480px] flex-col overflow-hidden rounded-[32px] border border-white/20 bg-white shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)]">
+      <div className="relative flex w-full max-w-[420px] flex-col overflow-hidden border border-white/20 bg-white shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] rounded-2xl">
         {/* Header Section */}
-        <div className="relative shrink-0 bg-gradient-to-br from-rose-600 via-rose-500 to-pink-500 px-5 py-5 text-center text-white">
+        <div className="relative shrink-0 bg-gradient-to-br from-rose-600 via-rose-500 to-pink-500 px-4 py-4 text-center text-white">
           <div className="absolute top-3 right-3 z-10">
              <button
               onClick={handleModalClose}
@@ -211,7 +211,7 @@ export default function PaymentModal({
           </div>
         </div>
 
-        <div className="p-5">
+        <div className="p-4">
           {status === "success" ? (
             <div className="py-6 text-center">
               <div className="ui-icon-lift mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50">
@@ -372,7 +372,7 @@ export default function PaymentModal({
               <button
                 onClick={handlePay}
                 disabled={status === "processing"}
-                className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 py-4 text-[15px] font-bold text-white shadow-[0_16px_32px_-8px_rgba(244,63,94,0.4)] transition-all hover:shadow-[0_20px_40px_-6px_rgba(244,63,94,0.5)] hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70"
+                className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 py-3 text-[14px] font-bold text-white shadow-[0_16px_32px_-8px_rgba(244,63,94,0.4)] transition-all hover:shadow-[0_20px_40px_-6px_rgba(244,63,94,0.5)] hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70"
               >
                 {status === "processing" ? (
                   <>

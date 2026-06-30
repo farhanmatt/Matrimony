@@ -23,6 +23,7 @@ import {
 import { cn } from "@/lib/utils/helpers";
 import { useEffect, useState } from "react";
 import AdminTopNotifications from "@/components/admin/AdminTopNotifications";
+import { motion } from "framer-motion";
 
 const adminNav = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
@@ -110,36 +111,47 @@ function AdminSidebarContent({
                 key={item.href}
                 href={item.href}
                 onClick={onClose}
-                className={cn(
-                  "mb-1 flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-medium transition-all last:mb-0",
-                  isActive
-                    ? "bg-gradient-to-r from-rose-600 to-pink-500 text-white shadow-md"
-                    : "text-gray-600 hover:bg-rose-50 hover:text-rose-600"
-                )}
+                className="block mb-1 last:mb-0"
               >
-                <item.icon className="h-4 w-4 shrink-0" />
-                {item.label}
+                <motion.div
+                  whileHover={{ scale: 1.02, x: 4 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-medium transition-colors",
+                    isActive
+                      ? "bg-gradient-to-r from-rose-600 to-pink-500 text-white shadow-md"
+                      : "text-gray-600 hover:bg-rose-50 hover:text-rose-600"
+                  )}
+                >
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  {item.label}
+                </motion.div>
               </Link>
             );
           })}
         </nav>
 
         <div className="space-y-1 border-t border-rose-100 px-3 py-2.5">
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] text-gray-600 transition-all hover:bg-rose-50 hover:text-rose-600"
-          >
-            <Heart className="h-4 w-4 shrink-0" />
-            Back to Site
+          <Link href="/" className="block">
+            <motion.div
+              whileHover={{ scale: 1.02, x: 4 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] text-gray-600 transition-colors hover:bg-rose-50 hover:text-rose-600"
+            >
+              <Heart className="h-4 w-4 shrink-0" />
+              Back to Site
+            </motion.div>
           </Link>
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02, x: 4 }}
+            whileTap={{ scale: 0.98 }}
             type="button"
             onClick={() => setLogoutConfirmOpen(true)}
-            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] text-gray-600 transition-all hover:bg-rose-50 hover:text-rose-600"
+            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] text-gray-600 transition-colors hover:bg-rose-50 hover:text-rose-600"
           >
             <LogOut className="h-4 w-4 shrink-0" />
             Logout
-          </button>
+          </motion.button>
         </div>
       </div>
 

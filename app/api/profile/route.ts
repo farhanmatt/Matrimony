@@ -149,8 +149,8 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const profile = await prisma.profile.findUnique({
-    where: { userId: session.user.id },
+  const profile = await prisma.profile.findFirst({
+    where: { userId: session.user.id, status: "ACTIVE" },
     include: { photos: true, preference: true },
   });
 
@@ -189,6 +189,7 @@ export async function POST(req: NextRequest) {
     const [existing, currentUser] = await Promise.all([
       prisma.profile.findUnique({
         where: { userId: session.user.id },
+        select: { id: true, gender: true, profileUserId: true, status: true },
       }),
       prisma.user.findUnique({
         where: { id: session.user.id },
@@ -197,16 +198,20 @@ export async function POST(req: NextRequest) {
     ]);
 
     if (existing) {
-      await ensureProfileUserIdForProfile({
-        id: existing.id,
-        gender: existing.gender,
-        profileUserId: existing.profileUserId,
-      });
+      if (existing.status === "INACTIVE") {
+        await prisma.profile.delete({ where: { id: existing.id } });
+      } else {
+        await ensureProfileUserIdForProfile({
+          id: existing.id,
+          gender: existing.gender,
+          profileUserId: existing.profileUserId,
+        });
 
-      return NextResponse.json(
-        { error: "Profile already exists. Use PUT to update." },
-        { status: 409 }
-      );
+        return NextResponse.json(
+          { error: "Profile already exists. Use PUT to update." },
+          { status: 409 }
+        );
+      }
     }
 
     if (!currentUser) {

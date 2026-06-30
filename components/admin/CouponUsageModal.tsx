@@ -353,7 +353,7 @@ export default function CouponUsageModal({
                         <Users className="h-8 w-8 text-slate-300" />
                       </div>
                       <p className="mt-4 font-semibold text-slate-900">No usage history found</p>
-                      <p className="mt-1 text-sm text-slate-500">This coupon hasn't been used by any members yet.</p>
+                      <p className="mt-1 text-sm text-slate-500">This coupon hasn&apos;t been used by any members yet.</p>
                     </div>
                   )}
                 </div>

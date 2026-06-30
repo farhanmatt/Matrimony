@@ -397,6 +397,9 @@ export default function AdminProfileRelationsExplorer({
               </span>
             ) : null}
           </div>
+          <div className="mt-1 flex items-center gap-2 text-[15px] font-medium text-rose-600">
+            ID: {currentProfile.displayId}
+          </div>
           <div className="mt-2 text-sm text-gray-500 sm:text-base">
             {currentAge} yrs - {GENDER_LABELS[currentProfile.gender] ?? currentProfile.gender}
           </div>
@@ -457,6 +460,9 @@ export default function AdminProfileRelationsExplorer({
               </p>
               <button
                 type="button"
+                onClick={() => {
+                  document.getElementById("full-biodata")?.scrollIntoView({ behavior: "smooth" });
+                }}
                 className="mt-3 inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-50"
               >
                 View Full Biodata
@@ -471,15 +477,7 @@ export default function AdminProfileRelationsExplorer({
 
   return (
     <section className="rounded-3xl border border-gray-100 bg-white p-4 shadow-sm sm:p-4.5">
-      <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h2 className="font-display text-[1.8rem] font-semibold text-gray-900 sm:text-[2rem]">
-            {currentProfile.fullName} Profile
-          </h2>
-          <p className="mt-0.5 text-[13px] text-gray-500">
-            View matched and unlocked profiles without leaving this page.
-          </p>
-        </div>
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-end">
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -518,7 +516,7 @@ export default function AdminProfileRelationsExplorer({
         <div className="mt-5 space-y-5">
           {currentCard}
 
-          <div className="grid gap-4 xl:grid-cols-3 xl:items-start">
+          <div id="full-biodata" className="grid gap-4 xl:grid-cols-3 xl:items-start">
             <ProfileDetailCard title="Personal Information">
               <Row label="Gender" value={GENDER_LABELS[currentProfile.gender] ?? currentProfile.gender} />
               <Row label="Date of Birth" value={new Date(currentProfile.dateOfBirth).toLocaleDateString()} />

@@ -154,18 +154,11 @@ export default function AdminNotificationBell({ notifications }: AdminNotificati
       return;
     }
 
-    setSeenAt((currentSeenAt) => {
-      if (
-        currentSeenAt &&
-        new Date(currentSeenAt).getTime() >= new Date(latestCreatedAt).getTime()
-      ) {
-        return currentSeenAt;
-      }
-
+    if (!seenAt || new Date(seenAt).getTime() < new Date(latestCreatedAt).getTime()) {
+      setSeenAt(latestCreatedAt);
       writeAdminNotificationsSeenAt(latestCreatedAt);
-      return latestCreatedAt;
-    });
-  }, [notifications, open]);
+    }
+  }, [notifications, open, seenAt]);
 
   const notificationCount = useMemo(() => {
     if (!seenAt) {

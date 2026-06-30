@@ -4,6 +4,7 @@ export type CreateProfileDraft = {
   currentStep: number;
   maxStepReached: number;
   values: Partial<ProfileFormInput>;
+  updatedAt?: number;
 };
 
 const BASE_STORAGE_KEY = "vivah-bandhan-create-profile-draft";
@@ -17,12 +18,12 @@ function getScopedKey(userId: string | null | undefined) {
  * Saves the current profile creation draft to localStorage, scoped by user ID.
  * This ensures that different users on the same browser do not see each other's drafts.
  */
-export function saveCreateProfileDraft(userId: string | null | undefined, draft: CreateProfileDraft) {
+export function saveCreateProfileDraft(userId: string | null | undefined, draft: Omit<CreateProfileDraft, "updatedAt">) {
   if (typeof window === "undefined" || !userId) return;
 
   window.localStorage.setItem(
     getScopedKey(userId),
-    JSON.stringify(draft)
+    JSON.stringify({ ...draft, updatedAt: Date.now() })
   );
 }
 

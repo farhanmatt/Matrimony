@@ -3,6 +3,11 @@ import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  COUPON_ALREADY_USED_ERROR,
+  COUPON_ALREADY_USED_MESSAGE,
+  hasUserUsedCoupon,
+} from "@/lib/server/coupons";
 import { hasMutualLike } from "@/lib/utils/matching";
 import { publishUserNotification } from "@/lib/utils/notification-events";
 
@@ -90,8 +95,11 @@ export async function POST(req: NextRequest) {
             profileBId: true,
           },
         });
-      } catch (error: any) {
-        if (error.code === "P2002") {
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === "P2002"
+        ) {
           match = await prisma.match.findUnique({
             where: { profileAId_profileBId: pair },
             select: {
@@ -171,6 +179,13 @@ export async function POST(req: NextRequest) {
       });
 
       if (coupon && coupon.isActive && (!coupon.expiresAt || new Date() <= coupon.expiresAt)) {
+        if (await hasUserUsedCoupon(prisma, session.user.id, coupon.code)) {
+          return NextResponse.json(
+            { error: COUPON_ALREADY_USED_MESSAGE },
+            { status: 400 }
+          );
+        }
+
         // Check if coupon is valid for this type
         const isValidForType = 
           coupon.couponFor === "BOTH" || 
@@ -192,94 +207,103 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const unlock = await prisma.$transaction(async (tx) => {
-      // If coupon was applied, increment its usage
-      if (appliedCoupon) {
-        const updatedCoupon = await tx.couponCode.update({
-          where: { code: appliedCoupon },
-          data: { currentUses: { increment: 1 } },
-        });
-        
-        if (updatedCoupon.maxUses !== null && updatedCoupon.currentUses > updatedCoupon.maxUses) {
-          throw new Error("usage_limit_reached");
+    const unlock = await prisma.$transaction(
+      async (tx) => {
+        // If coupon was applied, increment its usage
+        if (appliedCoupon) {
+          if (await hasUserUsedCoupon(tx, session.user.id, appliedCoupon)) {
+            throw new Error(COUPON_ALREADY_USED_ERROR);
+          }
+
+          const updatedCoupon = await tx.couponCode.update({
+            where: { code: appliedCoupon },
+            data: { currentUses: { increment: 1 } },
+          });
+
+          if (updatedCoupon.maxUses !== null && updatedCoupon.currentUses > updatedCoupon.maxUses) {
+            throw new Error("usage_limit_reached");
+          }
         }
-      }
 
-      const payment = await tx.payment.create({
-        data: {
-          userId: session.user.id,
-          matchId: requestedMatchId!,
-          razorpayOrderId: `manual_unlock_${requestedType.toLowerCase()}_${randomUUID()}`,
-          amount: totalAmount,
-          currency: "INR",
-          status: "PAID",
-          baseAmount: requestedType === "PROFILE" ? baseAmount : 0,
-          profileAmount: requestedType === "PROFILE" ? profileAmount : 0,
-          perProfileChatAmount: requestedType === "CHAT" ? perProfileChatAmount : 0,
-          couponCode: appliedCoupon,
-          discountAmount: Math.floor(discountAmount / 100),
-        },
-      });
+        const payment = await tx.payment.create({
+          data: {
+            userId: session.user.id,
+            matchId: requestedMatchId!,
+            razorpayOrderId: `manual_unlock_${requestedType.toLowerCase()}_${randomUUID()}`,
+            amount: totalAmount,
+            currency: "INR",
+            status: "PAID",
+            baseAmount: requestedType === "PROFILE" ? baseAmount : 0,
+            profileAmount: requestedType === "PROFILE" ? profileAmount : 0,
+            perProfileChatAmount: requestedType === "CHAT" ? perProfileChatAmount : 0,
+            couponCode: appliedCoupon,
+            discountAmount: Math.floor(discountAmount / 100),
+          },
+        });
 
-      const createdUnlock = await tx.unlock.create({
-        data: {
-          userId: session.user.id,
-          matchId: requestedMatchId!,
-          paymentId: payment.id,
-          type: requestedType,
-        },
-        include: {
-          payment: {
-            select: {
-              amount: true,
-              createdAt: true,
+        const createdUnlock = await tx.unlock.create({
+          data: {
+            userId: session.user.id,
+            matchId: requestedMatchId!,
+            paymentId: payment.id,
+            type: requestedType,
+          },
+          include: {
+            payment: {
+              select: {
+                amount: true,
+                createdAt: true,
+              },
             },
           },
-        },
-      });
-
-      if (requestedType === "CHAT") {
-        const pair = {
-          profileAId: match.profileAId,
-          profileBId: match.profileBId,
-        };
-        const conversation = await tx.chatConversation.findUnique({
-          where: { profileAId_profileBId: pair },
         });
 
-        if (conversation && conversation.status === "PENDING" && conversation.initiatorProfileId !== ownProfile.id) {
-          await tx.chatConversation.update({
-            where: { id: conversation.id },
-            data: {
-              status: "ACCEPTED",
-              updatedAt: new Date(),
-            },
+        if (requestedType === "CHAT") {
+          const pair = {
+            profileAId: match.profileAId,
+            profileBId: match.profileBId,
+          };
+          const conversation = await tx.chatConversation.findUnique({
+            where: { profileAId_profileBId: pair },
           });
 
-          await tx.chatMessage.create({
-            data: {
-              conversationId: conversation.id,
-              senderProfileId: ownProfile.id,
-              isSystemMessage: true,
-              systemAction: "REQUEST_ACCEPTED",
-              content: `${ownProfile.fullName} accepted the chat request.`,
-            },
-          });
+          if (conversation && conversation.status === "PENDING" && conversation.initiatorProfileId !== ownProfile.id) {
+            await tx.chatConversation.update({
+              where: { id: conversation.id },
+              data: {
+                status: "ACCEPTED",
+                updatedAt: new Date(),
+              },
+            });
 
-          const otherProfileId = match.profileAId === ownProfile.id ? match.profileBId : match.profileAId;
-          await tx.chatMessage.updateMany({
-            where: {
-              conversationId: conversation.id,
-              senderProfileId: otherProfileId,
-              isRead: false,
-            },
-            data: { isRead: true },
-          });
+            await tx.chatMessage.create({
+              data: {
+                conversationId: conversation.id,
+                senderProfileId: ownProfile.id,
+                isSystemMessage: true,
+                systemAction: "REQUEST_ACCEPTED",
+                content: `${ownProfile.fullName} accepted the chat request.`,
+              },
+            });
+
+            const otherProfileId = match.profileAId === ownProfile.id ? match.profileBId : match.profileAId;
+            await tx.chatMessage.updateMany({
+              where: {
+                conversationId: conversation.id,
+                senderProfileId: otherProfileId,
+                isRead: false,
+              },
+              data: { isRead: true },
+            });
+          }
         }
-      }
 
-      return createdUnlock;
-    });
+        return createdUnlock;
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      }
+    );
 
     if (requestedType === "CHAT") {
       const otherProfileId = match.profileAId === ownProfile.id ? match.profileBId : match.profileAId;
@@ -311,6 +335,13 @@ export async function POST(req: NextRequest) {
       data: unlock,
     });
   } catch (error) {
+    if (error instanceof Error && error.message === COUPON_ALREADY_USED_ERROR) {
+      return NextResponse.json(
+        { error: COUPON_ALREADY_USED_MESSAGE },
+        { status: 400 }
+      );
+    }
+
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
