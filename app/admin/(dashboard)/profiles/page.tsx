@@ -106,6 +106,7 @@ function parseProfileColumns(raw: string | undefined): AdminProfileColumnKey[] {
 
 type ProfileRow = {
   id: string;
+  profileUserId: string | null;
   fullName: string;
   profileImage: string | null;
   phone: string | null;
@@ -260,6 +261,8 @@ export default async function AdminProfilesPage({
     andConditions.push({ status: "SUSPENDED" as never });
   } else if (status) {
     andConditions.push({ status: status as never });
+  } else {
+    andConditions.push({ status: { notIn: ["INACTIVE", "SUSPENDED"] } as never });
   }
 
   if (religion) {
@@ -372,6 +375,9 @@ export default async function AdminProfilesPage({
           <div className="min-w-0">
             <div className="break-words text-[15px] font-semibold leading-tight text-gray-900">
               {profile.fullName}
+            </div>
+            <div className="break-words text-[11px] font-medium text-rose-500 mb-0.5">
+              ID: {profile.profileUserId ?? "N/A"}
             </div>
             <div className="break-words text-[11px] leading-tight text-gray-500">
               {calculateAge(profile.dateOfBirth)} years, {GENDER_LABELS[profile.gender] ?? profile.gender}
@@ -589,6 +595,7 @@ export default async function AdminProfilesPage({
       cells: visibleColumns.map((column) => {
         const row = {
           id: profile.id,
+          profileUserId: profile.profileUserId,
           fullName: profile.fullName,
           profileImage: profile.profileImage ?? profile.photos[0]?.url ?? null,
           phone: profileData.phone ?? null,

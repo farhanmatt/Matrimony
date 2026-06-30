@@ -10,8 +10,8 @@ import { getMatchesForProfile } from "@/lib/utils/matching";
 import { ensureProfileUserIdForProfile } from "@/lib/profile-user-id";
 
 export async function getDashboardProfileSummary(userId: string) {
-  const profile = await prisma.profile.findUnique({
-    where: { userId },
+  const profile = await prisma.profile.findFirst({
+    where: { userId, status: "ACTIVE" },
     select: {
       id: true,
       profileUserId: true,

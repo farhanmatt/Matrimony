@@ -32,6 +32,7 @@ import {
   RASI_OPTIONS,
 } from "@/lib/constants/astrology";
 import { MOTHER_TONGUE_OPTIONS } from "@/lib/constants/languages";
+import { MUSLIM_SECTS, MUSLIM_COMMUNITIES } from "@/lib/constants/religion";
 import {
   STATE_OPTIONS,
   findMatchingCityForState,
@@ -59,6 +60,7 @@ import {
   clearCreateProfileDraft,
   type CreateProfileDraft,
 } from "@/lib/utils/profile-draft";
+import { clearShortlistedProfileIds } from "@/lib/utils/shortlist";
 
 const genderOptions = ["MALE", "FEMALE", "OTHER"] as const;
 const nationalityOptions = ["Indian", "NRI", "Expat"] as const;
@@ -408,6 +410,7 @@ interface ProfileFormProps {
   defaultValues?: Partial<ProfileFormInput>;
   isEdit?: boolean;
   profileUserId?: string | null;
+  inactiveProfileUpdatedAt?: number | null;
 }
 
 type PincodeLookupState = {
@@ -1265,6 +1268,7 @@ export default function ProfileForm({
   defaultValues,
   isEdit = false,
   profileUserId = null,
+  inactiveProfileUpdatedAt = null,
 }: ProfileFormProps) {
   const router = useRouter();
   const { data: session, update } = useSession();
@@ -1319,13 +1323,24 @@ export default function ProfileForm({
 
     const savedDraft = loadCreateProfileDraft(session.user.id);
     if (savedDraft) {
-      setIncomeSelectValue(getAnnualIncomeSelectValue(savedDraft.values.income));
-      reset(getProfileFormDefaults(savedDraft.values));
-      setCurrentStep(Math.max(savedDraft.currentStep, 0));
-      setMaxStepReached(Math.max(savedDraft.maxStepReached ?? 0, savedDraft.currentStep, 0));
+      if (
+        inactiveProfileUpdatedAt &&
+        (!savedDraft.updatedAt || savedDraft.updatedAt < inactiveProfileUpdatedAt)
+      ) {
+        clearCreateProfileDraft(session.user.id);
+        clearShortlistedProfileIds(session.user.id);
+      } else {
+        setIncomeSelectValue(getAnnualIncomeSelectValue(savedDraft.values.income));
+        reset(getProfileFormDefaults(savedDraft.values));
+        setCurrentStep(Math.max(savedDraft.currentStep, 0));
+        setMaxStepReached(Math.max(savedDraft.maxStepReached ?? 0, savedDraft.currentStep, 0));
+      }
+    } else if (inactiveProfileUpdatedAt) {
+      // Even if no draft exists, we should clear shortlists if we have an INACTIVE profile
+      clearShortlistedProfileIds(session.user.id);
     }
     setIsCreateDraftHydrated(true);
-  }, [isEdit, reset, session?.user?.id]);
+  }, [inactiveProfileUpdatedAt, isEdit, reset, session?.user?.id]);
 
   useEffect(() => {
     if (currentStep > maxStepReached) {
@@ -1959,6 +1974,8 @@ export default function ProfileForm({
       await handleSubmit(onSubmit)(event);
     }
   };
+
+  const religionValue = watch("religion");
 
   const phoneRegistration = register("phone", {
     setValueAs: normalizePhoneDigits,
@@ -2617,27 +2634,37 @@ export default function ProfileForm({
 
         <div>
           <label className={labelClass} htmlFor="pf-caste">
-            Caste *
+            {religionValue === "Muslim" ? "Sect *" : religionValue === "Christian" ? "Denomination *" : "Caste *"}
           </label>
-          <input
-            id="pf-caste"
-            type="text"
-            list="pf-caste-options"
-            {...register("caste")}
-            className={inputClass}
-            placeholder="Type caste or choose No Caste"
-          />
-          <datalist id="pf-caste-options">
-            {casteSuggestions.map((option) => (
-              <option key={option} value={option} />
-            ))}
-          </datalist>
+          <>
+            <input
+              id="pf-caste"
+              type="text"
+              list="pf-caste-options"
+              {...register("caste")}
+              className={inputClass}
+              placeholder={
+                religionValue === "Muslim"
+                  ? "e.g. Sunni, Shia"
+                  : religionValue === "Christian"
+                    ? "e.g. Catholic, Protestant"
+                    : "Type caste or choose No Caste"
+              }
+            />
+            {religionValue !== "Christian" && religionValue !== "Muslim" && (
+              <datalist id="pf-caste-options">
+                {casteSuggestions.map((option) => (
+                  <option key={option} value={option} />
+                ))}
+              </datalist>
+            )}
+          </>
           {errors.caste ? <p className={errorClass}>{errors.caste.message}</p> : null}
         </div>
 
         <div>
           <label className={labelClass} htmlFor="pf-subCaste">
-            Sub Caste
+            {religionValue === "Muslim" ? "Community" : religionValue === "Christian" ? "Church" : "Sub Caste"}
           </label>
           <input
             id="pf-subCaste"

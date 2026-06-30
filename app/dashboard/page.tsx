@@ -250,8 +250,8 @@ function getAuthenticatedProfilePreviewUrl(profile: {
 
 async function getDashboardHomeData(userId: string) {
   try {
-    const profile = await prisma.profile.findUnique({
-      where: { userId },
+    const profile = await prisma.profile.findFirst({
+      where: { userId, status: "ACTIVE" },
       select: {
         id: true,
         fullName: true,
@@ -341,10 +341,23 @@ async function getDashboardHomeData(userId: string) {
       unlocks,
       recommendedProfiles,
     ] = await Promise.all([
-      prisma.like.count({ where: { fromProfileId: profile.id } }),
-      prisma.like.count({ where: { toProfileId: profile.id } }),
+      prisma.like.count({
+        where: {
+          fromProfileId: profile.id,
+          toProfile: { status: "ACTIVE" },
+        },
+      }),
+      prisma.like.count({
+        where: {
+          toProfileId: profile.id,
+          fromProfile: { status: "ACTIVE" },
+        },
+      }),
       prisma.like.findMany({
-        where: { toProfileId: profile.id },
+        where: {
+          toProfileId: profile.id,
+          fromProfile: { status: "ACTIVE" },
+        },
         orderBy: { createdAt: "desc" },
         take: 12,
         select: {
@@ -369,7 +382,18 @@ async function getDashboardHomeData(userId: string) {
         },
       }),
       getMatchesForProfile(profile.id),
-      prisma.unlock.count({ where: { userId, type: "PROFILE" } }),
+      prisma.unlock.count({
+        where: {
+          userId,
+          type: "PROFILE",
+          match: {
+            OR: [
+              { profileA: { status: "ACTIVE" }, profileBId: profile.id },
+              { profileB: { status: "ACTIVE" }, profileAId: profile.id },
+            ]
+          }
+        },
+      }),
       prisma.profile.findMany({
         where: {
           status: "ACTIVE",

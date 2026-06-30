@@ -195,7 +195,7 @@ export default function DashboardSidebar({
   }, [logoutConfirmOpen, isSigningOut]);
 
   const currentUser = session?.user ?? initialUser;
-  const visibleAccountImage = accountImage ?? currentUser.image ?? null;
+  const visibleAccountImage = hasProfile ? (accountImage ?? currentUser.image ?? null) : null;
   const brandLogoSrc = logoImageUrl || "/default-logo.svg";
   const accountSubtitle = hasProfile
     ? initialProfileUserId ?? "User ID pending"

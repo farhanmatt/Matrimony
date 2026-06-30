@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  COUPON_ALREADY_USED_MESSAGE,
+  hasUserUsedCoupon,
+} from "@/lib/server/coupons";
 
 // POST /api/coupon/validate - validate a coupon code and return discount info
 export async function POST(req: NextRequest) {
@@ -43,6 +47,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         valid: false,
         error: "This coupon code has expired.",
+      });
+    }
+
+    if (await hasUserUsedCoupon(prisma, session.user.id, coupon.code)) {
+      return NextResponse.json({
+        valid: false,
+        error: COUPON_ALREADY_USED_MESSAGE,
       });
     }
 

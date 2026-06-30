@@ -4,7 +4,7 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -18,6 +18,7 @@ import {
 import ImageUpload from "@/components/common/ImageUpload";
 import { NAKSHATRA_OPTIONS, RASI_OPTIONS } from "@/lib/constants/astrology";
 import { MOTHER_TONGUE_OPTIONS } from "@/lib/constants/languages";
+import { MUSLIM_SECTS, MUSLIM_COMMUNITIES } from "@/lib/constants/religion";
 import { profileSchema, preferenceSchema } from "@/lib/validations/profile";
 import { registerSchema } from "@/lib/validations/auth";
 import {
@@ -232,6 +233,7 @@ export default function RegisterOnboardingWizard() {
     mode: "onTouched",
   });
 
+  const religionValue = useWatch({ control, name: "religion" });
   const isAccountStep = currentStep === -1;
   const isOtpStep = currentStep === OTP_STEP_INDEX;
   const stepMeta = useMemo(
@@ -1017,28 +1019,45 @@ export default function RegisterOnboardingWizard() {
 
               <div>
                 <label className={labelClass} htmlFor="onb-caste">
-                  Caste
+                  {religionValue === "Muslim" ? "Sect *" : religionValue === "Christian" ? "Denomination *" : "Caste *"}
                 </label>
                 <input
                   id="onb-caste"
                   type="text"
                   {...register("caste")}
                   className={inputClass}
-                  placeholder="e.g. Brahmin, Patel"
+                  placeholder={
+                    religionValue === "Muslim"
+                      ? "e.g. Sunni, Shia"
+                      : religionValue === "Christian"
+                        ? "e.g. Catholic, Protestant"
+                        : "e.g. Brahmin, Patel"
+                  }
                 />
               </div>
 
               <div>
                 <label className={labelClass} htmlFor="onb-subCaste">
-                  Sub Caste
+                  {religionValue === "Muslim" ? "Community" : religionValue === "Christian" ? "Church" : "Sub Caste"}
                 </label>
-                <input
-                  id="onb-subCaste"
-                  type="text"
-                  {...register("subCaste")}
-                  className={inputClass}
-                  placeholder="Optional"
-                />
+                {religionValue === "Muslim" ? (
+                  <select id="onb-subCaste" {...register("subCaste")} className={selectClass}>
+                    <option value="">Select Community</option>
+                    {MUSLIM_COMMUNITIES.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    id="onb-subCaste"
+                    type="text"
+                    {...register("subCaste")}
+                    className={inputClass}
+                    placeholder="Optional"
+                  />
+                )}
               </div>
             </div>
           ) : null}

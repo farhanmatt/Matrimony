@@ -279,7 +279,7 @@ export default async function AdminProfileDetailPage({
                 isPrimary: photo.isPrimary,
               })),
               horoscopeImage: profile.horoscopeImage,
-              displayId: `MTR-${profile.createdAt.getFullYear()}-${profile.id.slice(-5).toUpperCase()}`,
+              displayId: profile.profileUserId ?? `MTR-${profile.createdAt.getFullYear()}-${profile.id.slice(-5).toUpperCase()}`,
               email: profile.user.email,
               phone: profile.phone ?? null,
               isPaidProfile: profile.user.payments.some((payment) => payment.status === "PAID"),

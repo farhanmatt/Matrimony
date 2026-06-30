@@ -41,8 +41,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ data: [] });
     }
 
-    const ownProfile = await prisma.profile.findUnique({
-      where: { userId: session.user.id },
+    const ownProfile = await prisma.profile.findFirst({
+      where: { userId: session.user.id, status: "ACTIVE" },
       select: { id: true },
     });
 
@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
     const profiles = (await prisma.profile.findMany({
       where: {
         id: { in: profileIds },
+        status: "ACTIVE",
         NOT: { id: ownProfile.id },
         OR: [
           {

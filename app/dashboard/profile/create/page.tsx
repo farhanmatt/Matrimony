@@ -12,10 +12,12 @@ export default async function CreateProfilePage() {
 
   const existing = await prisma.profile.findUnique({
     where: { userId: session.user.id },
-    select: { id: true },
+    select: { id: true, status: true, updatedAt: true },
   });
 
-  if (existing) redirect("/dashboard/profile/edit");
+  if (existing && existing.status !== "INACTIVE") redirect("/dashboard/profile/edit");
+
+  const inactiveProfileUpdatedAt = existing?.status === "INACTIVE" ? existing.updatedAt.getTime() : null;
 
   return (
     <div>
@@ -36,7 +38,7 @@ export default async function CreateProfilePage() {
         className="ui-enter-scale"
         style={{ animationDelay: "180ms", animationFillMode: "forwards" }}
       >
-        <ProfileForm />
+        <ProfileForm inactiveProfileUpdatedAt={inactiveProfileUpdatedAt} />
       </div>
     </div>
   );

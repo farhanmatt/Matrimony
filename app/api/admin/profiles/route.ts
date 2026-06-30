@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
         { location: { contains: search, mode: "insensitive" as const } },
       ],
     }),
-    ...(status && { status: status as never }),
+    ...(status ? { status: status as never } : { status: { notIn: ["INACTIVE", "SUSPENDED"] } as never }),
   };
 
   const [profiles, total] = await Promise.all([
