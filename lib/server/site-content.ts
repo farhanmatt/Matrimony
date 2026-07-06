@@ -71,3 +71,34 @@ export const getCachedFeaturedProfiles = unstable_cache(
     tags: ["featured-profiles"],
   }
 );
+
+export const getCachedSuccessStories = unstable_cache(
+  async () => {
+    try {
+      // @ts-ignore
+      const stories = await prisma.successStory.findMany({
+        orderBy: { createdAt: "desc" },
+      });
+
+      return {
+        successStories: stories,
+        successStoriesUnavailable: false,
+      };
+    } catch (error) {
+      if (isDatabaseConnectionError(error) || isPrismaMissingTableError(error)) {
+        return {
+          successStories: [],
+          successStoriesUnavailable: true,
+        };
+      }
+
+      throw error;
+    }
+  },
+  ["success-stories"],
+  {
+    revalidate: 300,
+    tags: ["success-stories"],
+  }
+);
+

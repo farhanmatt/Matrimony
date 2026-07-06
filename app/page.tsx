@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import FullLandingPage from "@/components/landing/FullLandingPage";
 import { auth } from "@/lib/auth";
-import { getCachedFeaturedProfiles, getCachedSiteBranding } from "@/lib/server/site-content";
+import { getCachedFeaturedProfiles, getCachedSiteBranding, getCachedSuccessStories } from "@/lib/server/site-content";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -33,8 +33,15 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const session = await auth();
-  const [{ featuredProfiles, featuredProfilesUnavailable }, branding] =
-    await Promise.all([getCachedFeaturedProfiles(), getCachedSiteBranding()]);
+  const [
+    { featuredProfiles, featuredProfilesUnavailable },
+    branding,
+    { successStories, successStoriesUnavailable }
+  ] = await Promise.all([
+    getCachedFeaturedProfiles(),
+    getCachedSiteBranding(),
+    getCachedSuccessStories()
+  ]);
 
   return (
     <FullLandingPage
@@ -42,6 +49,8 @@ export default async function HomePage() {
       featuredProfilesUnavailable={featuredProfilesUnavailable}
       heroImageUrl={branding.heroImageUrl}
       session={session}
+      successStories={successStories}
+      successStoriesUnavailable={successStoriesUnavailable}
     />
   );
 }

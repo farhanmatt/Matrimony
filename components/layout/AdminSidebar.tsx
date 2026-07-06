@@ -34,6 +34,7 @@ const adminNav = [
   { href: "/admin/settings", icon: Settings, label: "Pricing Settings" },
   { href: "/admin/coupons", icon: Ticket, label: "Coupon Offers" },
   { href: "/admin/landing", icon: Image, label: "Landing Banner & Logo" },
+  { href: "/admin/success-stories", icon: Heart, label: "Success Stories" },
 ];
 
 function AdminSidebarContent({

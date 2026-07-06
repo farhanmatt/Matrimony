@@ -502,3 +502,14 @@ model CouponCode {
   @@index([code])
   @@index([isActive])
 }
+
+model SuccessStory {
+  id          String   @id @default(cuid())
+  coupleName  String
+  review      String   @db.Text
+  description String?  @db.Text
+  date        DateTime?
+  images      String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

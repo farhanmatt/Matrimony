@@ -140,9 +140,7 @@ const partnerPreferenceReligionOptions = [
   "Jain",
   "Buddhist",
   "Parsi",
-  "Other",
 ];
-const casteSuggestions = ["No Caste"];
 const higherEducationOptions = [
   "High School",
   "Diploma",
@@ -1291,6 +1289,8 @@ export default function ProfileForm({
     });
   const [createdProfileSuccess, setCreatedProfileSuccess] =
     useState<CreatedProfileSuccess | null>(null);
+  const [culturalSuggestions, setCulturalSuggestions] = useState<{ castes: string[], subCastes: string[] }>({ castes: [], subCastes: [] });
+  const previousReligion = useRef<string | null>(null);
   const displayProfileUserId = profileUserId?.trim() ?? "";
 
   const {
@@ -1410,6 +1410,10 @@ export default function ProfileForm({
   const selectedPhysicalActivity = watch("physicalActivity");
   const selectedPersonalityType = watch("personalityType");
   const isPhysicallyChallenged = watch("isPhysicallyChallenged");
+  const selectedCaste = watch("caste");
+  const selectedSubCaste = watch("subCaste");
+  const filteredCasteOptions = filterAutocompleteOptions(culturalSuggestions.castes, selectedCaste);
+  const filteredSubCasteOptions = filterAutocompleteOptions(culturalSuggestions.subCastes, selectedSubCaste);
   const matchedStateOption = findMatchingStateOption(selectedState);
   const matchedCityOption = matchedStateOption
     ? findMatchingCityForState(matchedStateOption, [selectedCity])
@@ -1976,6 +1980,28 @@ export default function ProfileForm({
   };
 
   const religionValue = watch("religion");
+
+  useEffect(() => {
+    if (previousReligion.current && previousReligion.current !== religionValue) {
+      setValue("caste", "");
+      setValue("subCaste", "");
+    }
+    previousReligion.current = religionValue;
+
+    if (religionValue === "Hindu" || religionValue === "Muslim" || religionValue === "Christian") {
+      fetch(`/api/profile/cultural-suggestions?religion=${religionValue}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setCulturalSuggestions({
+            castes: data.castes || [],
+            subCastes: data.subCastes || [],
+          });
+        })
+        .catch((err) => console.error("Failed to fetch cultural suggestions:", err));
+    } else {
+      setCulturalSuggestions({ castes: [], subCastes: [] });
+    }
+  }, [religionValue]);
 
   const phoneRegistration = register("phone", {
     setValueAs: normalizePhoneDigits,
@@ -2636,29 +2662,32 @@ export default function ProfileForm({
           <label className={labelClass} htmlFor="pf-caste">
             {religionValue === "Muslim" ? "Sect *" : religionValue === "Christian" ? "Denomination *" : "Caste *"}
           </label>
-          <>
-            <input
-              id="pf-caste"
-              type="text"
-              list="pf-caste-options"
-              {...register("caste")}
-              className={inputClass}
-              placeholder={
-                religionValue === "Muslim"
-                  ? "e.g. Sunni, Shia"
-                  : religionValue === "Christian"
-                    ? "e.g. Catholic, Protestant"
-                    : "Type caste or choose No Caste"
-              }
-            />
-            {religionValue !== "Christian" && religionValue !== "Muslim" && (
-              <datalist id="pf-caste-options">
-                {casteSuggestions.map((option) => (
-                  <option key={option} value={option} />
-                ))}
-              </datalist>
+          <Controller
+            name="caste"
+            control={control}
+            render={({ field }) => (
+              <SearchableDropdownInput
+                id="pf-caste"
+                value={typeof field.value === "string" ? field.value : ""}
+                options={filteredCasteOptions}
+                placeholder={
+                  religionValue === "Muslim"
+                    ? "e.g. Sunni, Shia"
+                    : religionValue === "Christian"
+                      ? "e.g. Catholic, Protestant"
+                      : "Type caste or choose No Caste"
+                }
+                emptyMessage="Type a new value and press Enter"
+                suggestionLabel="Suggestions"
+                inputClassName={inputClass}
+                onValueChange={field.onChange}
+                onCommit={(nextValue) => {
+                  field.onChange(nextValue);
+                  field.onBlur();
+                }}
+              />
             )}
-          </>
+          />
           {errors.caste ? <p className={errorClass}>{errors.caste.message}</p> : null}
         </div>
 
@@ -2666,12 +2695,25 @@ export default function ProfileForm({
           <label className={labelClass} htmlFor="pf-subCaste">
             {religionValue === "Muslim" ? "Community" : religionValue === "Christian" ? "Church" : "Sub Caste"}
           </label>
-          <input
-            id="pf-subCaste"
-            type="text"
-            {...register("subCaste")}
-            className={inputClass}
-            placeholder="Optional"
+          <Controller
+            name="subCaste"
+            control={control}
+            render={({ field }) => (
+              <SearchableDropdownInput
+                id="pf-subCaste"
+                value={typeof field.value === "string" ? field.value : ""}
+                options={filteredSubCasteOptions}
+                placeholder="Optional"
+                emptyMessage="Type a new value and press Enter"
+                suggestionLabel="Suggestions"
+                inputClassName={inputClass}
+                onValueChange={field.onChange}
+                onCommit={(nextValue) => {
+                  field.onChange(nextValue);
+                  field.onBlur();
+                }}
+              />
+            )}
           />
           {errors.subCaste ? (
             <p className={errorClass}>{errors.subCaste.message}</p>

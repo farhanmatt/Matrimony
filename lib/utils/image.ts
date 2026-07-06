@@ -88,3 +88,21 @@ export function getImageUploadErrorMessage(
 
   return rawMessage.trim() || "Failed to upload image. Please try again.";
 }
+
+export function getWatermarkedCloudinaryUrl(url: string, watermarkText = "Vivah Bandhan") {
+  if (!url || typeof url !== "string" || !url.includes("res.cloudinary.com") || !url.includes("/upload/")) {
+    return url;
+  }
+  
+  // Skip if it already has a text overlay to prevent double watermarking
+  if (url.includes("l_text:")) {
+    return url;
+  }
+  
+  const encodedText = encodeURIComponent(watermarkText);
+  // Add a white, semi-transparent text watermark to the bottom right corner
+  const watermarkParams = `l_text:Arial_30_bold:${encodedText},co_white,o_50,g_south_east,x_20,y_20`;
+  
+  // Insert the parameters right after "/upload/"
+  return url.replace("/upload/", `/upload/${watermarkParams}/`);
+}
