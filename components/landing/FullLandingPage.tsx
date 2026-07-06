@@ -13,7 +13,6 @@ import {
   HeartHandshake,
   ImagePlus,
   Instagram,
-  Linkedin,
   Lock,
   Mail,
   MapPin,
@@ -22,14 +21,15 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
-  Twitter,
   UserPlus,
   Users,
   Youtube,
 } from "lucide-react";
+import { getWatermarkedCloudinaryUrl } from "@/lib/utils/image";
 import LandingNavbar from "@/components/landing/LandingNavbar";
 import LandingHeroBanner from "@/components/landing/LandingHeroBanner";
 import LandingReveal from "@/components/landing/LandingReveal";
+import SuccessStoryModal from "@/components/landing/SuccessStoryModal";
 import { blogCardImageOverrides } from "@/lib/constants/blog-card-image-overrides";
 import { blogPosts } from "@/lib/constants/blog";
 
@@ -116,23 +116,7 @@ const steps = [
   },
 ];
 
-const successStories = [
-  {
-    name: "Arun & Divya",
-    quote: "We met on this platform and found our perfect match. Thank you.",
-    imagePosition: "78% center",
-  },
-  {
-    name: "Karthik & Meena",
-    quote: "A trusted platform that helped us find each other and start a new journey.",
-    imagePosition: "76% center",
-  },
-  {
-    name: "Vignesh & Sowmya",
-    quote: "Highly recommended for people who are looking for serious relationships.",
-    imagePosition: "82% center",
-  },
-];
+
 
 const membershipPlans = [
   {
@@ -237,18 +221,9 @@ const footerSocialLinks = [
     Icon: Instagram,
   },
   {
-    label: "X (Twitter)",
-    href: resolveExternalUrl(
-      process.env.NEXT_PUBLIC_SOCIAL_TWITTER_URL || "https://x.com/",
-    ),
-    Icon: Twitter,
-  },
-  {
-    label: "LinkedIn",
-    href: resolveExternalUrl(
-      process.env.NEXT_PUBLIC_SOCIAL_LINKEDIN_URL || "https://www.linkedin.com/",
-    ),
-    Icon: Linkedin,
+    label: "Gmail",
+    href: "https://mail.google.com/mail/?view=cm&fs=1&to=Bagavath85@gmail.com",
+    Icon: Mail,
   },
   {
     label: "YouTube",
@@ -292,6 +267,8 @@ interface FullLandingPageProps {
   featuredProfilesUnavailable?: boolean;
   heroImageUrl?: string;
   session?: Session | null;
+  successStories?: any[];
+  successStoriesUnavailable?: boolean;
 }
 
 export default function FullLandingPage({
@@ -299,6 +276,8 @@ export default function FullLandingPage({
   featuredProfilesUnavailable = false,
   heroImageUrl,
   session,
+  successStories = [],
+  successStoriesUnavailable = false,
 }: FullLandingPageProps) {
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#fff9fb_0%,#fff4f7_40%,#ffffff_100%)] text-slate-900">
@@ -539,34 +518,47 @@ export default function FullLandingPage({
                 <div>
                   <SectionTitle
                     title="Success Stories"
-                    href="/register"
+                    href="/success-stories"
                     linkLabel="View All Stories"
                   />
                 </div>
               </LandingReveal>
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {successStories.map((story, index) => (
-                  <LandingReveal key={story.name} delayMs={130 + index * 80} variant="right">
-                    <article className="landing-surface group flex min-h-[4.6rem] overflow-hidden rounded-[1.1rem] border border-rose-100 bg-white shadow-[0_14px_34px_rgba(15,23,42,0.05)]">
-                      <div className="relative w-20 shrink-0 sm:w-24">
-                        <Image
-                          src="/main.jpeg"
-                          alt={story.name}
-                          fill
-                          className="landing-surface-media object-cover"
-                          style={{ objectPosition: story.imagePosition }}
-                          sizes="(max-width: 640px) 80px, 96px"
-                        />
-                      </div>
-                      <div className="flex flex-1 flex-col justify-center px-3 py-2">
-                        <div className="text-[0.9rem] font-bold leading-snug text-slate-900">
-                          {story.name}
+                {successStories.slice(0, 3).map((story: any, index) => (
+                  <LandingReveal key={story.id || story.coupleName} delayMs={130 + index * 80} variant="scale">
+                    <SuccessStoryModal story={story}>
+                      <article className="landing-surface group flex h-full flex-col overflow-hidden rounded-[1.25rem] border border-rose-100 bg-white shadow-[0_14px_34px_rgba(15,23,42,0.05)] transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                        <div className="relative aspect-[16/10] w-full shrink-0 bg-rose-50 overflow-hidden">
+                          {story.images && story.images.length > 0 ? (
+                            <Image
+                              src={getWatermarkedCloudinaryUrl(story.images[0])}
+                              alt={story.coupleName}
+                              fill
+                              draggable={false}
+                              className="object-cover transition-transform duration-500 group-hover:scale-105 select-none pointer-events-none"
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-rose-200">
+                              <Heart className="h-10 w-10 opacity-50" />
+                            </div>
+                          )}
                         </div>
-                        <p className="mt-0.5 text-[0.72rem] leading-4 text-slate-500">
-                          &quot;{story.quote}&quot;
-                        </p>
-                      </div>
-                    </article>
+                        <div className="flex flex-1 flex-col p-5">
+                          <h3 className="font-display text-lg font-bold leading-snug text-slate-900 line-clamp-1">
+                            {story.coupleName}
+                          </h3>
+                          <p className="mt-2 text-[0.85rem] leading-relaxed text-slate-600 line-clamp-3 italic">
+                            &quot;{story.review}&quot;
+                          </p>
+                          {story.description && (
+                            <p className="mt-2 text-sm text-slate-500 line-clamp-3">
+                              {story.description}
+                            </p>
+                          )}
+                        </div>
+                      </article>
+                    </SuccessStoryModal>
                   </LandingReveal>
                 ))}
               </div>
