@@ -11,6 +11,7 @@ import DashboardRealtimeEvents from "@/components/dashboard/DashboardRealtimeEve
 import DashboardWelcomeIntro from "@/components/dashboard/DashboardWelcomeIntro";
 import DashboardSidebar from "@/components/layout/DashboardSidebar";
 import { getDashboardProfileSummary } from "@/lib/server/dashboard-page-data";
+import { getAdminSettingsSnapshot } from "@/lib/utils/admin-settings";
 
 export default async function DashboardLayout({
   children,
@@ -31,6 +32,7 @@ export default async function DashboardLayout({
     hasSeenDashboardIntro: true,
   };
   let profileSummary: Awaited<ReturnType<typeof getDashboardProfileSummary>> = null;
+  let adminSettings = await getAdminSettingsSnapshot();
 
   try {
     [notificationState, introStatus, profileSummary] = await Promise.all([
@@ -66,6 +68,7 @@ export default async function DashboardLayout({
         initialAccountImage={profileSummary?.accountImage ?? null}
         initialNotificationProfileId={notificationState.profileId}
         initialNotifications={notificationState.items}
+        initialChatFeatureEnabled={adminSettings.isChatFeatureEnabled}
       />
       <main className="min-h-screen pt-[72px]">
         <div className="mx-auto max-w-[1600px] px-4 pt-3 pb-4 sm:px-6 sm:pt-4 sm:pb-6 lg:px-8 lg:pt-4 lg:pb-8">
@@ -75,4 +78,3 @@ export default async function DashboardLayout({
     </div>
   );
 }
-

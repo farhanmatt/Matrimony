@@ -7,6 +7,7 @@ export const FALLBACK_ADMIN_SETTINGS = {
   profileAmount: 500,
   perProfileChatAmount: 0,
   isChatPaymentEnabled: true,
+  isChatFeatureEnabled: true,
   heroImageUrl: "/main.jpeg",
   logoImageUrl: "",
 };
@@ -15,7 +16,7 @@ type AdminSettingsSnapshot = typeof FALLBACK_ADMIN_SETTINGS;
 
 function clientSupportsChatPaymentSettings() {
   const fields = Object.values(Prisma.AdminSettingsScalarFieldEnum);
-  return fields.includes("perProfileChatAmount") && fields.includes("isChatPaymentEnabled");
+  return fields.includes("perProfileChatAmount") && fields.includes("isChatPaymentEnabled") && fields.includes("isChatFeatureEnabled");
 }
 
 async function getLegacyAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot> {
@@ -36,6 +37,7 @@ async function getLegacyAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot> 
           ...legacySettings,
           perProfileChatAmount: 0,
           isChatPaymentEnabled: true,
+          isChatFeatureEnabled: true,
         }
       : FALLBACK_ADMIN_SETTINGS;
   } catch (error) {
@@ -47,7 +49,7 @@ async function getLegacyAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot> 
 function errorMentionsNewFields(error: unknown) {
   return (
     error instanceof Error &&
-    (error.message.includes("perProfileChatAmount") || error.message.includes("isChatPaymentEnabled"))
+    (error.message.includes("perProfileChatAmount") || error.message.includes("isChatPaymentEnabled") || error.message.includes("isChatFeatureEnabled"))
   );
 }
 
@@ -76,6 +78,7 @@ export async function getAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot>
         profileAmount: true,
         perProfileChatAmount: true,
         isChatPaymentEnabled: true,
+        isChatFeatureEnabled: true,
         heroImageUrl: true,
         logoImageUrl: true,
       },

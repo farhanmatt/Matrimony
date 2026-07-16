@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import ProfileChatSession from "@/components/dashboard/ProfileChatSession";
 import { auth } from "@/lib/auth";
+import { getAdminSettingsSnapshot } from "@/lib/utils/admin-settings";
 
 export const metadata: Metadata = {
   title: "Profile Chat",
@@ -21,6 +22,11 @@ export default async function ProfileChatPage({
   }
 
   const { profileId } = await params;
+  const adminSettings = await getAdminSettingsSnapshot();
+
+  if (!adminSettings.isChatFeatureEnabled) {
+    redirect("/dashboard");
+  }
 
   return <ProfileChatSession profileId={profileId} />;
 }

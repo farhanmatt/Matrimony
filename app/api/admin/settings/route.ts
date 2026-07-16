@@ -51,6 +51,7 @@ export async function PUT(req: NextRequest) {
     profileAmount?: unknown;
     perProfileChatAmount?: unknown;
     isChatPaymentEnabled?: unknown;
+    isChatFeatureEnabled?: unknown;
     heroImageUrl?: unknown;
     logoImageUrl?: unknown;
   };
@@ -60,6 +61,7 @@ export async function PUT(req: NextRequest) {
     profileAmount?: number;
     perProfileChatAmount?: number;
     isChatPaymentEnabled?: boolean;
+    isChatFeatureEnabled?: boolean;
     heroImageUrl?: string;
     logoImageUrl?: string;
   } = {};
@@ -69,6 +71,7 @@ export async function PUT(req: NextRequest) {
     profileAmount: number;
     perProfileChatAmount: number;
     isChatPaymentEnabled: boolean;
+    isChatFeatureEnabled: boolean;
     heroImageUrl?: string;
     logoImageUrl?: string;
   } = {
@@ -77,6 +80,7 @@ export async function PUT(req: NextRequest) {
     profileAmount: 500,
     perProfileChatAmount: 0,
     isChatPaymentEnabled: true,
+    isChatFeatureEnabled: true,
   };
 
   if (Object.prototype.hasOwnProperty.call(body, "baseAmount")) {
@@ -109,6 +113,14 @@ export async function PUT(req: NextRequest) {
     }
     updateData.isChatPaymentEnabled = body.isChatPaymentEnabled;
     createData.isChatPaymentEnabled = body.isChatPaymentEnabled;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "isChatFeatureEnabled")) {
+    if (typeof body.isChatFeatureEnabled !== "boolean") {
+      return NextResponse.json({ error: "Invalid chat feature toggle" }, { status: 400 });
+    }
+    updateData.isChatFeatureEnabled = body.isChatFeatureEnabled;
+    createData.isChatFeatureEnabled = body.isChatFeatureEnabled;
   }
 
   if (Object.prototype.hasOwnProperty.call(body, "heroImageUrl")) {
@@ -159,9 +171,9 @@ export async function PUT(req: NextRequest) {
     });
   } catch (err: any) {
     // Check if the error is due to the new field not being in the client types yet
-    if (err.message?.includes("isChatPaymentEnabled")) {
-      const { isChatPaymentEnabled: _, ...safeUpdate } = updateData;
-      const { isChatPaymentEnabled: __, ...safeCreate } = createData;
+    if (err.message?.includes("isChatPaymentEnabled") || err.message?.includes("isChatFeatureEnabled")) {
+      const { isChatPaymentEnabled: _, isChatFeatureEnabled: ___, ...safeUpdate } = updateData;
+      const { isChatPaymentEnabled: __, isChatFeatureEnabled: ____, ...safeCreate } = createData;
       
       settings = await prisma.adminSettings.upsert({
         where: { id: "singleton" },
@@ -169,12 +181,23 @@ export async function PUT(req: NextRequest) {
         create: safeCreate as any,
       });
 
-      // Try raw update for the new field
+      // Try raw update for the new fields
       if (updateData.isChatPaymentEnabled !== undefined) {
         try {
           await prisma.$executeRawUnsafe(
             `UPDATE "AdminSettings" SET "isChatPaymentEnabled" = $1 WHERE id = 'singleton'`,
             updateData.isChatPaymentEnabled ? 1 : 0
+          );
+        } catch (rawErr) {
+          console.error("Raw update failed:", rawErr);
+        }
+      }
+      
+      if (updateData.isChatFeatureEnabled !== undefined) {
+        try {
+          await prisma.$executeRawUnsafe(
+            `UPDATE "AdminSettings" SET "isChatFeatureEnabled" = $1 WHERE id = 'singleton'`,
+            updateData.isChatFeatureEnabled ? 1 : 0
           );
         } catch (rawErr) {
           console.error("Raw update failed:", rawErr);

@@ -82,6 +82,7 @@ export default function LikedPageClient({
   initialMatches,
   initialPricing,
   viewMode = "interests",
+  initialChatFeatureEnabled = true,
 }: {
   initialLikes: LikedProfile[];
   initialMatches: MatchSummary[];
@@ -91,6 +92,7 @@ export default function LikedPageClient({
     perProfileChatAmount: number;
   };
   viewMode?: "interests" | "shortlist";
+  initialChatFeatureEnabled?: boolean;
 }) {
   const { data: session } = useSession();
   const shortlistUserId = session?.user?.id ?? null;
@@ -697,6 +699,7 @@ export default function LikedPageClient({
                         matchId={matchInfo?.id}
                         pricing={pricing}
                         allowUnlike={like.allowUnlike}
+                        isChatFeatureEnabled={initialChatFeatureEnabled}
                         onUnlike={handleUnlike}
                         onUnlockSuccess={() => fetchData()}
                       />

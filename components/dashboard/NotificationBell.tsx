@@ -297,11 +297,13 @@ export default function NotificationBell({
   initialProfileId = null,
   shortlistUserId = null,
   compact = false,
+  chatFeatureEnabled = true,
 }: {
   initialNotifications?: DashboardNotificationItem[];
   initialProfileId?: string | null;
   shortlistUserId?: string | null;
   compact?: boolean;
+  chatFeatureEnabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [panelVisible, setPanelVisible] = useState(false);
@@ -650,14 +652,16 @@ export default function NotificationBell({
       );
   }, [refreshNotifications]);
 
-  const visibleNotifications = useMemo(
-    () =>
-      mergeVisibleNotifications(
-        serverNotifications,
-        pendingMessageNotifications
-      ),
-    [pendingMessageNotifications, serverNotifications]
-  );
+  const visibleNotifications = useMemo(() => {
+    const merged = mergeVisibleNotifications(
+      serverNotifications,
+      pendingMessageNotifications
+    );
+    if (!chatFeatureEnabled) {
+      return merged.filter((item) => item.kind !== "message");
+    }
+    return merged;
+  }, [pendingMessageNotifications, serverNotifications, chatFeatureEnabled]);
 
   const visibleNotificationsWithLabels = useMemo(
     () =>

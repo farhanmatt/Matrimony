@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import LikedPageClient from "@/components/dashboard/LikedPageClient";
 import { getLikedPageData } from "@/lib/server/dashboard-page-data";
+import { getAdminSettingsSnapshot } from "@/lib/utils/admin-settings";
 
 export default async function ShortlistPage() {
   const session = await auth();
@@ -9,6 +10,7 @@ export default async function ShortlistPage() {
   }
 
   const { likes, matches, pricing } = await getLikedPageData(session.user.id);
+  const adminSettings = await getAdminSettingsSnapshot();
 
   return (
     <LikedPageClient
@@ -16,6 +18,7 @@ export default async function ShortlistPage() {
       initialMatches={matches}
       initialPricing={pricing}
       viewMode="shortlist"
+      initialChatFeatureEnabled={adminSettings.isChatFeatureEnabled}
     />
   );
 }
