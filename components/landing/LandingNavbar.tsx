@@ -15,7 +15,6 @@ const navLinks = [
   { href: "/about", label: "About Us" },
   { href: "/#find-match", label: "Search" },
   { href: "/#success-stories", label: "Success Stories" },
-  { href: "/#membership-plans", label: "Membership Plans" },
   { href: "/blog", label: "Blog" },
   { href: "/contact", label: "Help" },
 ];

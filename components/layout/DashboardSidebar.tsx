@@ -55,6 +55,7 @@ export default function DashboardSidebar({
   initialAccountImage = null,
   initialNotificationProfileId = null,
   initialNotifications = [],
+  initialChatFeatureEnabled = true,
 }: {
   initialUser: {
     id: string;
@@ -67,6 +68,7 @@ export default function DashboardSidebar({
   initialAccountImage?: string | null;
   initialNotificationProfileId?: string | null;
   initialNotifications?: DashboardNotificationItem[];
+  initialChatFeatureEnabled?: boolean;
 }) {
   const { data: session } = useSession();
   const pathname = usePathname();
@@ -215,21 +217,23 @@ export default function DashboardSidebar({
     label: "Support",
   };
 
-  const desktopNavItems = baseNavItems.filter(
+  const activeBaseNavItems = baseNavItems;
+
+  const desktopNavItems = activeBaseNavItems.filter(
     (item) =>
       item.href !== "/dashboard/preferences" && item.href !== "/dashboard/settings"
   );
 
   const mobileNavItems = [
-    baseNavItems[0],
+    activeBaseNavItems[0],
     profileNavItem,
-    ...baseNavItems.slice(1),
+    ...activeBaseNavItems.slice(1),
     supportNavItem,
   ];
 
   const currentNavItem =
     mobileNavItems.find((item) => isActivePath(pathname, item.href)) ??
-    baseNavItems[0];
+    activeBaseNavItems[0];
   const accountMenuItems = [
     profileNavItem,
     { href: "/dashboard/preferences", icon: Star, label: "Preferences" },
@@ -330,6 +334,7 @@ export default function DashboardSidebar({
                   initialProfileId={initialNotificationProfileId}
                   shortlistUserId={session?.user?.id ?? initialUser.id}
                   compact
+                  chatFeatureEnabled={initialChatFeatureEnabled}
                 />
               </div>
 
@@ -462,6 +467,7 @@ export default function DashboardSidebar({
                   initialNotifications={initialNotifications}
                   initialProfileId={initialNotificationProfileId}
                   shortlistUserId={session?.user?.id ?? initialUser.id}
+                  chatFeatureEnabled={initialChatFeatureEnabled}
                 />
               </div>
 

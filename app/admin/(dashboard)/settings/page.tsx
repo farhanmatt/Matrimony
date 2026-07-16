@@ -9,6 +9,7 @@ export default function AdminSettingsPage() {
   const [profileAmount, setProfileAmount] = useState(500);
   const [perProfileChatAmount, setPerProfileChatAmount] = useState(0);
   const [isChatPaymentEnabled, setIsChatPaymentEnabled] = useState(true);
+  const [isChatFeatureEnabled, setIsChatFeatureEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -23,6 +24,7 @@ export default function AdminSettingsPage() {
           setProfileAmount(data.settings.profileAmount);
           setPerProfileChatAmount(data.settings.perProfileChatAmount ?? 0);
           setIsChatPaymentEnabled(data.settings.isChatPaymentEnabled ?? true);
+          setIsChatFeatureEnabled(data.settings.isChatFeatureEnabled ?? true);
         }
         setLoading(false);
       });
@@ -37,7 +39,8 @@ export default function AdminSettingsPage() {
         baseAmount, 
         profileAmount, 
         perProfileChatAmount, 
-        isChatPaymentEnabled 
+        isChatPaymentEnabled,
+        isChatFeatureEnabled 
       }),
     });
     const data = await res.json();
@@ -189,9 +192,29 @@ export default function AdminSettingsPage() {
 
           {activeTab === "chat" && (
             <div className="space-y-6 animate-in fade-in duration-300">
+              <div className="flex items-center justify-between pb-6 border-b border-gray-100">
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-500 flex items-center justify-center text-sm">02</span>
+                  Chat Feature
+                </h2>
+                
+                <button
+                  onClick={() => setIsChatFeatureEnabled(!isChatFeatureEnabled)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                    isChatFeatureEnabled ? "bg-indigo-500" : "bg-gray-200"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isChatFeatureEnabled ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-lg bg-pink-50 text-pink-500 flex items-center justify-center text-sm">02</span>
+                  <span className="w-8 h-8 rounded-lg bg-pink-50 text-pink-500 flex items-center justify-center text-sm">03</span>
                   Chat Payment Settings
                 </h2>
                 
@@ -200,6 +223,7 @@ export default function AdminSettingsPage() {
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
                     isChatPaymentEnabled ? "bg-rose-500" : "bg-gray-200"
                   }`}
+                  disabled={!isChatFeatureEnabled}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${

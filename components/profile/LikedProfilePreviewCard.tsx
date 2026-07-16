@@ -54,6 +54,7 @@ interface LikedProfilePreviewCardProps {
   };
   onUnlike?: (profileId: string) => void;
   onUnlockSuccess?: () => void;
+  isChatFeatureEnabled?: boolean;
 }
 
 export default function LikedProfilePreviewCard({
@@ -61,6 +62,7 @@ export default function LikedProfilePreviewCard({
   shortlistUserId,
   showChatAction = false,
   isUnlocked = false,
+  isChatFeatureEnabled = true,
   matchId,
   pricing,
   allowUnlike = true,
@@ -238,21 +240,21 @@ export default function LikedProfilePreviewCard({
 
             {menuOpen ? (
               <div className="ui-enter-up absolute right-0 top-11 w-48 overflow-hidden rounded-[18px] border border-rose-100 bg-white py-2 shadow-[0_20px_44px_rgba(15,23,42,0.16)]">
-                <button
-                  type="button"
-                  onClick={handleShortlistToggle}
-                  className="ui-link-shift flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
-                >
-                  <Bookmark
-                    className={`h-4 w-4 ${
-                      shortlisted ? "fill-current text-rose-500" : "text-slate-500"
-                    }`}
-                  />
-                  <span className="flex-1">
-                    {shortlisted ? "Shortlisted" : "Shortlist"}
-                  </span>
-                  {shortlisted ? <Check className="h-4 w-4 text-emerald-500" /> : null}
-                </button>
+                  <button
+                    type="button"
+                    onClick={handleShortlistToggle}
+                    className="ui-link-shift flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                  >
+                    <Bookmark
+                      className={`h-4 w-4 ${
+                        shortlisted ? "fill-current text-rose-500" : "text-slate-500"
+                      }`}
+                    />
+                    <span className="flex-1">
+                      {shortlisted ? "Shortlisted" : "Shortlist"}
+                    </span>
+                    {shortlisted ? <Check className="h-4 w-4 text-emerald-500" /> : null}
+                  </button>
                 {allowUnlike ? (
                   <button
                     type="button"
@@ -295,7 +297,7 @@ export default function LikedProfilePreviewCard({
             </div>
           </div>
 
-          {showChatAction ? (
+          {showChatAction && isChatFeatureEnabled ? (
             <div className="mt-4 flex justify-end">
               <button
                 type="button"

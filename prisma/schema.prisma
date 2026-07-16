@@ -470,6 +470,7 @@ model AdminSettings {
   profileUnlockAmount  Int      @default(500) // in rupees
   perProfileChatAmount Int      @default(0) // in rupees
   isChatPaymentEnabled Boolean  @default(true)
+  isChatFeatureEnabled Boolean  @default(true)
   heroImageUrl         String   @default("/main.jpeg")
   logoImageUrl         String   @default("")
   updatedAt            DateTime @updatedAt
