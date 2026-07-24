@@ -6,7 +6,7 @@ import { Heart, Target, Users, Shield } from "lucide-react";
 export const metadata: Metadata = {
   title: "About Us — Our Story",
   description:
-    "Learn about Vivah Bandhan — India's most trusted matrimony platform. Our mission is to connect families and build happy marriages.",
+    "Learn about FMLP Matrimony — India's most trusted matrimony platform. Our mission is to connect families and build happy marriages.",
   alternates: { canonical: "/about" },
 };
 
@@ -21,7 +21,7 @@ export default function AboutPage() {
             Our Story & <span className="gradient-text">Mission</span>
           </h1>
           <p className="text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto">
-            Founded in 2015, Vivah Bandhan was built with a single purpose — to
+            Founded in 2015, FMLP Matrimony was built with a single purpose — to
             help families find trustworthy, compatible life partners through
             technology guided by tradition.
           </p>

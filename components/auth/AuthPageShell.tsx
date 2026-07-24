@@ -50,7 +50,7 @@ export default function AuthPageShell({
           <Link href="/" className="ui-link-shift inline-flex items-center justify-center">
             <SiteLogo
               src={logoImageUrl}
-              alt="Vivah Bandhan logo"
+              alt="FMLP Matrimony logo"
               className="ui-soft-float h-14 max-w-[260px] sm:h-16 sm:max-w-[320px]"
             />
           </Link>

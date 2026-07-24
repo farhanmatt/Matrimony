@@ -7,8 +7,8 @@ import SuccessStoryModal from "@/components/landing/SuccessStoryModal";
 import { getWatermarkedCloudinaryUrl } from "@/lib/utils/image";
 
 export const metadata: Metadata = {
-  title: "Success Stories - Vivah Bandhan",
-  description: "Read inspiring success stories from couples who found their perfect match on Vivah Bandhan.",
+  title: "Success Stories - FMLP Matrimony",
+  description: "Read inspiring success stories from couples who found their perfect match on FMLP Matrimony.",
 };
 
 export default async function SuccessStoriesPage(props: {

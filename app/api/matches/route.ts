@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
   const settings = await prisma.adminSettings.findUnique({
     where: { id: "singleton" },
-    select: { baseAmount: true, profileAmount: true, perProfileChatAmount: true },
+    select: { baseAmount: true, profileAmount: true, perProfileChatAmount: true, isChatPaymentEnabled: true },
   });
 
   let filteredMatches = matches;
@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
         ? {
             baseAmount: settings.baseAmount,
             profileAmount: settings.profileAmount,
-            perProfileChatAmount: settings.perProfileChatAmount,
+            perProfileChatAmount: settings.isChatPaymentEnabled ? settings.perProfileChatAmount : 0,
           }
         : undefined,
     });
@@ -153,7 +153,7 @@ export async function GET(req: NextRequest) {
       ? {
           baseAmount: settings.baseAmount,
           profileAmount: settings.profileAmount,
-          perProfileChatAmount: settings.perProfileChatAmount,
+          perProfileChatAmount: settings.isChatPaymentEnabled ? settings.perProfileChatAmount : 0,
         }
       : undefined,
   });

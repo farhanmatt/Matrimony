@@ -325,6 +325,11 @@ const baseProfileSchema = z.object({
     .optional()
     .default([]),
   horoscopeImage: z.string().url("Invalid horoscope image URL").optional().nullable(),
+  selfieImages: z
+    .array(z.string().url("Invalid selfie image URL"))
+    .max(4, "You can upload up to 4 selfie photos")
+    .optional()
+    .default([]),
 });
 
 export const profileSchema = baseProfileSchema.superRefine(

@@ -19,6 +19,8 @@ import {
   Shield,
   HeartHandshake,
   Ticket,
+  Mail,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils/helpers";
 import { useEffect, useState } from "react";
@@ -35,6 +37,8 @@ const adminNav = [
   { href: "/admin/coupons", icon: Ticket, label: "Coupon Offers" },
   { href: "/admin/landing", icon: Image, label: "Landing Banner & Logo" },
   { href: "/admin/success-stories", icon: Heart, label: "Success Stories" },
+  { href: "/admin/gmail-setup", icon: Mail, label: "Gmail Setup" },
+  { href: "/admin/health", icon: Activity, label: "Health Access" },
 ];
 
 function AdminSidebarContent({

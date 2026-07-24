@@ -187,7 +187,9 @@ const footerColumns = [
       { href: "/faq", label: "FAQ" },
       { href: "/privacy", label: "Privacy Policy" },
       { href: "/contact", label: "Support" },
-      { href: "/contact", label: "Safety Tips" },
+      { href: "/safety-tips", label: "Safety Tips" },
+      { href: "/terms", label: "Terms & Conditions" },
+      { href: "/refund", label: "Refund Policy" },
     ],
   },
 ];
@@ -269,6 +271,7 @@ interface FullLandingPageProps {
   session?: Session | null;
   successStories?: any[];
   successStoriesUnavailable?: boolean;
+  officialEmail?: string;
 }
 
 export default function FullLandingPage({
@@ -278,7 +281,30 @@ export default function FullLandingPage({
   session,
   successStories = [],
   successStoriesUnavailable = false,
+  officialEmail = "support@fmlpmatrimony.com",
 }: FullLandingPageProps) {
+  const socialLinks = [
+    {
+      label: "Instagram",
+      href: resolveExternalUrl(
+        process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM_URL || "https://www.instagram.com/",
+      ),
+      Icon: Instagram,
+    },
+    {
+      label: "Gmail",
+      href: `https://mail.google.com/mail/?view=cm&fs=1&to=${officialEmail}`,
+      Icon: Mail,
+    },
+    {
+      label: "YouTube",
+      href: resolveExternalUrl(
+        process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE_URL || "https://www.youtube.com/",
+      ),
+      Icon: Youtube,
+    },
+  ];
+
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#fff9fb_0%,#fff4f7_40%,#ffffff_100%)] text-slate-900">
       <LandingNavbar session={session} />
@@ -648,7 +674,7 @@ export default function FullLandingPage({
               </div>
               <div className="flex items-center gap-3 lg:justify-end">
                 <span className="text-sm font-semibold text-rose-100">Follow Us</span>
-                {footerSocialLinks.map(({ label, href, Icon }) =>
+                {socialLinks.map(({ label, href, Icon }) =>
                   href ? (
                     <a
                       key={label}
@@ -684,7 +710,7 @@ export default function FullLandingPage({
                   <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15">
                     <Heart className="h-5 w-5 fill-white" />
                   </div>
-                  <div className="font-display text-2xl font-bold">Vivah Bandhan</div>
+                  <div className="font-display text-2xl font-bold">FMLP Matrimony</div>
                 </Link>
                 <p className="mt-4 max-w-xs text-sm leading-7 text-rose-100/85">
                   Helping you find your perfect life partner with trusted and
@@ -718,7 +744,7 @@ export default function FullLandingPage({
                   <li className="flex items-start gap-3">
                     <Mail className="mt-0.5 h-4 w-4 text-rose-200" />
                     <div>
-                      <div>Bagavath85@gmail.com</div>
+                      <div>{officialEmail}</div>
                       <p className="mt-2 max-w-xs text-xs leading-5 text-rose-100/65">
                         Have a question? We&apos;re here to help. Expect a response within 48 hours.
                       </p>
@@ -730,7 +756,7 @@ export default function FullLandingPage({
           </LandingReveal>
 
           <div className="border-t border-white/10 py-5 text-center text-sm text-rose-100/75">
-            © {new Date().getFullYear()} Vivah Bandhan. All Rights Reserved.
+            © {new Date().getFullYear()} FMLP Matrimony. All Rights Reserved.
           </div>
         </div>
       </footer>

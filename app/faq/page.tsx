@@ -2,15 +2,22 @@ import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FAQSection from "@/components/landing/FAQSection";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "FAQ — Frequently Asked Questions",
   description:
-    "Find answers to common questions about Vivah Bandhan — how matching works, pricing, privacy, and more.",
+    "Find answers to common questions about FMLP Matrimony — how matching works, pricing, privacy, and more.",
   alternates: { canonical: "/faq" },
 };
 
-export default function FAQPage() {
+export default async function FAQPage() {
+  const settings = await prisma.adminSettings.findUnique({
+    where: { id: "singleton" },
+    select: { officialEmail: true },
+  });
+  const officialEmail = settings?.officialEmail || "support@fmlpmatrimony.com";
+
   return (
     <main>
       <Navbar />
@@ -20,11 +27,11 @@ export default function FAQPage() {
             Frequently Asked Questions
           </h1>
           <p className="text-gray-500">
-            Everything you need to know about Vivah Bandhan
+            Everything you need to know about FMLP Matrimony
           </p>
         </div>
       </div>
-      <FAQSection showIntro={false} />
+      <FAQSection showIntro={false} officialEmail={officialEmail} />
       <Footer />
     </main>
   );

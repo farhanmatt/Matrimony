@@ -179,7 +179,7 @@ function buildProfileCreatedEmailHtml({
           <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:#ecfdf3;color:#047857;font-size:12px;font-weight:700;letter-spacing:0.04em;">
             PROFILE CREATED
           </div>
-          <h1 style="margin:18px 0 8px;font-size:32px;line-height:1.15;color:#0f172a;">Welcome to Vivah Bandhan</h1>
+          <h1 style="margin:18px 0 8px;font-size:32px;line-height:1.15;color:#0f172a;">Welcome to FMLP Matrimony</h1>
           <p style="margin:0;font-size:16px;line-height:1.7;color:#475569;">
             Hi ${firstName}, your matrimony profile has been created successfully.
           </p>
@@ -188,7 +188,7 @@ function buildProfileCreatedEmailHtml({
         <div style="padding:32px;">
           <p style="margin:0 0 18px;font-size:16px;line-height:1.8;color:#475569;">
             We have successfully registered your profile
-            <strong style="color:#0f172a;"> ${profileName}</strong> on Vivah Bandhan.
+            <strong style="color:#0f172a;"> ${profileName}</strong> on FMLP Matrimony.
             You can now browse profiles, receive likes, and find your perfect match.
           </p>
 
@@ -227,7 +227,7 @@ function buildProfileCreatedEmailText({
   return [
     `Hi ${firstName},`,
     "",
-    `Your matrimony profile "${profileName}" has been created successfully on Vivah Bandhan.`,
+    `Your matrimony profile "${profileName}" has been created successfully on FMLP Matrimony.`,
     "",
     "You can now browse profiles, receive likes, and explore your matches.",
     "",
@@ -243,7 +243,7 @@ function buildProfileLikedEmailHtml({
 }: Omit<ProfileLikedEmailParams, "to">) {
   const appUrl = getAppUrl();
   const firstName = recipientName?.trim() || "there";
-  const admirerName = likedByName.trim() || "Another Vivah Bandhan member";
+  const admirerName = likedByName.trim() || "Another FMLP Matrimony member";
 
   return `
     <div style="margin:0;padding:32px 16px;background:#fff8fb;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
@@ -254,7 +254,7 @@ function buildProfileLikedEmailHtml({
           </div>
           <h1 style="margin:18px 0 8px;font-size:32px;line-height:1.15;color:#0f172a;">Someone liked your profile</h1>
           <p style="margin:0;font-size:16px;line-height:1.7;color:#475569;">
-            Hi ${firstName}, you have received a new like on Vivah Bandhan.
+            Hi ${firstName}, you have received a new like on FMLP Matrimony.
           </p>
         </div>
 
@@ -289,12 +289,12 @@ function buildProfileLikedEmailText({
 }: Omit<ProfileLikedEmailParams, "to">) {
   const appUrl = getAppUrl();
   const firstName = recipientName?.trim() || "there";
-  const admirerName = likedByName.trim() || "Another Vivah Bandhan member";
+  const admirerName = likedByName.trim() || "Another FMLP Matrimony member";
 
   return [
     `Hi ${firstName},`,
     "",
-    `${admirerName} liked your profile on Vivah Bandhan.`,
+    `${admirerName} liked your profile on FMLP Matrimony.`,
     "",
     "Open your received likes to review their profile and respond if you are interested.",
     "",
@@ -318,7 +318,7 @@ function buildPasswordResetCodeEmailHtml({
           </div>
           <h1 style="margin:18px 0 8px;font-size:32px;line-height:1.15;color:#0f172a;">Your verification code</h1>
           <p style="margin:0;font-size:16px;line-height:1.7;color:#475569;">
-            Hi ${firstName}, use the code below to finish resetting your Vivah Bandhan password.
+            Hi ${firstName}, use the code below to finish resetting your FMLP Matrimony password.
           </p>
         </div>
 
@@ -347,7 +347,7 @@ function buildPasswordResetCodeEmailText({
   return [
     `Hi ${firstName},`,
     "",
-    "Use this verification code to finish resetting your Vivah Bandhan password:",
+    "Use this verification code to finish resetting your FMLP Matrimony password:",
     "",
     verificationCode,
     "",
@@ -373,7 +373,7 @@ function buildRegistrationOtpEmailHtml({
           </div>
           <h1 style="margin:18px 0 8px;font-size:32px;line-height:1.15;color:#0f172a;">Verify your email</h1>
           <p style="margin:0;font-size:16px;line-height:1.7;color:#475569;">
-            Hi ${firstName}, use the OTP below to finish creating your Vivah Bandhan account.
+            Hi ${firstName}, use the OTP below to finish creating your FMLP Matrimony account.
           </p>
         </div>
 
@@ -402,7 +402,7 @@ function buildRegistrationOtpEmailText({
   return [
     `Hi ${firstName},`,
     "",
-    "Use this OTP to finish creating your Vivah Bandhan account:",
+    "Use this OTP to finish creating your FMLP Matrimony account:",
     "",
     verificationCode,
     "",
@@ -427,7 +427,7 @@ function buildPasswordChangedEmailHtml({
           </div>
           <h1 style="margin:18px 0 8px;font-size:32px;line-height:1.15;color:#0f172a;">Your password was changed</h1>
           <p style="margin:0;font-size:16px;line-height:1.7;color:#475569;">
-            Hi ${firstName}, your Vivah Bandhan password has been updated successfully.
+            Hi ${firstName}, your FMLP Matrimony password has been updated successfully.
           </p>
         </div>
 
@@ -463,7 +463,7 @@ function buildPasswordChangedEmailText({
   return [
     `Hi ${firstName},`,
     "",
-    "Your Vivah Bandhan password has been updated successfully.",
+    "Your FMLP Matrimony password has been updated successfully.",
     "",
     "If this was you, no further action is needed.",
     "",
@@ -480,7 +480,7 @@ export async function sendProfileCreatedEmail({
 }: ProfileCreatedEmailParams): Promise<SendEmailResult> {
   return sendTransactionalEmail({
     to,
-    subject: "Your Vivah Bandhan profile has been created",
+    subject: "Your FMLP Matrimony profile has been created",
     html: buildProfileCreatedEmailHtml({ recipientName, profileName }),
     text: buildProfileCreatedEmailText({ recipientName, profileName }),
     skippedReason:
@@ -496,7 +496,7 @@ export async function sendProfileLikedEmail({
 }: ProfileLikedEmailParams): Promise<SendEmailResult> {
   return sendTransactionalEmail({
     to,
-    subject: "Your profile was liked on Vivah Bandhan",
+    subject: "Your profile was liked on FMLP Matrimony",
     html: buildProfileLikedEmailHtml({ recipientName, likedByName }),
     text: buildProfileLikedEmailText({ recipientName, likedByName }),
     skippedReason:
@@ -513,7 +513,7 @@ export async function sendPasswordResetCodeEmail({
 }: PasswordResetCodeEmailParams): Promise<SendEmailResult> {
   return sendTransactionalEmail({
     to,
-    subject: "Your Vivah Bandhan password reset code",
+    subject: "Your FMLP Matrimony password reset code",
     html: buildPasswordResetCodeEmailHtml({
       recipientName,
       verificationCode,
@@ -538,7 +538,7 @@ export async function sendRegistrationOtpEmail({
 }: RegistrationOtpEmailParams): Promise<SendEmailResult> {
   return sendTransactionalEmail({
     to,
-    subject: "Your Vivah Bandhan registration OTP",
+    subject: "Your FMLP Matrimony registration OTP",
     html: buildRegistrationOtpEmailHtml({
       recipientName,
       verificationCode,
@@ -561,7 +561,7 @@ export async function sendPasswordChangedEmail({
 }: PasswordChangedEmailParams): Promise<SendEmailResult> {
   return sendTransactionalEmail({
     to,
-    subject: "Your Vivah Bandhan password was changed",
+    subject: "Your FMLP Matrimony password was changed",
     html: buildPasswordChangedEmailHtml({ recipientName }),
     text: buildPasswordChangedEmailText({ recipientName }),
     skippedReason:
@@ -570,3 +570,34 @@ export async function sendPasswordChangedEmail({
   });
 }
 
+export async function sendMobileSelfieLinkEmail({
+  to,
+  recipientName,
+  link,
+}: {
+  to: string;
+  recipientName?: string | null;
+  link: string;
+}): Promise<SendEmailResult> {
+  const name = recipientName || "User";
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+      <h2>Hello ${name},</h2>
+      <p>Please use the link below to securely capture and upload your selfie photos from your mobile device.</p>
+      <p><a href="${link}" style="display: inline-block; padding: 10px 20px; background-color: #e11d48; color: white; text-decoration: none; border-radius: 5px;">Capture Selfie</a></p>
+      <p>If the button doesn't work, copy and paste this link into your mobile browser:</p>
+      <p><a href="${link}">${link}</a></p>
+      <p>This link will expire in 15 minutes.</p>
+    </div>
+  `;
+  const text = `Hello ${name},\n\nPlease use this link to capture your selfie photos securely on your mobile device:\n${link}\n\nThis link will expire in 15 minutes.`;
+
+  return sendTransactionalEmail({
+    to,
+    subject: "Action Required: Capture your Selfie Photos",
+    html,
+    text,
+    skippedReason: "SMTP_USER / SMTP_PASS not configured. Selfie email skipped.",
+    errorContext: "Selfie mobile link email error",
+  });
+}

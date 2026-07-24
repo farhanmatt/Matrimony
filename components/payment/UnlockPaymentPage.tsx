@@ -13,6 +13,7 @@ interface UnlockPaymentPageProps {
   baseAmount: number;
   profileUnlockAmount: number;
   perProfileChatAmount: number;
+  isChatPaymentEnabled?: boolean;
   returnTo: string;
 }
 
@@ -22,6 +23,7 @@ export default function UnlockPaymentPage({
   baseAmount,
   profileUnlockAmount,
   perProfileChatAmount,
+  isChatPaymentEnabled = true,
   returnTo,
 }: UnlockPaymentPageProps) {
   const router = useRouter();
@@ -143,10 +145,12 @@ export default function UnlockPaymentPage({
                       <span>Profile unlock amount</span>
                       <span className="font-semibold">{formatCurrency(profileUnlockAmount)}</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span>Chat unlock amount</span>
-                      <span className="font-semibold">{formatCurrency(perProfileChatAmount)}</span>
-                    </div>
+                    {isChatPaymentEnabled && (
+                      <div className="flex items-center justify-between">
+                        <span>Chat unlock amount</span>
+                        <span className="font-semibold">{formatCurrency(perProfileChatAmount)}</span>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between border-t border-gray-200 pt-3 text-base">
                       <span className="font-semibold text-gray-900">Total</span>
                       <span className="font-bold text-rose-600">{formatCurrency(totalAmount)}</span>

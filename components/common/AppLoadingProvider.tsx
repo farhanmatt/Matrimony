@@ -151,10 +151,10 @@ export default function AppLoadingProvider({
 
     if (pendingCount > 0) {
       window.clearTimeout(hideTimer);
-      showTimer = window.setTimeout(() => setVisible(true), 120);
+      showTimer = window.setTimeout(() => setVisible(true), 300);
     } else {
       window.clearTimeout(showTimer);
-      hideTimer = window.setTimeout(() => setVisible(false), 180);
+      hideTimer = window.setTimeout(() => setVisible(false), 200);
     }
 
     return () => {
@@ -308,21 +308,6 @@ export default function AppLoadingProvider({
       >
         <div className="relative h-1 overflow-hidden bg-rose-100/70">
           <div className="app-loading-bar absolute inset-y-0 left-0 rounded-r-full bg-gradient-to-r from-rose-500 via-pink-500 to-rose-400" />
-        </div>
-      </div>
-
-      <div
-        role="status"
-        aria-live="polite"
-        className={`pointer-events-none fixed inset-0 z-[121] flex items-center justify-center px-6 transition-opacity duration-200 ${
-          visible ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        <div className="flex items-center gap-3 rounded-2xl border border-rose-100 bg-white/96 px-5 py-3 shadow-[0_24px_60px_rgba(15,23,42,0.14)] backdrop-blur">
-          <LoadingSpinner size="sm" />
-          <span className="text-sm font-medium text-slate-700">
-            Loading...
-          </span>
         </div>
       </div>
     </AppLoadingContext.Provider>

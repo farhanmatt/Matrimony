@@ -81,7 +81,7 @@ export default function FeaturesSection() {
     <section className="py-24 section-gradient" id="features">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="section-title">Why Vivah Bandhan?</h2>
+          <h2 className="section-title">Why FMLP Matrimony?</h2>
           <p className="section-subtitle mx-auto">
             Trusted by millions across India. Here&apos;s what makes us different.
           </p>

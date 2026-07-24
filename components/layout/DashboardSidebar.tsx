@@ -24,6 +24,7 @@ import {
   Unlock,
   User,
   X,
+  Activity,
 } from "lucide-react";
 import { cn, getInitials } from "@/lib/utils/helpers";
 import { useEffect, useRef, useState } from "react";
@@ -56,6 +57,7 @@ export default function DashboardSidebar({
   initialNotificationProfileId = null,
   initialNotifications = [],
   initialChatFeatureEnabled = true,
+  initialHealthDetailsEnabled = true,
 }: {
   initialUser: {
     id: string;
@@ -69,6 +71,7 @@ export default function DashboardSidebar({
   initialNotificationProfileId?: string | null;
   initialNotifications?: DashboardNotificationItem[];
   initialChatFeatureEnabled?: boolean;
+  initialHealthDetailsEnabled?: boolean;
 }) {
   const { data: session } = useSession();
   const pathname = usePathname();
@@ -217,7 +220,11 @@ export default function DashboardSidebar({
     label: "Support",
   };
 
-  const activeBaseNavItems = baseNavItems;
+  const activeBaseNavItems = [
+    ...baseNavItems.slice(0, 7), // Up to Unlocked Profiles
+    ...(initialHealthDetailsEnabled ? [{ href: "/dashboard/health", icon: Activity, label: "Health" }] : []),
+    ...baseNavItems.slice(7), // Preferences, Settings
+  ];
 
   const desktopNavItems = activeBaseNavItems.filter(
     (item) =>

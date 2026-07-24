@@ -52,12 +52,31 @@ export default function AdminSettingsPage() {
     setSaving(false);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
+  const renderSkeleton = () => (
+    <div className="max-w-xl pb-12 animate-pulse">
+      <div className="h-8 w-48 bg-slate-100 rounded-md mb-2" />
+      <div className="h-4 w-3/4 bg-slate-100 rounded-md mb-8" />
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden p-6 sm:p-8 space-y-8">
+        <div className="flex gap-4 border-b border-gray-100 pb-4">
+          <div className="h-6 w-24 bg-slate-100 rounded-md" />
+          <div className="h-6 w-24 bg-slate-100 rounded-md" />
+        </div>
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div className="h-4 w-32 bg-slate-100 rounded-md" />
+            <div className="h-12 w-full bg-slate-100 rounded-xl" />
+          </div>
+          <div className="space-y-4">
+            <div className="h-4 w-32 bg-slate-100 rounded-md" />
+            <div className="h-12 w-full bg-slate-100 rounded-xl" />
+          </div>
+        </div>
       </div>
-    );
+    </div>
+  );
+
+  if (loading) {
+    return renderSkeleton();
   }
 
   const total = baseAmount + profileAmount;

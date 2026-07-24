@@ -8,15 +8,17 @@ export const FALLBACK_ADMIN_SETTINGS = {
   perProfileChatAmount: 0,
   isChatPaymentEnabled: true,
   isChatFeatureEnabled: true,
+  isHealthDetailsEnabled: true,
   heroImageUrl: "/main.jpeg",
   logoImageUrl: "",
+  officialEmail: "support@fmlpmatrimony.com",
 };
 
 type AdminSettingsSnapshot = typeof FALLBACK_ADMIN_SETTINGS;
 
 function clientSupportsChatPaymentSettings() {
   const fields = Object.values(Prisma.AdminSettingsScalarFieldEnum);
-  return fields.includes("perProfileChatAmount") && fields.includes("isChatPaymentEnabled") && fields.includes("isChatFeatureEnabled");
+  return fields.includes("perProfileChatAmount") && fields.includes("isChatPaymentEnabled") && fields.includes("isChatFeatureEnabled") && fields.includes("isHealthDetailsEnabled") && fields.includes("officialEmail");
 }
 
 async function getLegacyAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot> {
@@ -35,9 +37,12 @@ async function getLegacyAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot> 
     return legacySettings
       ? {
           ...legacySettings,
+          ...legacySettings,
           perProfileChatAmount: 0,
           isChatPaymentEnabled: true,
           isChatFeatureEnabled: true,
+          isHealthDetailsEnabled: true,
+          officialEmail: "support@fmlpmatrimony.com",
         }
       : FALLBACK_ADMIN_SETTINGS;
   } catch (error) {
@@ -49,7 +54,7 @@ async function getLegacyAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot> 
 function errorMentionsNewFields(error: unknown) {
   return (
     error instanceof Error &&
-    (error.message.includes("perProfileChatAmount") || error.message.includes("isChatPaymentEnabled") || error.message.includes("isChatFeatureEnabled"))
+    (error.message.includes("perProfileChatAmount") || error.message.includes("isChatPaymentEnabled") || error.message.includes("isChatFeatureEnabled") || error.message.includes("isHealthDetailsEnabled") || error.message.includes("officialEmail"))
   );
 }
 
@@ -79,8 +84,10 @@ export async function getAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot>
         perProfileChatAmount: true,
         isChatPaymentEnabled: true,
         isChatFeatureEnabled: true,
+        isHealthDetailsEnabled: true,
         heroImageUrl: true,
         logoImageUrl: true,
+        officialEmail: true,
       },
     });
 

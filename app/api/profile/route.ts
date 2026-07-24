@@ -244,6 +244,11 @@ export async function POST(req: NextRequest) {
         });
       }
 
+      await tx.user.update({
+        where: { id: session.user.id },
+        data: { tempSelfieImages: [] },
+      });
+
       return createdProfile;
     });
 
@@ -280,7 +285,10 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error("Create profile error:", error);
-    return NextResponse.json({ error: "Failed to create profile" }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to create profile" }, 
+      { status: 500 }
+    );
   }
 }
 
@@ -331,6 +339,11 @@ export async function PUT(req: NextRequest) {
         });
       }
 
+      await tx.user.update({
+        where: { id: session.user.id },
+        data: { tempSelfieImages: [] },
+      });
+
       return { ...updatedProfile, profileUserId };
     });
 
@@ -347,6 +360,9 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ profile });
   } catch (error) {
     console.error("Update profile error:", error);
-    return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to update profile" }, 
+      { status: 500 }
+    );
   }
 }

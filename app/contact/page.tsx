@@ -2,15 +2,22 @@ import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Mail, Phone, MapPin, Clock } from "lucide-react";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Contact Us",
   description:
-    "Get in touch with the Vivah Bandhan support team. We're available 24/7 to help you with your matrimony journey.",
+    "Get in touch with the FMLP Matrimony support team. We're available 24/7 to help you with your matrimony journey.",
   alternates: { canonical: "/contact" },
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const settings = await prisma.adminSettings.findUnique({
+    where: { id: "singleton" },
+    select: { officialEmail: true },
+  });
+  const contactEmail = settings?.officialEmail || "support@fmlpmatrimony.com";
+
   return (
     <main>
       <Navbar />
@@ -28,10 +35,10 @@ export default function ContactPage() {
                       <Mail className="w-6 h-6 text-white/90" />
                     </div>
                     <a 
-                      href="mailto:Bagavath85@gmail.com" 
+                      href={`mailto:${contactEmail}`} 
                       className="text-2xl font-medium tracking-tight hover:text-rose-200 transition-colors"
                     >
-                      Bagavath85@gmail.com
+                      {contactEmail}
                     </a>
                   </div>
                   

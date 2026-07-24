@@ -7,15 +7,15 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export const metadata: Metadata = {
-  title: "Vivah Bandhan - Find Your Perfect Life Partner",
+  title: "FMLP Matrimony - Find Your Perfect Life Partner",
   description:
-    "Find your perfect life partner with Vivah Bandhan. Explore verified profiles, success stories, membership plans, and premium matchmaking support.",
+    "Find your perfect life partner with FMLP Matrimony. Explore verified profiles, success stories, membership plans, and premium matchmaking support.",
   alternates: { canonical: "/" },
   other: {
     "application/ld+json": JSON.stringify({
       "@context": "https://schema.org",
       "@type": "WebSite",
-      name: "Vivah Bandhan",
+      name: "FMLP Matrimony",
       url: process.env.NEXT_PUBLIC_APP_URL,
       description:
         "A trusted Indian matrimony platform connecting families and individuals through verified matchmaking.",
@@ -51,6 +51,7 @@ export default async function HomePage() {
       session={session}
       successStories={successStories}
       successStoriesUnavailable={successStoriesUnavailable}
+      officialEmail={branding.officialEmail}
     />
   );
 }
