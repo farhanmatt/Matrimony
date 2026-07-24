@@ -16,6 +16,7 @@ export const getCachedSiteBranding = unstable_cache(
     return {
       heroImageUrl: settings.heroImageUrl?.trim() || "/main.jpeg",
       logoImageUrl: settings.logoImageUrl?.trim() || "/default-logo.svg",
+      officialEmail: settings.officialEmail?.trim() || "support@fmlpmatrimony.com",
     };
   },
   ["site-branding"],

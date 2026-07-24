@@ -69,6 +69,7 @@ export default async function DashboardLayout({
         initialNotificationProfileId={notificationState.profileId}
         initialNotifications={notificationState.items}
         initialChatFeatureEnabled={adminSettings.isChatFeatureEnabled}
+        initialHealthDetailsEnabled={adminSettings.isHealthDetailsEnabled}
       />
       <main className="min-h-screen pt-[72px]">
         <div className="mx-auto max-w-[1600px] px-4 pt-3 pb-4 sm:px-6 sm:pt-4 sm:pb-6 lg:px-8 lg:pt-4 lg:pb-8">

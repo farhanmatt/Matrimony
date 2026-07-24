@@ -220,7 +220,10 @@ export default function BrowsePage() {
           ...(ageMax && { ageMax }),
         });
 
-        const res = await fetch(`/api/profiles?${params}`, { cache: "no-store" });
+        const res = await fetch(`/api/profiles?${params}`, { 
+          cache: "no-store",
+          headers: { "x-skip-loading": "1" }
+        });
         const data = await res.json();
 
         if (res.status === 403 && data.code === "PROFILE_REQUIRED") {

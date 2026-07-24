@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { headers } from "next/headers";
+
 import { formatDistanceToNow, subYears } from "date-fns";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -10,13 +11,16 @@ import { Prisma } from "@prisma/client";
 import type { ReactNode } from "react";
 import { isDatabaseConnectionError } from "@/lib/utils/errors";
 import { findUnlockForProfiles } from "@/lib/utils/matching";
+import { getAdminSettingsSnapshot } from "@/lib/utils/admin-settings";
 import {
+  Activity,
   ArrowLeft,
   BadgeCheck,
   Briefcase,
   ChevronsRight,
   Clock3,
   DatabaseZap,
+  Download,
   Globe2,
   GraduationCap,
   Home,
@@ -414,6 +418,7 @@ type DetailProfile = Prisma.ProfileGetPayload<{
         role: true;
       };
     };
+    healthDetails: true;
   };
 }>;
 type ViewerProfile = Prisma.ProfileGetPayload<{
@@ -479,6 +484,7 @@ export default async function ProfileDetailsPage({
     const query = browseQueryString ? `?${browseQueryString}` : "";
     return `/dashboard/profile/${profileId}${query}`;
   };
+  let adminSettings = await getAdminSettingsSnapshot();
   let dbUnavailable = false;
   let ownProfile: ViewerProfile | null = null;
   let profile: DetailProfile | null = null;
@@ -526,6 +532,7 @@ export default async function ProfileDetailsPage({
             role: true,
           },
         },
+        healthDetails: true,
       },
     });
 
@@ -705,6 +712,7 @@ export default async function ProfileDetailsPage({
     { id: "education", label: "Education & Career" },
     { id: "lifestyle", label: "Lifestyle" },
     ...(showHoroscopeSection ? [{ id: "horoscope", label: "Horoscope" }] : []),
+    ...(adminSettings.isHealthDetailsEnabled && profile.healthDetails ? [{ id: "health", label: "Health Details" }] : []),
   ];
   const primarySummary = profile.profession || profile.education || "Matrimony Member";
   const secondarySummary = profile.course || profile.education;
@@ -1024,6 +1032,32 @@ export default async function ProfileDetailsPage({
                     ]}
                   />
                 ) : null}
+
+                {adminSettings.isHealthDetailsEnabled && profile.healthDetails ? (
+                  <ProfileInfoCard
+                    id="health"
+                    icon={<Activity className="h-5 w-5" />}
+                    title="Health Details"
+                    delayMs={580}
+                    rows={[
+                      { label: "Blood Pressure", value: profile.healthDetails.bloodPressure },
+                      { label: "Diabetes", value: profile.healthDetails.diabetesStatus !== "No" && profile.healthDetails.diabetesStatus ? (profile.healthDetails.diabetesDetails ? `${profile.healthDetails.diabetesStatus} - ${profile.healthDetails.diabetesDetails}` : profile.healthDetails.diabetesStatus) : "No" },
+                      { 
+                        label: "Medical Report", 
+                        value: profile.healthDetails.medicalReportUrl ? (
+                          <a 
+                            href={profile.healthDetails.medicalReportUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="inline-flex items-center gap-1.5 text-sm font-medium text-rose-600 hover:text-rose-700 transition-colors"
+                          >
+                            <Download className="w-4 h-4" /> View / Download
+                          </a>
+                        ) : "Not Provided" 
+                      },
+                    ]}
+                  />
+                ) : null}
               </div>
             </div>
           </section>
@@ -1032,4 +1066,3 @@ export default async function ProfileDetailsPage({
     </div>
   );
 }
-

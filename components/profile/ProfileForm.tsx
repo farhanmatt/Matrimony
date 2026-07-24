@@ -49,6 +49,7 @@ import {
 } from "@/lib/validations/profile";
 import ImageUpload from "@/components/common/ImageUpload";
 import MultiImageUpload from "@/components/common/MultiImageUpload";
+import SelfieCapture from "@/components/profile/SelfieCapture";
 import {
   mapPreferenceSourceToBrowseFilters,
   writeStoredBrowseFilters,
@@ -1939,7 +1940,6 @@ export default function ProfileForm({
 
     if (isEdit) {
       toast.success("Profile updated successfully. Redirecting to home...");
-      await new Promise((resolve) => setTimeout(resolve, 900));
       router.replace("/dashboard");
       return;
     }
@@ -3390,8 +3390,22 @@ export default function ProfileForm({
           />
         ) : null}
       </div>
+      
+      <div className="pt-6 border-t border-gray-100">
+        <Controller
+          name="selfieImages"
+          control={control}
+          render={({ field }) => (
+            <SelfieCapture
+              value={field.value ?? []}
+              onChange={field.onChange}
+              error={errors.selfieImages?.message}
+            />
+          )}
+        />
+      </div>
 
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-gray-500 pt-4">
         You can upload photos now and update them later anytime from Edit Profile.
       </p>
     </div>

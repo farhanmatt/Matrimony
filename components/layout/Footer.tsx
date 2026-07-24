@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { Heart, Mail, Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+import { prisma } from "@/lib/prisma";
 
-export default function Footer() {
+export default async function Footer() {
+  const settings = await prisma.adminSettings.findUnique({
+    where: { id: "singleton" },
+    select: { officialEmail: true },
+  });
+  const contactEmail = settings?.officialEmail || "support@fmlpmatrimony.com";
   return (
     <footer className="bg-gray-950 text-gray-300">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
@@ -13,7 +19,7 @@ export default function Footer() {
                 <Heart className="w-5 h-5 text-white fill-white" />
               </div>
               <span className="font-display text-xl font-bold text-white">
-                Vivah Bandhan
+                FMLP Matrimony
               </span>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed mb-5">
@@ -88,8 +94,8 @@ export default function Footer() {
                   <Mail className="h-4 w-4" />
                 </div>
                 <div>
-                  <a href="mailto:Bagavath85@gmail.com" className="ui-link-shift text-[15px] font-medium text-gray-200 transition-colors hover:text-rose-400">
-                    Bagavath85@gmail.com
+                  <a href={`mailto:${contactEmail}`} className="ui-link-shift text-[15px] font-medium text-gray-200 transition-colors hover:text-rose-400">
+                    {contactEmail}
                   </a>
                   <p className="mt-2 text-xs leading-relaxed text-gray-500">
                     Have a question? We&apos;re here to help. Expect a response within 48 hours.
@@ -101,7 +107,7 @@ export default function Footer() {
         </div>
 
         <div className="ui-enter-up mt-12 flex flex-col items-center justify-between gap-4 border-t border-gray-800 pt-8 text-sm text-gray-500 sm:flex-row" style={{ animationDelay: "120ms" }}>
-          <p>© {new Date().getFullYear()} Vivah Bandhan. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} FMLP Matrimony. All rights reserved.</p>
           <p className="flex items-center gap-1">
             Made with <Heart className="ui-soft-float h-4 w-4 fill-rose-500 text-rose-500" /> in India
           </p>

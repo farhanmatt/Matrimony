@@ -158,7 +158,7 @@ function AdminLoginForm() {
             <div className="flex justify-center">
               <SiteLogo
                 src={logoImageUrl}
-                alt="Vivah Bandhan logo"
+                alt="FMLP Matrimony logo"
                 className="ui-soft-float h-14 max-w-[320px] sm:h-16 sm:max-w-[420px]"
               />
             </div>
@@ -328,7 +328,7 @@ function AdminLoginForm() {
         style={{ animationDelay: "500ms", animationFillMode: "forwards" }}
       >
         &copy; <span suppressHydrationWarning>{new Date().getFullYear()}</span>{" "}
-        Vivah Bandhan Administration System. All rights reserved.
+        FMLP Matrimony Administration System. All rights reserved.
       </p>
     </div>
   );

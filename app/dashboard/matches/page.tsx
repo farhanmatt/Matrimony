@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useDeferredValue, useEffect, useState } from "react";
 import EmptyState from "@/components/common/EmptyState";
 import { PageLoader } from "@/components/common/LoadingSpinner";
+import { SkeletonGrid } from "@/components/common/SkeletonCard";
 import MatchProfileCard from "@/components/dashboard/MatchProfileCard";
 import PaymentModal from "@/components/payment/PaymentModal";
 import { useAutoRefresh } from "@/lib/hooks/useAutoRefresh";
@@ -85,7 +86,7 @@ export default function MatchesPage() {
             setPricing({
               baseAmount: settingsData.settings.baseAmount,
               profileAmount: settingsData.settings.profileAmount,
-              perProfileChatAmount: settingsData.settings.perProfileChatAmount ?? 0,
+              perProfileChatAmount: settingsData.settings.isChatPaymentEnabled ? (settingsData.settings.perProfileChatAmount ?? 0) : 0,
             });
         }
       } catch (error) {
@@ -122,10 +123,6 @@ export default function MatchesPage() {
     }
   };
 
-  if (loading) {
-    return <PageLoader />;
-  }
-
   const recentCutoff = subDays(new Date(), 7);
   const normalizedSearch = deferredSearchTerm.trim().toLowerCase();
   const filteredMatches = matches.filter((match) => {
@@ -158,28 +155,6 @@ export default function MatchesPage() {
 
   const visibleMatches = filteredMatches.slice(0, visibleCount);
   const canLoadMore = visibleCount < filteredMatches.length;
-
-  if (matches.length === 0) {
-    return (
-      <EmptyState
-        icon="heart"
-        title={
-          unlockedMatchesCount > 0
-            ? "No pending mutual interests to unlock"
-            : "No mutual interests yet"
-        }
-        description={
-          unlockedMatchesCount > 0
-            ? "Profiles you unlocked have been moved to Unlocked Profiles."
-            : "Start liking profiles that interest you. When they like you back, you'll see a mutual interest here!"
-        }
-        action={{
-          label: unlockedMatchesCount > 0 ? "View Unlocked Profiles" : "Browse Profiles",
-          href: unlockedMatchesCount > 0 ? "/dashboard/unlocked" : "/dashboard/browse",
-        }}
-      />
-    );
-  }
 
   return (
     <div className="space-y-8">
@@ -251,13 +226,33 @@ export default function MatchesPage() {
         </div>
       </section>
 
-      {filteredMatches.length === 0 ? (
+      {loading ? (
+        <SkeletonGrid count={8} />
+      ) : matches.length === 0 ? (
+        <EmptyState
+          icon="heart"
+          title={
+            unlockedMatchesCount > 0
+              ? "No pending mutual interests to unlock"
+              : "No mutual interests yet"
+          }
+          description={
+            unlockedMatchesCount > 0
+              ? "Profiles you unlocked have been moved to Unlocked Profiles."
+              : "Start liking profiles that interest you. When they like you back, you'll see a mutual interest here!"
+          }
+          action={{
+            label: unlockedMatchesCount > 0 ? "View Unlocked Profiles" : "Browse Profiles",
+            href: unlockedMatchesCount > 0 ? "/dashboard/unlocked" : "/dashboard/browse",
+          }}
+        />
+      ) : filteredMatches.length === 0 ? (
         <section className="rounded-[28px] border border-rose-100 bg-white px-6 py-10 text-center shadow-sm">
           <h2 className="font-display text-[1.55rem] font-bold text-slate-900">
             No mutual interests found
           </h2>
-          <p className="mt-2 text-[15px] text-slate-500">
-            Try a different search or filter to see more mutual interests.
+          <p className="mt-2 text-slate-500">
+            Try adjusting your search or filters to find what you're looking for.
           </p>
         </section>
       ) : (

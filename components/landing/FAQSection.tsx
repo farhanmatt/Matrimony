@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils/helpers";
 
 const faqs = [
   {
-    q: "Is registration on Vivah Bandhan free?",
+    q: "Is registration on FMLP Matrimony free?",
     a: "Yes! Basic registration is completely free. You can create your profile, browse matches, and show interest at no cost. Payment is only required when you want to unlock a mutual match's full contact details.",
   },
   {
@@ -35,14 +35,16 @@ const faqs = [
   },
   {
     q: "How do I contact customer support?",
-    a: "You can reach us via email at support@vivahbandhan.com or call our toll-free number 1800-123-456. We're available 24/7 to assist you.",
+    a: "You can reach us via email at {email} or call our toll-free number 1800-123-456. We're available 24/7 to assist you.",
   },
 ];
 
 export default function FAQSection({
   showIntro = true,
+  officialEmail = "support@fmlpmatrimony.com",
 }: {
   showIntro?: boolean;
+  officialEmail?: string;
 }) {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
@@ -53,7 +55,7 @@ export default function FAQSection({
           <div className="text-center mb-16">
             <h2 className="section-title">Frequently Asked Questions</h2>
             <p className="section-subtitle mx-auto">
-              Everything you need to know about Vivah Bandhan.
+              Everything you need to know about FMLP Matrimony.
             </p>
           </div>
         ) : null}
@@ -85,7 +87,7 @@ export default function FAQSection({
                 )}
               >
                 <p className="px-6 pb-5 text-gray-600 text-sm leading-relaxed">
-                  {faq.a}
+                  {faq.a.replace("{email}", officialEmail)}
                 </p>
               </div>
             </div>

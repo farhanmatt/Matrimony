@@ -79,8 +79,10 @@ export default async function UnlockMatchPage({
     (settings as { profileUnlockAmount?: number } | null)?.profileUnlockAmount ??
     settings?.profileAmount ??
     500;
-  const perProfileChatAmount = (settings as { perProfileChatAmount?: number } | null)
-    ?.perProfileChatAmount ?? 0;
+  const isChatPaymentEnabled = settings?.isChatPaymentEnabled ?? true;
+  const perProfileChatAmount = isChatPaymentEnabled 
+    ? ((settings as { perProfileChatAmount?: number } | null)?.perProfileChatAmount ?? 0)
+    : 0;
 
   return (
     <UnlockPaymentPage
@@ -89,6 +91,7 @@ export default async function UnlockMatchPage({
       baseAmount={settings?.baseAmount ?? 500}
       profileUnlockAmount={profileUnlockAmount}
       perProfileChatAmount={perProfileChatAmount}
+      isChatPaymentEnabled={isChatPaymentEnabled}
       returnTo={returnTo}
     />
   );

@@ -52,8 +52,10 @@ export async function PUT(req: NextRequest) {
     perProfileChatAmount?: unknown;
     isChatPaymentEnabled?: unknown;
     isChatFeatureEnabled?: unknown;
+    isHealthDetailsEnabled?: unknown;
     heroImageUrl?: unknown;
     logoImageUrl?: unknown;
+    officialEmail?: unknown;
   };
 
   const updateData: {
@@ -62,8 +64,10 @@ export async function PUT(req: NextRequest) {
     perProfileChatAmount?: number;
     isChatPaymentEnabled?: boolean;
     isChatFeatureEnabled?: boolean;
+    isHealthDetailsEnabled?: boolean;
     heroImageUrl?: string;
     logoImageUrl?: string;
+    officialEmail?: string;
   } = {};
   const createData: {
     id: "singleton";
@@ -72,8 +76,10 @@ export async function PUT(req: NextRequest) {
     perProfileChatAmount: number;
     isChatPaymentEnabled: boolean;
     isChatFeatureEnabled: boolean;
+    isHealthDetailsEnabled: boolean;
     heroImageUrl?: string;
     logoImageUrl?: string;
+    officialEmail: string;
   } = {
     id: "singleton",
     baseAmount: 500,
@@ -81,6 +87,8 @@ export async function PUT(req: NextRequest) {
     perProfileChatAmount: 0,
     isChatPaymentEnabled: true,
     isChatFeatureEnabled: true,
+    isHealthDetailsEnabled: true,
+    officialEmail: "support@fmlpmatrimony.com",
   };
 
   if (Object.prototype.hasOwnProperty.call(body, "baseAmount")) {
@@ -123,6 +131,14 @@ export async function PUT(req: NextRequest) {
     createData.isChatFeatureEnabled = body.isChatFeatureEnabled;
   }
 
+  if (Object.prototype.hasOwnProperty.call(body, "isHealthDetailsEnabled")) {
+    if (typeof body.isHealthDetailsEnabled !== "boolean") {
+      return NextResponse.json({ error: "Invalid health details toggle" }, { status: 400 });
+    }
+    updateData.isHealthDetailsEnabled = body.isHealthDetailsEnabled;
+    createData.isHealthDetailsEnabled = body.isHealthDetailsEnabled;
+  }
+
   if (Object.prototype.hasOwnProperty.call(body, "heroImageUrl")) {
     if (typeof body.heroImageUrl !== "string") {
       return NextResponse.json({ error: "Invalid hero image URL" }, { status: 400 });
@@ -158,6 +174,18 @@ export async function PUT(req: NextRequest) {
     createData.logoImageUrl = logoImageUrl;
   }
 
+  if (Object.prototype.hasOwnProperty.call(body, "officialEmail")) {
+    if (typeof body.officialEmail !== "string") {
+      return NextResponse.json({ error: "Invalid official email" }, { status: 400 });
+    }
+    const email = body.officialEmail.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
+    }
+    updateData.officialEmail = email;
+    createData.officialEmail = email;
+  }
+
   if (Object.keys(updateData).length === 0) {
     return NextResponse.json({ error: "No settings provided" }, { status: 400 });
   }
@@ -171,9 +199,9 @@ export async function PUT(req: NextRequest) {
     });
   } catch (err: any) {
     // Check if the error is due to the new field not being in the client types yet
-    if (err.message?.includes("isChatPaymentEnabled") || err.message?.includes("isChatFeatureEnabled")) {
-      const { isChatPaymentEnabled: _, isChatFeatureEnabled: ___, ...safeUpdate } = updateData;
-      const { isChatPaymentEnabled: __, isChatFeatureEnabled: ____, ...safeCreate } = createData;
+    if (err.message?.includes("isChatPaymentEnabled") || err.message?.includes("isChatFeatureEnabled") || err.message?.includes("isHealthDetailsEnabled")) {
+      const { isChatPaymentEnabled: _, isChatFeatureEnabled: ___, isHealthDetailsEnabled: _hd, ...safeUpdate } = updateData;
+      const { isChatPaymentEnabled: __, isChatFeatureEnabled: ____, isHealthDetailsEnabled: __hd, ...safeCreate } = createData;
       
       settings = await prisma.adminSettings.upsert({
         where: { id: "singleton" },
@@ -198,6 +226,17 @@ export async function PUT(req: NextRequest) {
           await prisma.$executeRawUnsafe(
             `UPDATE "AdminSettings" SET "isChatFeatureEnabled" = $1 WHERE id = 'singleton'`,
             updateData.isChatFeatureEnabled ? 1 : 0
+          );
+        } catch (rawErr) {
+          console.error("Raw update failed:", rawErr);
+        }
+      }
+      
+      if (updateData.isHealthDetailsEnabled !== undefined) {
+        try {
+          await prisma.$executeRawUnsafe(
+            `UPDATE "AdminSettings" SET "isHealthDetailsEnabled" = $1 WHERE id = 'singleton'`,
+            updateData.isHealthDetailsEnabled ? 1 : 0
           );
         } catch (rawErr) {
           console.error("Raw update failed:", rawErr);
