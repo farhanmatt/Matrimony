@@ -266,6 +266,7 @@ const baseProfileSchema = z.object({
     "SEPARATED",
     "AWAITING_DIVORCE",
   ]),
+  hasConsented: z.boolean().default(false),
   isPhysicallyChallenged: z.boolean().default(false),
   disabilityType: z.string().max(100).optional().nullable(),
   phone: optionalPhone,
@@ -330,6 +331,7 @@ const baseProfileSchema = z.object({
     .max(4, "You can upload up to 4 selfie photos")
     .optional()
     .default([]),
+  selfieVideoUrl: z.string().url("Invalid selfie video URL").optional().nullable(),
 });
 
 export const profileSchema = baseProfileSchema.superRefine(

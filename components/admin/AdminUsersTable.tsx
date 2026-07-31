@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -16,6 +16,9 @@ import {
   Phone,
   Square,
   UserRound,
+  Trash2,
+  AlertTriangle,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import StatusBadge from "@/components/common/StatusBadge";
@@ -107,6 +110,10 @@ export default function AdminUsersTable({ users }: AdminUsersTableProps) {
   const bulkPanelRef = useRef<HTMLDivElement | null>(null);
   const actionTriggerRef = useRef<HTMLButtonElement | null>(null);
   const actionMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const selectedCount = selectedIds.length;
   const allSelected = visibleUsers.length > 0 && selectedCount === visibleUsers.length;
@@ -325,6 +332,34 @@ export default function AdminUsersTable({ users }: AdminUsersTableProps) {
     }
   };
 
+  const handleDeleteUser = async () => {
+    if (!userToDelete || isDeleting) return;
+    setIsDeleting(true);
+
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: userToDelete }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error ?? "Failed to delete user");
+        return;
+      }
+
+      toast.success("User deleted successfully");
+      setConfirmOpen(false);
+      setUserToDelete(null);
+      router.refresh();
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="px-4 pt-4 sm:px-4">
@@ -532,6 +567,19 @@ export default function AdminUsersTable({ users }: AdminUsersTableProps) {
                                   <Copy className="h-4 w-4 text-slate-500" />
                                   Copy user ID
                                 </button>
+                                <button
+                                  type="button"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    setUserToDelete(user.id);
+                                    setConfirmOpen(true);
+                                    setOpenActionRowId(null);
+                                  }}
+                                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Delete User
+                                </button>
                               </div>,
                               document.body,
                             )
@@ -605,6 +653,81 @@ export default function AdminUsersTable({ users }: AdminUsersTableProps) {
             : null}
         </div>
       </div>
+
+      {/* Delete User Confirmation Modal */}
+      {confirmOpen && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/50 px-4 py-6 backdrop-blur-[2px]"
+              onClick={(event) => {
+                if (event.target === event.currentTarget && !isDeleting) {
+                  setConfirmOpen(false);
+                  setUserToDelete(null);
+                }
+              }}
+            >
+              <div className="relative w-full max-w-md rounded-[28px] border border-rose-100 bg-white p-6 shadow-[0_28px_80px_rgba(15,23,42,0.22)] sm:p-7">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmOpen(false);
+                    setUserToDelete(null);
+                  }}
+                  className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-400 transition-colors hover:border-rose-200 hover:text-rose-500"
+                  aria-label="Close dialog"
+                  disabled={isDeleting}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+
+                <div className="mb-6 flex flex-col items-center text-center">
+                  <div className="mb-4 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+                    <AlertTriangle className="h-6 w-6" />
+                  </div>
+                  <h3 className="font-display text-[1.4rem] font-bold text-slate-900">
+                    Delete this user?
+                  </h3>
+                  <p className="mt-3 text-[15px] leading-7 text-slate-500">
+                    Are you sure you want to delete this user? This action cannot be undone.
+                  </p>
+                </div>
+
+                <div className="flex gap-3 sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConfirmOpen(false);
+                      setUserToDelete(null);
+                    }}
+                    disabled={isDeleting}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center rounded-[16px] border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDeleteUser}
+                    disabled={isDeleting}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-75"
+                  >
+                    {isDeleting ? (
+                      <>
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

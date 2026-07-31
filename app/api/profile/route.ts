@@ -232,6 +232,7 @@ export async function POST(req: NextRequest) {
           status: "ACTIVE",
           ...rest,
           location,
+          selfieVideoStatus: rest.selfieVideoUrl ? "PENDING" : null,
         },
       });
 
@@ -312,6 +313,16 @@ export async function PUT(req: NextRequest) {
     const { dateOfBirth, additionalPhotoUrls = [], preference, ...rest } = validated.data;
     const location = compactAddressLocation(rest.city, rest.state);
 
+    const existingProfile = await prisma.profile.findUnique({
+      where: { userId: session.user.id },
+      select: { selfieVideoUrl: true, selfieVideoStatus: true }
+    });
+
+    const videoStatus = 
+      rest.selfieVideoUrl && rest.selfieVideoUrl !== existingProfile?.selfieVideoUrl 
+        ? "PENDING" 
+        : (rest.selfieVideoUrl ? existingProfile?.selfieVideoStatus : null);
+
     const profile = await prisma.$transaction(async (tx) => {
       const updatedProfile = await tx.profile.update({
         where: { userId: session.user.id },
@@ -319,6 +330,7 @@ export async function PUT(req: NextRequest) {
           dateOfBirth: new Date(dateOfBirth),
           ...rest,
           location,
+          selfieVideoStatus: videoStatus,
         },
       });
 

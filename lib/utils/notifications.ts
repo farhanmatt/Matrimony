@@ -386,26 +386,28 @@ export async function getDashboardNotificationsForUser(userId: string): Promise<
       subtitle: like.fromProfile.profession ?? "Tap to view their interest.",
     })),
     ...unreadMessages,
-    ...profileNotifications.map((notification) => ({
-      id: notification.id,
-      kind: "message_rejected" as const,
-      createdAt: notification.createdAt.toISOString(),
-      href: `/dashboard/chat/${notification.actorProfile.id}`,
-      actorProfileId: notification.actorProfile.id,
-      actorName: notification.actorProfile.fullName,
-      actorProfession: notification.actorProfile.profession,
-      actorLocation: getLocation(
-        notification.actorProfile.city,
-        notification.actorProfile.state,
-        notification.actorProfile.location
-      ),
-      actorImageUrl: getNotificationActorImageUrl(notification.actorProfile),
-      title: getProfileNotificationTitle(
-        notification.kind,
-        notification.actorProfile.fullName
-      ),
-      subtitle: getProfileNotificationSubtitle(notification.kind),
-    })),
+    ...profileNotifications
+      .filter((notification): notification is typeof notification & { actorProfile: NonNullable<typeof notification.actorProfile> } => notification.actorProfile !== null)
+      .map((notification) => ({
+        id: notification.id,
+        kind: "message_rejected" as const,
+        createdAt: notification.createdAt.toISOString(),
+        href: `/dashboard/profile/${notification.actorProfile.id}`,
+        actorProfileId: notification.actorProfile.id,
+        actorName: notification.actorProfile.fullName,
+        actorProfession: notification.actorProfile.profession,
+        actorLocation: getLocation(
+          notification.actorProfile.city,
+          notification.actorProfile.state,
+          notification.actorProfile.location
+        ),
+        actorImageUrl: getNotificationActorImageUrl(notification.actorProfile),
+        title: getProfileNotificationTitle(
+          notification.kind,
+          notification.actorProfile.fullName
+        ),
+        subtitle: getProfileNotificationSubtitle(notification.kind),
+      })),
   ].sort(
     (left, right) =>
       new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()

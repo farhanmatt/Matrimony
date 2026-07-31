@@ -101,6 +101,8 @@ export default async function EditProfilePage() {
       .filter((photo) => !photo.isPrimary)
       .map((photo) => photo.url),
     horoscopeImage: profile.horoscopeImage ?? undefined,
+    selfieImages: profile.selfieImages ?? [],
+    selfieVideoUrl: profile.selfieVideoUrl ?? undefined,
     preference: profile.preference
       ? {
           ageMin: profile.preference.ageMin ?? undefined,
@@ -140,6 +142,7 @@ export default async function EditProfilePage() {
           defaultValues={defaultValues}
           isEdit
           profileUserId={profileUserId}
+          selfieVideoStatus={profile.selfieVideoStatus}
         />
       </div>
     </div>

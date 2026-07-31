@@ -50,6 +50,7 @@ import {
 import ImageUpload from "@/components/common/ImageUpload";
 import MultiImageUpload from "@/components/common/MultiImageUpload";
 import SelfieCapture from "@/components/profile/SelfieCapture";
+import SelfieVideoCapture from "@/components/profile/SelfieVideoCapture";
 import {
   mapPreferenceSourceToBrowseFilters,
   writeStoredBrowseFilters,
@@ -408,8 +409,9 @@ const emptyPreference: PreferenceInput = {
 interface ProfileFormProps {
   defaultValues?: Partial<ProfileFormInput>;
   isEdit?: boolean;
-  profileUserId?: string | null;
+  profileUserId?: string;
   inactiveProfileUpdatedAt?: number | null;
+  selfieVideoStatus?: string | null;
 }
 
 type PincodeLookupState = {
@@ -1266,8 +1268,9 @@ function ProfileCreatedSuccessModal({
 export default function ProfileForm({
   defaultValues,
   isEdit = false,
-  profileUserId = null,
-  inactiveProfileUpdatedAt = null,
+  profileUserId,
+  inactiveProfileUpdatedAt,
+  selfieVideoStatus,
 }: ProfileFormProps) {
   const router = useRouter();
   const { data: session, update } = useSession();
@@ -1413,6 +1416,7 @@ export default function ProfileForm({
   const isPhysicallyChallenged = watch("isPhysicallyChallenged");
   const selectedCaste = watch("caste");
   const selectedSubCaste = watch("subCaste");
+  const hasConsented = watch("hasConsented");
   const filteredCasteOptions = filterAutocompleteOptions(culturalSuggestions.castes, selectedCaste);
   const filteredSubCasteOptions = filterAutocompleteOptions(culturalSuggestions.subCastes, selectedSubCaste);
   const matchedStateOption = findMatchingStateOption(selectedState);
@@ -3405,8 +3409,23 @@ export default function ProfileForm({
         />
       </div>
 
+      <div className="pt-8 mt-8 border-t border-gray-100">
+        <Controller
+          name="selfieVideoUrl"
+          control={control}
+          render={({ field }) => (
+            <SelfieVideoCapture
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.selfieVideoUrl?.message}
+              status={selfieVideoStatus}
+            />
+          )}
+        />
+      </div>
+
       <p className="text-sm text-gray-500 pt-4">
-        You can upload photos now and update them later anytime from Edit Profile.
+        You can upload photos and videos now and update them later anytime from Edit Profile.
       </p>
     </div>
   );
@@ -3537,6 +3556,24 @@ export default function ProfileForm({
 
                     <div className="mt-8">{renderCreateStepContent()}</div>
 
+                    {!isEdit && isLastCreateStep && (
+                      <div className="mt-6 flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                        <div className="flex h-5 items-center">
+                          <input
+                            id="privacy-consent"
+                            type="checkbox"
+                            className="h-4 w-4 cursor-pointer rounded border-gray-300 text-rose-600 focus:ring-rose-600"
+                            {...register("hasConsented")}
+                          />
+                        </div>
+                        <div className="text-sm text-gray-700">
+                          <label htmlFor="privacy-consent" className="font-medium text-gray-900 cursor-pointer select-none">
+                            I agree to share my profile information with authorized third parties in accordance with the <Link href="/privacy" className="text-rose-600 hover:underline" target="_blank">Privacy Policy</Link> and <Link href="/terms" className="text-rose-600 hover:underline" target="_blank">Terms &amp; Conditions</Link>.
+                          </label>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="mt-8 flex flex-col gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex flex-col gap-3 sm:flex-row">
                         <button
@@ -3585,8 +3622,8 @@ export default function ProfileForm({
                           <button
                             type="button"
                             onClick={handleCreateProfile}
-                            disabled={isSubmitting}
-                            className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-7 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(244,63,94,0.28)] transition-all hover:shadow-[0_18px_40px_rgba(244,63,94,0.34)] disabled:opacity-70"
+                            disabled={isSubmitting || (!isEdit && !hasConsented)}
+                            className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-500 px-7 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(244,63,94,0.28)] transition-all hover:shadow-[0_18px_40px_rgba(244,63,94,0.34)] disabled:opacity-70 disabled:cursor-not-allowed"
                           >
                             {isSubmitting ? (
                               <>

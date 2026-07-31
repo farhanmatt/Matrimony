@@ -31,6 +31,8 @@ import {
   ShieldCheck,
   Unlock,
   Users,
+  Video,
+  AlertTriangle,
 } from "lucide-react";
 
 const sampleProfileImages = [
@@ -212,6 +214,68 @@ function getFallbackAvatar(gender?: string | null, index = 0) {
   return sampleProfileImages[index % sampleProfileImages.length];
 }
 
+function VideoStatusBanner({ status }: { status?: "PENDING" | "APPROVED" | "REJECTED" | null }) {
+  if (!status) return null;
+  
+  if (status === "APPROVED") {
+    return (
+      <div className="rounded-[18px] border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
+        <div className="flex items-start">
+          <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-emerald-100">
+            <ShieldCheck className="h-5 w-5 text-emerald-600" />
+          </div>
+          <div className="ml-3 flex-1">
+            <h3 className="text-[15px] font-bold text-emerald-900">Selfie Video Verified</h3>
+            <p className="mt-1 text-sm text-emerald-700">Your profile is marked as highly trusted, increasing your chances of finding a match.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "PENDING") {
+    return (
+      <div className="rounded-[18px] border border-amber-200 bg-amber-50 p-5 shadow-sm">
+        <div className="flex items-start">
+          <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-amber-100">
+            <Video className="h-5 w-5 text-amber-600" />
+          </div>
+          <div className="ml-3 flex-1">
+            <h3 className="text-[15px] font-bold text-amber-900">Video Verification Pending</h3>
+            <p className="mt-1 text-sm text-amber-700">Your selfie video is currently being reviewed by our team. This usually takes a few hours.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "REJECTED") {
+    return (
+      <div className="rounded-[18px] border border-rose-200 bg-rose-50 p-5 shadow-sm">
+        <div className="flex items-start">
+          <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-rose-100">
+            <AlertTriangle className="h-5 w-5 text-rose-600" />
+          </div>
+          <div className="ml-3 flex-1">
+            <h3 className="text-[15px] font-bold text-rose-900">Video Verification Failed</h3>
+            <p className="mt-1 text-sm text-rose-700">Your selfie video was rejected. Please ensure you are clearly visible and the video is up to 10 seconds.</p>
+            <div className="mt-3">
+              <Link
+                href="/dashboard/profile/edit"
+                className="text-sm font-semibold text-rose-700 hover:text-rose-800 underline underline-offset-2"
+              >
+                Re-record Selfie Video
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
 function getProfileCardImage(
   previewImageUrl?: string | null,
   gender?: string | null,
@@ -291,6 +355,8 @@ async function getDashboardHomeData(userId: string) {
         city: true,
         state: true,
         pincode: true,
+        selfieVideoStatus: true,
+        selfieVideoUrl: true,
         photos: {
           where: { isPrimary: true },
           select: { url: true, isPrimary: true },
@@ -712,6 +778,10 @@ export default async function DashboardPage() {
             </div>
           </div>
         </section>
+
+        {profile?.selfieVideoStatus && (
+          <VideoStatusBanner status={profile.selfieVideoStatus} />
+        )}
 
         <section
           className="ui-enter-up rounded-[30px] border border-gray-100 bg-white p-5 shadow-sm sm:p-6"

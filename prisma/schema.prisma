@@ -39,6 +39,12 @@ enum ProfileStatus {
   SUSPENDED
 }
 
+enum SelfieVideoStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum FamilyType {
   NUCLEAR
   JOINT
@@ -54,6 +60,8 @@ enum FamilyStatus {
 
 enum ProfileNotificationKind {
   MESSAGE_REQUEST_REJECTED
+  VIDEO_APPROVED
+  VIDEO_REJECTED
 }
 
 enum ChatStatus {
@@ -183,6 +191,7 @@ model Profile {
   height                 Float? // in cm
   nationality            String?
   maritalStatus          MaritalStatus @default(NEVER_MARRIED)
+  hasConsented           Boolean       @default(false)
   isPhysicallyChallenged Boolean       @default(false)
   disabilityType         String?
   phone                  String?
@@ -234,6 +243,8 @@ model Profile {
   profileImage   String?
   horoscopeImage String?
   selfieImages   String[] @default([])
+  selfieVideoUrl String?
+  selfieVideoStatus SelfieVideoStatus?
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -379,12 +390,12 @@ model ChatMessage {
 model ProfileNotification {
   id                 String                  @id @default(cuid())
   recipientProfileId String
-  actorProfileId     String
+  actorProfileId     String?
   kind               ProfileNotificationKind
   createdAt          DateTime                @default(now())
 
   recipientProfile Profile @relation("ProfileNotificationRecipient", fields: [recipientProfileId], references: [id], onDelete: Cascade)
-  actorProfile     Profile @relation("ProfileNotificationActor", fields: [actorProfileId], references: [id], onDelete: Cascade)
+  actorProfile     Profile? @relation("ProfileNotificationActor", fields: [actorProfileId], references: [id], onDelete: Cascade)
 
   @@index([recipientProfileId, createdAt])
   @@index([actorProfileId, createdAt])

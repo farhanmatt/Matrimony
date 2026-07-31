@@ -30,7 +30,7 @@ export default function SelfieCapture({ value = [], onChange, error }: SelfieCap
           if (res.ok) {
             const data = await res.json();
             if (data.selfies && data.selfies.length > 0) {
-              onChange(data.selfies);
+              onChange([...value, ...data.selfies].slice(0, 4));
             }
           }
         } catch (e) {
@@ -39,7 +39,7 @@ export default function SelfieCapture({ value = [], onChange, error }: SelfieCap
       }, 5000);
     }
     return () => clearInterval(interval);
-  }, [mobileLinkSent, value.length, onChange]);
+  }, [mobileLinkSent, value, onChange]);
 
   const capture = useCallback(async () => {
     if (value.length >= 4) {
@@ -194,16 +194,21 @@ export default function SelfieCapture({ value = [], onChange, error }: SelfieCap
           {value.map((url, index) => (
             <div key={url} className="relative group rounded-xl overflow-hidden aspect-[3/4] border border-gray-200 shadow-sm bg-gray-100">
               <Image src={url} alt={`Selfie ${index + 1}`} fill className="object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4">
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-start justify-end p-2">
                 <button
                   type="button"
-                  onClick={() => removeSelfie(url)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/90 backdrop-blur-sm text-white text-xs font-semibold rounded-lg hover:bg-rose-600 transition-colors"
+                  onClick={() => {
+                    if (window.confirm("Are you sure you want to remove this selfie?")) {
+                      removeSelfie(url);
+                    }
+                  }}
+                  className="p-2 bg-white/90 text-rose-600 rounded-full hover:bg-white hover:scale-110 transition-all shadow-sm backdrop-blur-sm"
+                  title="Remove Selfie"
                 >
-                  <Trash2 className="w-3.5 h-3.5" /> Remove
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
-              <div className="absolute top-2 right-2 bg-emerald-500/90 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1 shadow-sm">
+              <div className="absolute bottom-2 left-2 bg-emerald-500/90 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1 shadow-sm">
                 <CheckCircle2 className="w-3 h-3" /> Verified
               </div>
             </div>
