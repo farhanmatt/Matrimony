@@ -85,7 +85,8 @@ export default async function AdminNotificationsPage() {
               </div>
             </div>
           ) : (
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto pb-4">
+              <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-rose-100 bg-rose-50/40">
                   <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-900">
@@ -125,10 +126,11 @@ export default async function AdminNotificationsPage() {
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap text-gray-600">{item.createdAtLabel}</td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </AdminListCard>
       </div>

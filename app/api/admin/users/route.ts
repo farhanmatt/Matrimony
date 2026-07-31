@@ -50,3 +50,27 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({ data: users, total, page, limit, totalPages: Math.ceil(total / limit) });
 }
+
+// DELETE /api/admin/users
+export async function DELETE(req: NextRequest) {
+  const session = await auth();
+  const guard = adminGuard(session);
+  if (guard) return guard;
+
+  try {
+    const { userId } = await req.json();
+    if (!userId) {
+      return NextResponse.json({ error: "userId is required" }, { status: 400 });
+    }
+
+    // Delete user (Prisma cascade will handle related records like profile, photos, etc.)
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Admin user delete error:", error);
+    return NextResponse.json({ error: "Failed to delete user" }, { status: 500 });
+  }
+}

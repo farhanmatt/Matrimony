@@ -151,7 +151,7 @@ export default function ProfileCard({
             alt={`${profile.fullName} matrimony profile`}
             fill
             className={`ui-media-zoom object-cover transition-all duration-300 ${
-              blurPhotoPreview ? "blur-[5px] scale-105" : ""
+              blurPhotoPreview ? "blur-[2px] scale-105" : ""
             }`}
             style={{ objectPosition: "center 12%" }}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

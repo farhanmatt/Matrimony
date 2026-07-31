@@ -411,7 +411,7 @@ export default async function AdminUsersPage({
             })}
           />
         ) : (
-          <>
+          <div className="overflow-x-auto pb-4">
             <table className="w-full min-w-max table-auto text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/90">
@@ -445,7 +445,7 @@ export default async function AdminUsersPage({
             {users.length === 0 ? (
               <div className="py-12 text-center text-gray-400">No users found.</div>
             ) : null}
-          </>
+          </div>
         )}
       </AdminListCard>
     </div>

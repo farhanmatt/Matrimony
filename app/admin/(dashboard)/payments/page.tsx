@@ -331,7 +331,7 @@ export default async function AdminPaymentsPage({
             })}
           />
         ) : (
-          <>
+          <div className="overflow-x-auto pb-4">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
@@ -365,7 +365,7 @@ export default async function AdminPaymentsPage({
             {payments.length === 0 ? (
               <div className="py-12 text-center text-gray-400">No payments yet.</div>
             ) : null}
-          </>
+          </div>
         )}
       </AdminListCard>
     </div>

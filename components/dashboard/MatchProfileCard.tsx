@@ -128,7 +128,7 @@ export default function MatchProfileCard({
               fill
               className={cn(
                 "object-cover object-center opacity-20",
-                isUnlocked ? "blur-0 opacity-90" : "blur-xl scale-110"
+                isUnlocked ? "blur-0 opacity-90" : "blur-md scale-105"
               )}
               sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 25vw"
               quality={100}

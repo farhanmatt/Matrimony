@@ -19,6 +19,7 @@ import {
   Briefcase,
   ChevronsRight,
   Clock3,
+  CheckCircle2,
   DatabaseZap,
   Download,
   Globe2,
@@ -31,6 +32,7 @@ import {
   Sparkles,
   UserCircle2,
   Users,
+  Video,
 } from "lucide-react";
 import {
   calculateAge,
@@ -331,10 +333,12 @@ function buildProfilePhotoUrls(profile: {
   photos: { url: string; isPrimary: boolean }[];
   profileImage?: string | null;
   user?: { image?: string | null } | null;
+  selfieImages?: string[];
 }) {
   const orderedUrls = [
     profile.photos.find((photo) => photo.isPrimary)?.url ?? null,
     ...profile.photos.map((photo) => photo.url),
+    ...(profile.selfieImages ?? []),
     profile.profileImage ?? null,
     profile.user?.image ?? null,
   ];
@@ -1059,6 +1063,26 @@ export default async function ProfileDetailsPage({
                   />
                 ) : null}
               </div>
+              
+              {profile.selfieVideoUrl && profile.selfieVideoStatus === "APPROVED" && (
+                <div className="mt-8 pt-8 border-t border-gray-100 ui-enter-up" style={{ animationDelay: "640ms", animationFillMode: "forwards" }}>
+                  <div className="flex items-center gap-3 mb-6 px-1">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shadow-sm border border-emerald-100/50">
+                      <Video className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-display font-bold text-gray-900 tracking-tight">Verified Profile Video</h3>
+                      <p className="text-sm text-gray-500 mt-0.5">Watch a quick introduction from {profile.fullName.split(" ")[0]}.</p>
+                    </div>
+                  </div>
+                  <div className="relative overflow-hidden rounded-2xl aspect-video max-w-3xl border border-gray-200 shadow-[0_14px_34px_rgba(0,0,0,0.06)] bg-black group mx-auto">
+                    <video src={profile.selfieVideoUrl} controls playsInline className="w-full h-full object-contain" />
+                    <div className="absolute top-4 right-4 bg-emerald-500/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm z-10 transition-opacity opacity-100 group-hover:opacity-100 sm:opacity-0">
+                      <CheckCircle2 className="w-4 h-4" /> Identity Verified
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
         </div>
