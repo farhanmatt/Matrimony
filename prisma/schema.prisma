@@ -489,6 +489,15 @@ model AdminSettings {
   heroImageUrl         String   @default("/main.jpeg")
   logoImageUrl         String   @default("")
   officialEmail        String   @default("support@fmlpmatrimony.com")
+  doorNumber           String?
+  streetName           String?
+  roadName             String?
+  areaLocality         String?
+  city                 String?
+  district             String?
+  state                String?
+  pincode              String?
+  country              String?
   updatedAt            DateTime @updatedAt
 }
 

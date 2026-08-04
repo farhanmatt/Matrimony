@@ -52,6 +52,15 @@ export default async function HomePage() {
       successStories={successStories}
       successStoriesUnavailable={successStoriesUnavailable}
       officialEmail={branding.officialEmail}
+      doorNumber={branding.doorNumber}
+      streetName={branding.streetName}
+      roadName={branding.roadName}
+      areaLocality={branding.areaLocality}
+      city={branding.city}
+      district={branding.district}
+      state={branding.state}
+      pincode={branding.pincode}
+      country={branding.country}
     />
   );
 }

@@ -12,6 +12,15 @@ export const FALLBACK_ADMIN_SETTINGS = {
   heroImageUrl: "/main.jpeg",
   logoImageUrl: "",
   officialEmail: "support@fmlpmatrimony.com",
+  doorNumber: null as string | null,
+  streetName: null as string | null,
+  roadName: null as string | null,
+  areaLocality: null as string | null,
+  city: null as string | null,
+  district: null as string | null,
+  state: null as string | null,
+  pincode: null as string | null,
+  country: null as string | null,
 };
 
 type AdminSettingsSnapshot = typeof FALLBACK_ADMIN_SETTINGS;
@@ -43,6 +52,15 @@ async function getLegacyAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot> 
           isChatFeatureEnabled: true,
           isHealthDetailsEnabled: true,
           officialEmail: "support@fmlpmatrimony.com",
+          doorNumber: null,
+          streetName: null,
+          roadName: null,
+          areaLocality: null,
+          city: null,
+          district: null,
+          state: null,
+          pincode: null,
+          country: null,
         }
       : FALLBACK_ADMIN_SETTINGS;
   } catch (error) {
@@ -88,6 +106,15 @@ export async function getAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot>
         heroImageUrl: true,
         logoImageUrl: true,
         officialEmail: true,
+        doorNumber: true,
+        streetName: true,
+        roadName: true,
+        areaLocality: true,
+        city: true,
+        district: true,
+        state: true,
+        pincode: true,
+        country: true,
       },
     });
 
