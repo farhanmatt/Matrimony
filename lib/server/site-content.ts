@@ -11,12 +11,21 @@ import { toPublicLandingFeaturedProfile } from "@/lib/server/featured-profile-pr
 
 export const getCachedSiteBranding = unstable_cache(
   async () => {
-    const settings = await getAdminSettingsSnapshot();
+    const settings = await getAdminSettingsSnapshot() as any;
 
     return {
       heroImageUrl: settings.heroImageUrl?.trim() || "/main.jpeg",
       logoImageUrl: settings.logoImageUrl?.trim() || "/default-logo.svg",
       officialEmail: settings.officialEmail?.trim() || "support@fmlpmatrimony.com",
+      doorNumber: settings.doorNumber || null,
+      streetName: settings.streetName || null,
+      roadName: settings.roadName || null,
+      areaLocality: settings.areaLocality || null,
+      city: settings.city || null,
+      district: settings.district || null,
+      state: settings.state || null,
+      pincode: settings.pincode || null,
+      country: settings.country || null,
     };
   },
   ["site-branding"],

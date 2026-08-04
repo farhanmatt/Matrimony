@@ -272,6 +272,15 @@ interface FullLandingPageProps {
   successStories?: any[];
   successStoriesUnavailable?: boolean;
   officialEmail?: string;
+  doorNumber?: string | null;
+  streetName?: string | null;
+  roadName?: string | null;
+  areaLocality?: string | null;
+  city?: string | null;
+  district?: string | null;
+  state?: string | null;
+  pincode?: string | null;
+  country?: string | null;
 }
 
 export default function FullLandingPage({
@@ -282,6 +291,15 @@ export default function FullLandingPage({
   successStories = [],
   successStoriesUnavailable = false,
   officialEmail = "support@fmlpmatrimony.com",
+  doorNumber,
+  streetName,
+  roadName,
+  areaLocality,
+  city,
+  district,
+  state,
+  pincode,
+  country,
 }: FullLandingPageProps) {
   const socialLinks = [
     {
@@ -750,6 +768,29 @@ export default function FullLandingPage({
                       </p>
                     </div>
                   </li>
+                  {(doorNumber || streetName || roadName || areaLocality || city || district || state || pincode || country) && (
+                    <li className="flex items-start gap-3 mt-4">
+                      <div className="mt-0.5 h-4 w-4 shrink-0 flex items-center justify-center">
+                        <svg className="w-4 h-4 text-rose-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </div>
+                      <div className="max-w-xs text-sm text-rose-100/85">
+                        {[
+                          doorNumber,
+                          streetName,
+                          roadName,
+                          areaLocality,
+                          city,
+                          district,
+                          state,
+                          pincode,
+                          country
+                        ].filter(Boolean).join(', ')}
+                      </div>
+                    </li>
+                  )}
                 </ul>
               </div>
             </div>

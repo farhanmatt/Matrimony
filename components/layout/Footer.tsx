@@ -5,8 +5,8 @@ import { prisma } from "@/lib/prisma";
 export default async function Footer() {
   const settings = await prisma.adminSettings.findUnique({
     where: { id: "singleton" },
-    select: { officialEmail: true },
-  });
+    select: { officialEmail: true, doorNumber: true, streetName: true, roadName: true, areaLocality: true, city: true, district: true, state: true, pincode: true, country: true },
+  }) as any;
   const contactEmail = settings?.officialEmail || "support@fmlpmatrimony.com";
   return (
     <footer className="bg-gray-950 text-gray-300">
@@ -102,6 +102,29 @@ export default async function Footer() {
                   </p>
                 </div>
               </li>
+              {(settings?.doorNumber || settings?.streetName || settings?.roadName || settings?.areaLocality || settings?.city || settings?.district || settings?.state || settings?.pincode || settings?.country) && (
+                <li className="flex items-start gap-4 mt-4">
+                  <div className="ui-icon-lift mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-gray-800 text-rose-400 shrink-0">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div className="text-[13px] leading-relaxed text-gray-400">
+                    {[
+                      settings.doorNumber,
+                      settings.streetName,
+                      settings.roadName,
+                      settings.areaLocality,
+                      settings.city,
+                      settings.district,
+                      settings.state,
+                      settings.pincode,
+                      settings.country
+                    ].filter(Boolean).join(', ')}
+                  </div>
+                </li>
+              )}
             </ul>
           </div>
         </div>

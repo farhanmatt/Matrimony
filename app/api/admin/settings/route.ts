@@ -56,6 +56,15 @@ export async function PUT(req: NextRequest) {
     heroImageUrl?: unknown;
     logoImageUrl?: unknown;
     officialEmail?: unknown;
+    doorNumber?: unknown;
+    streetName?: unknown;
+    roadName?: unknown;
+    areaLocality?: unknown;
+    city?: unknown;
+    district?: unknown;
+    state?: unknown;
+    pincode?: unknown;
+    country?: unknown;
   };
 
   const updateData: {
@@ -68,6 +77,15 @@ export async function PUT(req: NextRequest) {
     heroImageUrl?: string;
     logoImageUrl?: string;
     officialEmail?: string;
+    doorNumber?: string | null;
+    streetName?: string | null;
+    roadName?: string | null;
+    areaLocality?: string | null;
+    city?: string | null;
+    district?: string | null;
+    state?: string | null;
+    pincode?: string | null;
+    country?: string | null;
   } = {};
   const createData: {
     id: "singleton";
@@ -80,6 +98,15 @@ export async function PUT(req: NextRequest) {
     heroImageUrl?: string;
     logoImageUrl?: string;
     officialEmail: string;
+    doorNumber?: string | null;
+    streetName?: string | null;
+    roadName?: string | null;
+    areaLocality?: string | null;
+    city?: string | null;
+    district?: string | null;
+    state?: string | null;
+    pincode?: string | null;
+    country?: string | null;
   } = {
     id: "singleton",
     baseAmount: 500,
@@ -178,12 +205,93 @@ export async function PUT(req: NextRequest) {
     if (typeof body.officialEmail !== "string") {
       return NextResponse.json({ error: "Invalid official email" }, { status: 400 });
     }
-    const email = body.officialEmail.trim();
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    const emailInput = body.officialEmail.trim();
+    if (!emailInput || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput)) {
       return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
     }
-    updateData.officialEmail = email;
-    createData.officialEmail = email;
+    updateData.officialEmail = emailInput;
+    createData.officialEmail = emailInput;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "doorNumber")) {
+    if (body.doorNumber !== undefined && body.doorNumber !== null && typeof body.doorNumber !== "string") {
+      return NextResponse.json({ error: "Invalid door number" }, { status: 400 });
+    }
+    const doorNumberInput = (body.doorNumber as string)?.trim() || null;
+    updateData.doorNumber = doorNumberInput;
+    createData.doorNumber = doorNumberInput;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "streetName")) {
+    if (body.streetName !== undefined && body.streetName !== null && typeof body.streetName !== "string") {
+      return NextResponse.json({ error: "Invalid street name" }, { status: 400 });
+    }
+    const streetNameInput = (body.streetName as string)?.trim() || null;
+    updateData.streetName = streetNameInput;
+    createData.streetName = streetNameInput;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "roadName")) {
+    if (body.roadName !== undefined && body.roadName !== null && typeof body.roadName !== "string") {
+      return NextResponse.json({ error: "Invalid road name" }, { status: 400 });
+    }
+    const roadNameInput = (body.roadName as string)?.trim() || null;
+    updateData.roadName = roadNameInput;
+    createData.roadName = roadNameInput;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "areaLocality")) {
+    if (body.areaLocality !== undefined && body.areaLocality !== null && typeof body.areaLocality !== "string") {
+      return NextResponse.json({ error: "Invalid area/locality" }, { status: 400 });
+    }
+    const input = (body.areaLocality as string)?.trim() || null;
+    updateData.areaLocality = input;
+    createData.areaLocality = input;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "city")) {
+    if (body.city !== undefined && body.city !== null && typeof body.city !== "string") {
+      return NextResponse.json({ error: "Invalid city" }, { status: 400 });
+    }
+    const input = (body.city as string)?.trim() || null;
+    updateData.city = input;
+    createData.city = input;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "district")) {
+    if (body.district !== undefined && body.district !== null && typeof body.district !== "string") {
+      return NextResponse.json({ error: "Invalid district" }, { status: 400 });
+    }
+    const input = (body.district as string)?.trim() || null;
+    updateData.district = input;
+    createData.district = input;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "state")) {
+    if (body.state !== undefined && body.state !== null && typeof body.state !== "string") {
+      return NextResponse.json({ error: "Invalid state" }, { status: 400 });
+    }
+    const input = (body.state as string)?.trim() || null;
+    updateData.state = input;
+    createData.state = input;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "pincode")) {
+    if (body.pincode !== undefined && body.pincode !== null && typeof body.pincode !== "string") {
+      return NextResponse.json({ error: "Invalid pincode" }, { status: 400 });
+    }
+    const input = (body.pincode as string)?.trim() || null;
+    updateData.pincode = input;
+    createData.pincode = input;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "country")) {
+    if (body.country !== undefined && body.country !== null && typeof body.country !== "string") {
+      return NextResponse.json({ error: "Invalid country" }, { status: 400 });
+    }
+    const input = (body.country as string)?.trim() || null;
+    updateData.country = input;
+    createData.country = input;
   }
 
   if (Object.keys(updateData).length === 0) {
