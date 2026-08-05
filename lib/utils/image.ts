@@ -106,3 +106,39 @@ export function getWatermarkedCloudinaryUrl(url: string, watermarkText = "FMLP M
   // Insert the parameters right after "/upload/"
   return url.replace("/upload/", `/upload/${watermarkParams}/`);
 }
+
+export function getPdfCloudinaryUrl(url: string | null | undefined) {
+  if (!url || typeof url !== "string" || !url.includes("res.cloudinary.com") || !url.includes("/upload/")) {
+    return url || "";
+  }
+  
+  // If the file was uploaded as raw, transformations are invalid.
+  if (url.includes("/raw/upload/")) {
+    return url.replace("/fl_attachment/", "/");
+  }
+  
+  // For PDF files on Cloudinary free tier, direct PDF delivery is restricted (returns 401).
+  // The official workaround is to deliver the PDF as an image (e.g. using f_auto).
+  // We remove fl_attachment (if present) and insert f_auto,q_auto to render it securely in the browser.
+  let safeUrl = url;
+  if (safeUrl.includes("fl_attachment")) {
+    safeUrl = safeUrl.replace("fl_attachment/", "").replace("/fl_attachment", "");
+  }
+  
+  if (safeUrl.includes("/image/upload/") && !safeUrl.includes("f_auto")) {
+    return safeUrl.replace("/image/upload/", "/image/upload/f_auto,q_auto/");
+  }
+  
+  return safeUrl;
+}
+
+export function getPdfPageUrl(url: string | null | undefined, pageNum: number) {
+  const safeUrl = getPdfCloudinaryUrl(url);
+  
+  // Only apply page transformation if it's a Cloudinary image URL and has f_auto
+  if (safeUrl.includes("/image/upload/f_auto,q_auto/")) {
+     return safeUrl.replace("/image/upload/f_auto,q_auto/", `/image/upload/pg_${pageNum},f_auto,q_auto/`);
+  }
+  
+  return safeUrl;
+}

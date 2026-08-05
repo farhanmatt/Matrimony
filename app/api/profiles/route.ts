@@ -7,6 +7,7 @@ import {
   createFeaturedProfilePreviewToken,
   getFeaturedProfilePreviewSource,
 } from "@/lib/server/featured-profile-preview";
+import { getAdminSettingsSnapshot } from "@/lib/utils/admin-settings";
 
 const DEFAULT_PROFILE_PAGE_SIZE = 12;
 const MAX_PROFILE_PAGE_SIZE = 24;
@@ -155,7 +156,7 @@ export async function GET(req: NextRequest) {
           ? { fullName: "asc" }
           : { createdAt: "desc" };
 
-  const [profiles, total] = await Promise.all([
+  const [profiles, total, healthRequestsRaw] = await Promise.all([
     prisma.profile.findMany({
       where,
       skip: (page - 1) * limit,
@@ -183,11 +184,34 @@ export async function GET(req: NextRequest) {
             publicId: true,
           },
         },
+        user: {
+          select: {
+            payments: {
+              where: { status: "PAID" },
+              take: 1,
+              select: { id: true },
+            },
+          },
+        },
+        viewsReceived: {
+          where: { viewerId: currentUserProfile.id },
+          take: 1,
+          select: { id: true },
+        },
       },
       orderBy,
     }),
     prisma.profile.count({ where }),
+    prisma.$queryRaw<{ recipientId: string, status: string }[]>`
+      SELECT "recipientId", "status"
+      FROM "HealthRequest"
+      WHERE "requesterId" = ${currentUserProfile.id}
+    `
   ]);
+
+  const healthRequestStatusMap = new Map(
+    healthRequestsRaw.map(req => [req.recipientId, req.status])
+  );
 
   const data = profiles.map((profile) => {
     const previewSource = getFeaturedProfilePreviewSource(profile);
@@ -216,8 +240,13 @@ export async function GET(req: NextRequest) {
       previewImageUrl: previewToken
         ? `/api/profiles/preview/${encodeURIComponent(previewToken)}`
         : null,
+      healthRequestStatus: healthRequestStatusMap.get(profile.id) ?? null,
+      isPremium: (profile.user?.payments?.length ?? 0) > 0,
+      isNew: (profile.viewsReceived?.length ?? 0) === 0,
     };
   });
+
+  const { isHealthDetailsEnabled } = await getAdminSettingsSnapshot();
 
   return NextResponse.json({
     data,
@@ -225,5 +254,6 @@ export async function GET(req: NextRequest) {
     page,
     limit,
     totalPages: Math.ceil(total / limit),
+    isHealthDetailsEnabled: isHealthDetailsEnabled ?? true,
   });
 }

@@ -128,7 +128,8 @@ function getProfileNotificationFindMany() {
     }
   ).profileNotification;
 
-  return delegate?.findMany;
+  // Force raw SQL fallback to bypass outdated Prisma engine enum validation
+  return undefined as unknown as typeof delegate.findMany;
 }
 
 async function getProfileNotificationsForRecipient(
@@ -182,7 +183,7 @@ async function getProfileNotificationsForRecipient(
   const actorProfiles = await prisma.profile.findMany({
     where: {
       id: {
-        in: rawNotifications.map((notification) => notification.actorProfileId),
+        in: rawNotifications.map((notification) => notification.actorProfileId).filter(Boolean) as string[],
       },
     },
     select: notificationActorSelect,
@@ -225,7 +226,8 @@ async function createProfileNotification(
     }
   ).profileNotification?.create;
 
-  if (createWithDelegate) {
+  // Force raw SQL fallback to bypass outdated Prisma engine enum validation
+  if (false && createWithDelegate) {
     await createWithDelegate({
       data: {
         recipientProfileId,

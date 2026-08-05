@@ -203,7 +203,7 @@ function getPublicFeaturedProfileLocation(
 }
 
 export function getFeaturedProfilePreviewUrl(token: string) {
-  return `${FEATURED_PROFILE_PREVIEW_ROUTE}/${encodeURIComponent(token)}`;
+  return `${FEATURED_PROFILE_PREVIEW_ROUTE}/${encodeURIComponent(token)}?v=2`;
 }
 
 export function getFeaturedProfileNameLabelUrl(token: string) {

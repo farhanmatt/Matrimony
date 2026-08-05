@@ -81,6 +81,8 @@ interface Profile {
   state: string | null;
   religion: string | null;
   previewImageUrl: string | null;
+  isPremium?: boolean;
+  isNew?: boolean;
 }
 
 
@@ -118,6 +120,7 @@ export default function BrowsePage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [profileRequired, setProfileRequired] = useState(false);
   const [hiddenProfileIds, setHiddenProfileIds] = useState<string[]>([]);
+  const [isHealthDetailsEnabled, setIsHealthDetailsEnabled] = useState(true);
   const [preferenceFiltersReady, setPreferenceFiltersReady] = useState(false);
   const emptyPreferencePayload = {
     ageMin: null,
@@ -238,6 +241,7 @@ export default function BrowsePage() {
           throw new Error(data.error ?? "Failed to load profiles");
         }
 
+        setIsHealthDetailsEnabled(data.isHealthDetailsEnabled ?? true);
         setProfileRequired(false);
         const nextProfiles = (data.data ?? []).filter(
           (profile: Profile) => !hiddenProfileIds.includes(profile.id)
@@ -1033,9 +1037,10 @@ export default function BrowsePage() {
                   >
                     <BrowseProfileCard
                       profile={profile}
-                      badge={index % 5 === 2 || index % 5 === 4 ? "Premium" : "New"}
+                      badge={profile.isPremium ? "Premium" : profile.isNew ? "New" : undefined}
                       onLike={handleProfileLike}
                       profileHref={buildProfileHref(profile.id)}
+                      isHealthDetailsEnabled={isHealthDetailsEnabled}
                     />
                   </div>
                 ))}

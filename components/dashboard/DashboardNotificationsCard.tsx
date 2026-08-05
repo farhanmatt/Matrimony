@@ -1,10 +1,13 @@
 "use client";
 
-import { Heart } from "lucide-react";
+import { Heart, Activity } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
-type NotificationItem = {
+export type NotificationItem = {
   id: string;
+  type?: "LIKE" | "HEALTH_REQUEST";
   title: string;
   subtitle: string;
   time: string;
@@ -17,16 +20,58 @@ type DashboardNotificationsCardProps = {
 const DEFAULT_VISIBLE_NOTIFICATIONS = 3;
 
 function NotificationRow({ item }: { item: NotificationItem }) {
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleAction = async (status: "ACCEPTED" | "REJECTED") => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/health-requests/${item.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+      if (!res.ok) throw new Error("Action failed");
+      toast.success(`Request ${status.toLowerCase()}!`);
+      router.refresh();
+    } catch (err) {
+      toast.error("Failed to update request");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isHealth = item.type === "HEALTH_REQUEST";
+
   return (
     <div className="rounded-[20px] transition-transform duration-300 hover:translate-x-1">
       <div className="flex items-start gap-3">
-        <div className="ui-icon-lift flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
-          <Heart className="h-4.5 w-4.5" />
+        <div className={`ui-icon-lift flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${isHealth ? 'bg-sky-50 text-sky-500' : 'bg-rose-50 text-rose-500'}`}>
+          {isHealth ? <Activity className="h-4.5 w-4.5" /> : <Heart className="h-4.5 w-4.5" />}
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-[13px] font-semibold leading-5 text-gray-900">{item.title}</p>
           <p className="text-[11px] leading-4 text-gray-500">{item.subtitle}</p>
           <p className="mt-1 text-[10px] font-medium text-gray-400">{item.time}</p>
+          
+          {isHealth && (
+            <div className="mt-2 flex items-center gap-2">
+              <button
+                onClick={() => handleAction("ACCEPTED")}
+                disabled={loading}
+                className="flex-1 rounded-lg bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-600 transition-colors hover:bg-emerald-100 disabled:opacity-50"
+              >
+                Accept
+              </button>
+              <button
+                onClick={() => handleAction("REJECTED")}
+                disabled={loading}
+                className="flex-1 rounded-lg bg-rose-50 px-3 py-1.5 text-[11px] font-semibold text-rose-600 transition-colors hover:bg-rose-100 disabled:opacity-50"
+              >
+                Reject
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

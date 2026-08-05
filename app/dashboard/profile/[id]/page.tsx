@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 import { isDatabaseConnectionError } from "@/lib/utils/errors";
 import { findUnlockForProfiles } from "@/lib/utils/matching";
 import { getAdminSettingsSnapshot } from "@/lib/utils/admin-settings";
+import { getPdfCloudinaryUrl } from "@/lib/utils/image";
 import {
   Activity,
   ArrowLeft,
@@ -22,6 +23,7 @@ import {
   CheckCircle2,
   DatabaseZap,
   Download,
+  FileText,
   Globe2,
   GraduationCap,
   Home,
@@ -1046,18 +1048,19 @@ export default async function ProfileDetailsPage({
                     rows={[
                       { label: "Blood Pressure", value: profile.healthDetails.bloodPressure },
                       { label: "Diabetes", value: profile.healthDetails.diabetesStatus !== "No" && profile.healthDetails.diabetesStatus ? (profile.healthDetails.diabetesDetails ? `${profile.healthDetails.diabetesStatus} - ${profile.healthDetails.diabetesDetails}` : profile.healthDetails.diabetesStatus) : "No" },
-                      { 
-                        label: "Medical Report", 
+                      { label: "Diabetes Details", value: profile.healthDetails.diabetesDetails },
+                      {
+                        label: "Medical Report",
                         value: profile.healthDetails.medicalReportUrl ? (
-                          <a 
-                            href={profile.healthDetails.medicalReportUrl} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="inline-flex items-center gap-1.5 text-sm font-medium text-rose-600 hover:text-rose-700 transition-colors"
+                          <a
+                            href={profile.healthDetails.medicalReportUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-rose-600 hover:underline flex items-center gap-1"
                           >
-                            <Download className="w-4 h-4" /> View / Download
+                            <FileText className="h-4 w-4" /> View Report
                           </a>
-                        ) : "Not Provided" 
+                        ) : null,
                       },
                     ]}
                   />

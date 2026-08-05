@@ -143,34 +143,17 @@ export async function GET(_request: Request, context: RouteContext) {
       ),
     ]);
 
-    const renderedImage = unlock
-      ? await sharp(imageBuffer)
-          .rotate()
-          .resize(480, 560, {
-            fit: "cover",
-            position: "centre",
-          })
-          .jpeg({
-            quality: 78,
-            mozjpeg: true,
-          })
-          .toBuffer()
-      : await sharp(imageBuffer)
-          .rotate()
-          .resize(480, 560, {
-            fit: "cover",
-            position: "centre",
-          })
-          .blur(20)
-          .modulate({
-            brightness: 0.92,
-            saturation: 0.88,
-          })
-          .jpeg({
-            quality: 44,
-            mozjpeg: true,
-          })
-          .toBuffer();
+    const renderedImage = await sharp(imageBuffer)
+      .rotate()
+      .resize(480, 560, {
+        fit: "cover",
+        position: "centre",
+      })
+      .jpeg({
+        quality: 78,
+        mozjpeg: true,
+      })
+      .toBuffer();
 
     return buildImageResponse(renderedImage);
   } catch (error) {
