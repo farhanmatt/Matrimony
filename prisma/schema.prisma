@@ -62,6 +62,15 @@ enum ProfileNotificationKind {
   MESSAGE_REQUEST_REJECTED
   VIDEO_APPROVED
   VIDEO_REJECTED
+  HEALTH_REQUEST_RECEIVED
+  HEALTH_REQUEST_ACCEPTED
+  HEALTH_REQUEST_REJECTED
+}
+
+enum HealthRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
 
 enum ChatStatus {
@@ -178,6 +187,20 @@ model PendingRegistration {
 
 // ─── Profile ─────────────────────────────────────────────────────────────────
 
+model ProfileView {
+  id        String   @id @default(cuid())
+  viewerId  String
+  viewedId  String
+  createdAt DateTime @default(now())
+
+  viewer Profile @relation("ProfileViewsGiven", fields: [viewerId], references: [id], onDelete: Cascade)
+  viewed Profile @relation("ProfileViewsReceived", fields: [viewedId], references: [id], onDelete: Cascade)
+
+  @@unique([viewerId, viewedId])
+  @@index([viewerId])
+  @@index([viewedId])
+}
+
 model Profile {
   id            String        @id @default(cuid())
   userId        String        @unique
@@ -254,6 +277,8 @@ model Profile {
   photos                ProfilePhoto[]
   preference            Preference?
   healthDetails         HealthDetails?
+  viewsGiven            ProfileView[]         @relation("ProfileViewsGiven")
+  viewsReceived         ProfileView[]         @relation("ProfileViewsReceived")
   likesSent             Like[]                @relation("LikeFrom")
   likesReceived         Like[]                @relation("LikeTo")
   matchesAsA            Match[]               @relation("MatchProfileA")
@@ -263,6 +288,8 @@ model Profile {
   sentChatMessages      ChatMessage[]         @relation("ChatMessageSender")
   receivedNotifications ProfileNotification[] @relation("ProfileNotificationRecipient")
   authoredNotifications ProfileNotification[] @relation("ProfileNotificationActor")
+  healthRequestsSent     HealthRequest[] @relation("HealthRequestFrom")
+  healthRequestsReceived HealthRequest[] @relation("HealthRequestTo")
 
   @@index([gender])
   @@index([religion])
@@ -555,4 +582,20 @@ model HealthDetails {
   updatedAt DateTime @updatedAt
 
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model HealthRequest {
+  id              String   @id @default(cuid())
+  requesterId     String
+  recipientId     String
+  status          HealthRequestStatus @default(PENDING)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  requester Profile @relation("HealthRequestFrom", fields: [requesterId], references: [id], onDelete: Cascade)
+  recipient Profile @relation("HealthRequestTo", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, recipientId])
+  @@index([requesterId])
+  @@index([recipientId])
 }

@@ -1,10 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
+  Activity,
   BadgeCheck,
   Briefcase,
   GraduationCap,
@@ -12,6 +14,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { toast } from "sonner";
+import HealthDetailsModal from "./HealthDetailsModal";
 import {
   calculateAge,
   cmToFeetInches,
@@ -35,10 +38,12 @@ interface BrowseProfileCardProps {
     state: string | null;
     religion: string | null;
     previewImageUrl: string | null;
+    healthRequestStatus?: "PENDING" | "ACCEPTED" | "REJECTED" | null;
   };
   badge?: "New" | "Premium";
   profileHref: string;
   onLike?: (profileId: string) => void;
+  isHealthDetailsEnabled?: boolean;
 }
 
 export default function BrowseProfileCard({
@@ -46,15 +51,21 @@ export default function BrowseProfileCard({
   badge = "New",
   profileHref: _profileHref,
   onLike,
+  isHealthDetailsEnabled = true,
 }: BrowseProfileCardProps) {
   const [liked, setLiked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
+  const [healthStatus, setHealthStatus] = useState(profile.healthRequestStatus);
+  const [healthLoading, setHealthLoading] = useState(false);
+  const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
+
   useEffect(() => {
     setLiked(false);
     setConfirmOpen(false);
-  }, [profile.id]);
+    setHealthStatus(profile.healthRequestStatus);
+  }, [profile.id, profile.healthRequestStatus]);
 
   useEffect(() => {
     if (!confirmOpen) return;
@@ -119,9 +130,54 @@ export default function BrowseProfileCard({
     setConfirmOpen(true);
   };
 
+  const handleHealthReqClick = async (e: ReactMouseEvent) => {
+    e.stopPropagation();
+    if (healthStatus === "ACCEPTED") {
+      setIsHealthModalOpen(true);
+      return;
+    }
+    if (healthStatus === "PENDING" || healthLoading) return;
+
+    setHealthLoading(true);
+    try {
+      const res = await fetch("/api/health-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recipientId: profile.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      setHealthStatus("PENDING");
+      toast.success("Health request sent!");
+    } catch (err) {
+      toast.error("Failed to send health request");
+    } finally {
+      setHealthLoading(false);
+    }
+  };
+
+  const getHealthBtnLabel = () => {
+    if (healthStatus === "ACCEPTED") return "View Health";
+    if (healthStatus === "PENDING") return "Request Sent";
+    return "Health Req";
+  };
+
+  const handleCardClick = () => {
+    if (badge === "New") {
+      fetch("/api/profile/view", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ viewedProfileId: profile.id }),
+      }).catch(console.error);
+    }
+  };
+
   return (
     <>
-      <div
+      <Link 
+        href={_profileHref}
+        onClick={handleCardClick}
         className="ui-card-lift group flex h-full flex-col overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)]"
       >
         <div className="relative h-[184px] overflow-hidden bg-[linear-gradient(135deg,#fff2f6_0%,#ffe7ee_55%,#ffeef4_100%)]">
@@ -130,7 +186,7 @@ export default function BrowseProfileCard({
               src={primaryPhoto}
               alt="Protected matrimony profile preview"
               fill
-              className="ui-media-zoom scale-[1.04] object-cover object-center blur-[2px]"
+              className="ui-media-zoom scale-[1.04] object-cover object-center"
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, (max-width: 1536px) 25vw, 20vw"
               quality={75}
               unoptimized
@@ -219,8 +275,28 @@ export default function BrowseProfileCard({
               </span>
             ) : null}
           </div>
+
+          {isHealthDetailsEnabled && (
+            <div className="mt-4 border-t border-rose-50 pt-4">
+              <button
+                onClick={handleHealthReqClick}
+                disabled={healthLoading || healthStatus === "PENDING"}
+                className={cn(
+                  "flex w-full items-center justify-center gap-2 rounded-[12px] px-4 py-2.5 text-[13px] font-semibold transition-all",
+                  healthStatus === "ACCEPTED"
+                    ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                    : healthStatus === "PENDING"
+                    ? "cursor-not-allowed bg-slate-50 text-slate-400"
+                    : "bg-rose-50 text-rose-600 hover:bg-rose-100"
+                )}
+              >
+                <Activity className="h-4 w-4" />
+                {healthLoading ? "Sending..." : getHealthBtnLabel()}
+              </button>
+            </div>
+          )}
         </div>
-      </div>
+      </Link>
 
       {confirmOpen && typeof document !== "undefined"
         ? createPortal(
@@ -268,6 +344,13 @@ export default function BrowseProfileCard({
             document.body
           )
         : null}
+
+      <HealthDetailsModal
+        isOpen={isHealthModalOpen}
+        onClose={() => setIsHealthModalOpen(false)}
+        profileId={profile.id}
+        profileName={profile.fullName}
+      />
     </>
   );
 }

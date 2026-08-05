@@ -111,13 +111,8 @@ export async function GET(_request: Request, context: RouteContext) {
         fit: "cover",
         position: "centre",
       })
-      .blur(22)
-      .modulate({
-        brightness: 0.92,
-        saturation: 0.88,
-      })
       .jpeg({
-        quality: 48,
+        quality: 75,
         mozjpeg: true,
       })
       .toBuffer();

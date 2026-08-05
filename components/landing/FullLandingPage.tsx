@@ -415,10 +415,11 @@ export default function FullLandingPage({
                       {profile.previewImageUrl ? (
                         <Image
                           src={profile.previewImageUrl}
-                          alt="Blurred featured profile preview"
+                          alt="Featured profile preview"
                           fill
-                          className="landing-surface-media object-cover blur-[3px]"
+                          className="landing-surface-media object-cover"
                           sizes="(max-width: 1280px) 50vw, 16vw"
+                          unoptimized
                         />
                       ) : (
                         <div className="h-full bg-[radial-gradient(circle_at_top,#ffe4eb_0%,#f8bbd0_42%,#f48fb1_100%)]" />
@@ -426,11 +427,6 @@ export default function FullLandingPage({
                       <div className="absolute inset-0 bg-black/20" />
                       <div className="absolute left-3 top-3 rounded-full bg-gradient-to-r from-rose-600 to-pink-500 px-3 py-1 text-xs font-semibold text-white">
                         Featured
-                      </div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="landing-surface-icon rounded-full bg-white/90 p-4 text-rose-500 shadow-lg">
-                          <Lock className="h-6 w-6" />
-                        </div>
                       </div>
                     </div>
                     <div className="px-4 py-3">

@@ -393,6 +393,7 @@ async function getDashboardHomeData(userId: string) {
         recentLikes: [],
         recentMatches: [],
         recommendedProfiles: [],
+        pendingHealthRequests: [],
         dbUnavailable: false,
       };
     }
@@ -406,6 +407,7 @@ async function getDashboardHomeData(userId: string) {
       activeMatches,
       unlocks,
       recommendedProfiles,
+      rawHealthRequests,
     ] = await Promise.all([
       prisma.like.count({
         where: {
@@ -491,7 +493,31 @@ async function getDashboardHomeData(userId: string) {
           },
         },
       }),
+      prisma.$queryRaw<
+        {
+          id: string;
+          createdAt: Date;
+          fullName: string;
+          profession: string | null;
+        }[]
+      >`
+        SELECT hr.id, hr."createdAt", p."fullName", p.profession
+        FROM "HealthRequest" hr
+        JOIN "Profile" p ON hr."requesterId" = p.id
+        WHERE hr."recipientId" = ${profile.id} AND hr.status = 'PENDING'
+        ORDER BY hr."createdAt" DESC
+      `,
     ]);
+
+    // Map raw SQL result to expected object shape
+    const pendingHealthRequests = rawHealthRequests.map((row) => ({
+      id: row.id,
+      createdAt: row.createdAt,
+      requester: {
+        fullName: row.fullName,
+        profession: row.profession,
+      },
+    }));
 
     const matchedProfileIds = new Set(
       activeMatches.map((match) =>
@@ -520,6 +546,7 @@ async function getDashboardHomeData(userId: string) {
       })),
       recentMatches,
       recommendedProfiles,
+      pendingHealthRequests,
       dbUnavailable: false,
     };
   } catch (error) {
@@ -535,6 +562,7 @@ async function getDashboardHomeData(userId: string) {
         recentLikes: [],
         recentMatches: [],
         recommendedProfiles: [],
+        pendingHealthRequests: [],
         dbUnavailable: true,
       };
     }
@@ -547,7 +575,7 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  const { profile, stats, recentLikes, recentMatches, recommendedProfiles, dbUnavailable } =
+  const { profile, stats, recentLikes, recentMatches, recommendedProfiles, pendingHealthRequests, dbUnavailable } =
     await getDashboardHomeData(session.user.id);
 
   const profileCompletion = getProfileCompletion(profile, {
@@ -574,14 +602,32 @@ export default async function DashboardPage() {
   const suggestedFallbackCards =
     recommendedCards.length > 0 ? recommendedCards : fallbackRecommendedCards.slice(0, 6);
 
-  const notificationItems =
-    recentLikes.length > 0
-      ? recentLikes.map((like) => ({
-          id: like.id,
-          title: `${like.fromProfile.fullName} liked your profile`,
-          subtitle: like.fromProfile.profession ?? "New interest received",
-          time: formatRelativeTime(like.createdAt),
-        }))
+  const healthRequestItems = pendingHealthRequests.map((req) => ({
+    id: req.id,
+    type: "HEALTH_REQUEST" as const,
+    title: `${req.requester.fullName} requested health details`,
+    subtitle: req.requester.profession ?? "Health Request",
+    time: formatRelativeTime(req.createdAt),
+  }));
+
+  const likeNotificationItems = recentLikes.map((like) => ({
+    id: like.id,
+    type: "LIKE" as const,
+    title: `${like.fromProfile.fullName} liked your profile`,
+    subtitle: like.fromProfile.profession ?? "New interest received",
+    time: formatRelativeTime(like.createdAt),
+  }));
+
+  const combinedNotifications = [...healthRequestItems, ...likeNotificationItems].sort(
+    (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime() 
+    // Wait, time is a string like "5 mins ago", we can't sort it easily.
+    // Instead we can just append them, or sort before formatting.
+  );
+  
+  // Since time is string, we'll just put health requests first, then likes
+  const notificationItems = 
+    healthRequestItems.length > 0 || likeNotificationItems.length > 0
+      ? [...healthRequestItems, ...likeNotificationItems]
       : [
           {
             id: "empty-notification",
@@ -820,7 +866,7 @@ export default async function DashboardPage() {
                       src={candidate.image}
                       alt={candidate.fullName}
                       fill
-                      className="ui-media-zoom scale-[1.04] object-cover blur-[5px]"
+                      className="ui-media-zoom scale-[1.04] object-cover"
                       sizes="(max-width: 640px) 100vw, 260px"
                       unoptimized
                     />
