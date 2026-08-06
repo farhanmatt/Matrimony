@@ -9,7 +9,7 @@ import {
 } from "@/lib/server/featured-profile-preview";
 import { getAdminSettingsSnapshot } from "@/lib/utils/admin-settings";
 
-const DEFAULT_PROFILE_PAGE_SIZE = 12;
+const DEFAULT_PROFILE_PAGE_SIZE = 8;
 const MAX_PROFILE_PAGE_SIZE = 24;
 
 function getDefaultBrowseGender(gender: Gender | null | undefined) {

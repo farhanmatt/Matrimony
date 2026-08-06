@@ -898,23 +898,23 @@ export default function ProfileChatSession({
   if (!chat) {
     return (
       <div
-        className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 bg-white px-6 py-12 text-center shadow-sm"
+        className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-12 text-center shadow-sm"
         style={{ animationDelay: "60ms", animationFillMode: "forwards" }}
       >
-        <div className="ui-soft-float mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+        <div className="ui-soft-float mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 dark:bg-slate-800 text-rose-500">
           <MessageCircle className="h-6 w-6" />
         </div>
-        <h1 className="mt-5 font-display text-[1.55rem] font-bold text-slate-900">
+        <h1 className="mt-5 font-display text-[1.55rem] font-bold text-slate-900 dark:text-slate-100">
           Chat unavailable
         </h1>
-        <p className="mt-2 text-[15px] text-slate-500">
+        <p className="mt-2 text-[15px] text-slate-500 dark:text-slate-400">
           We could not load this conversation right now.
         </p>
         <div className="mt-7 flex justify-center gap-3">
           <button
             type="button"
             onClick={() => setRetryKey((current) => current + 1)}
-            className="ui-link-shift inline-flex items-center justify-center rounded-[16px] border border-rose-200 px-5 py-3 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+            className="ui-link-shift inline-flex items-center justify-center rounded-[16px] border border-rose-200 dark:border-slate-700 px-5 py-3 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50 dark:hover:bg-slate-800"
           >
             Retry
           </button>
@@ -945,7 +945,7 @@ export default function ProfileChatSession({
       >
         <Link
           href="/dashboard/shortlist"
-          className="ui-link-shift inline-flex items-center gap-2 text-[15px] font-medium text-slate-600 transition-colors hover:text-rose-600"
+          className="ui-link-shift inline-flex items-center gap-2 text-[15px] font-medium text-slate-600 dark:text-slate-300 transition-colors hover:text-rose-600"
         >
           <ArrowLeft className="ui-arrow-shift h-4 w-4" />
           Back to Shortlist
@@ -954,11 +954,11 @@ export default function ProfileChatSession({
 
       <section className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)] xl:items-start">
         <aside
-          className="ui-enter-left ui-card-lift-soft h-[420px] self-start overflow-y-auto rounded-[28px] border border-rose-100/80 bg-white p-5 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:h-[460px] xl:h-[520px]"
+          className="ui-enter-left ui-card-lift-soft h-[420px] self-start overflow-y-auto rounded-[28px] border border-rose-100 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-5 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:h-[460px] xl:h-[520px]"
           style={{ animationDelay: "110ms", animationFillMode: "forwards" }}
         >
           <div className="flex items-center gap-4">
-            <div className="ui-icon-lift relative h-16 w-16 overflow-hidden rounded-full bg-rose-50">
+            <div className="ui-icon-lift relative h-16 w-16 overflow-hidden rounded-full bg-rose-50 dark:bg-slate-800">
               {chat.targetProfile.imageUrl ? (
                 <Image
                   src={chat.targetProfile.imageUrl}
@@ -976,10 +976,10 @@ export default function ProfileChatSession({
             </div>
 
             <div className="min-w-0">
-              <h1 className="truncate font-display text-[1.45rem] font-bold text-slate-900">
+              <h1 className="truncate font-display text-[1.45rem] font-bold text-slate-900 dark:text-slate-100">
                 {chat.targetProfile.fullName}
               </h1>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
                 {chat.targetProfile.profession || "Matrimony Member"}
               </p>
               <div
@@ -992,7 +992,7 @@ export default function ProfileChatSession({
                 <span
                   className={`h-2.5 w-2.5 rounded-full ${
                     effectiveTargetPresence.isOnline
-                      ? "animate-pulse bg-emerald-500 shadow-[0_0_0_4px_rgba(34,197,94,0.12)]"
+                      ? "animate-pulse bg-emerald-50 dark:bg-slate-8000 shadow-[0_0_0_4px_rgba(34,197,94,0.12)]"
                       : "bg-rose-500 shadow-[0_0_0_4px_rgba(244,63,94,0.1)]"
                   }`}
                 />
@@ -1001,8 +1001,8 @@ export default function ProfileChatSession({
             </div>
           </div>
 
-          <div className="mt-5 flex items-center gap-2 text-sm text-slate-600">
-            <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
+          <div className="mt-5 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+            <MapPin className="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
             <span>{chat.targetProfile.location}</span>
           </div>
 
@@ -1012,10 +1012,10 @@ export default function ProfileChatSession({
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-slate-900">
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   Private profile thread
                 </h2>
-                <p className="mt-1 text-sm leading-6 text-slate-600">
+                <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
                   This chat is only for your conversation with{" "}
                   {chat.targetProfile.fullName.split(" ")[0]} from your interest
                   shortlist.
@@ -1026,29 +1026,29 @@ export default function ProfileChatSession({
         </aside>
 
         <section
-          className="ui-enter-right relative flex h-[420px] min-h-0 flex-col overflow-hidden rounded-[28px] border border-rose-100/80 bg-white shadow-[0_20px_52px_rgba(15,23,42,0.06)] sm:h-[460px] xl:h-[520px]"
+          className="ui-enter-right relative flex h-[420px] min-h-0 flex-col overflow-hidden rounded-[28px] border border-rose-100 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-[0_20px_52px_rgba(15,23,42,0.06)] sm:h-[460px] xl:h-[520px]"
           style={{ animationDelay: "170ms", animationFillMode: "forwards" }}
         >
-          <div className="border-b border-rose-100/70 px-5 py-4">
-            <h2 className="font-display text-[1.3rem] font-bold text-slate-900">
+          <div className="border-b border-rose-100 dark:border-slate-800/70 px-5 py-4">
+            <h2 className="font-display text-[1.3rem] font-bold text-slate-900 dark:text-slate-100">
               Chat with {chat.targetProfile.fullName.split(" ")[0]}
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               Only this profile&apos;s conversation appears in this session.
             </p>
           </div>
 
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-[linear-gradient(180deg,rgba(255,250,251,0.82)_0%,rgba(255,255,255,1)_100%)] px-5 py-5 pb-8">
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-[linear-gradient(180deg,rgba(255,250,251,0.82)_0%,rgba(255,255,255,1)_100%)] dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.82)_0%,rgba(30,41,59,1)_100%)] px-5 py-5 pb-8">
               {chat.messages.length === 0 ? (
                 <div className="ui-enter-up flex h-full min-h-[340px] flex-col items-center justify-center text-center">
-                  <div className="ui-soft-float flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+                  <div className="ui-soft-float flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 dark:bg-slate-800 text-rose-500">
                     <MessageCircle className="h-6 w-6" />
                   </div>
-                  <h3 className="mt-5 font-display text-[1.45rem] font-bold text-slate-900">
+                  <h3 className="mt-5 font-display text-[1.45rem] font-bold text-slate-900 dark:text-slate-100">
                     Start the conversation
                   </h3>
-                  <p className="mt-2 max-w-md text-[15px] leading-6 text-slate-500">
+                  <p className="mt-2 max-w-md text-[15px] leading-6 text-slate-500 dark:text-slate-400">
                     Send your first message to{" "}
                     {chat.targetProfile.fullName.split(" ")[0]}.
                   </p>
@@ -1058,7 +1058,7 @@ export default function ProfileChatSession({
                   if (message.isSystemMessage) {
                     return (
                       <div key={message.id} className="flex justify-center py-2">
-                        <div className="rounded-full bg-slate-100 px-4 py-1.5 text-xs font-semibold text-slate-500">
+                        <div className="rounded-full bg-slate-100 dark:bg-slate-800 px-4 py-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
                           {message.content}
                         </div>
                       </div>
@@ -1116,8 +1116,8 @@ export default function ProfileChatSession({
                           "ui-card-lift-soft max-w-[82%] rounded-[22px] px-4 py-3 shadow-sm sm:max-w-[70%]",
                           isOwnMessage
                             ? "bg-gradient-to-r from-rose-600 to-pink-500 text-white"
-                            : "border border-rose-100 bg-white text-slate-800",
-                          !isOwnMessage && "cursor-pointer transition-colors hover:bg-rose-50/70",
+                            : "border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200",
+                          !isOwnMessage && "cursor-pointer transition-colors hover:bg-rose-50 dark:hover:bg-slate-800/70",
                           highlightedMessageId === message.id &&
                             "ring-2 ring-amber-300 ring-offset-2 ring-offset-white",
                           isEditingCurrentMessage &&
@@ -1136,8 +1136,8 @@ export default function ProfileChatSession({
                             className={cn(
                               "mb-3 flex w-full flex-col rounded-[16px] border-l-2 px-3 py-2 text-left transition-colors",
                               isOwnMessage
-                                ? "border-white/60 bg-white/12 text-white/90 hover:bg-white/18"
-                                : "border-rose-300 bg-rose-50/90 text-slate-600 hover:bg-rose-100"
+                                ? "border-white/60 bg-white dark:bg-slate-900/12 text-white/90 hover:bg-white/18"
+                                : "border-rose-300 bg-rose-50 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 hover:bg-rose-100 dark:hover:bg-slate-700"
                             )}
                           >
                             <span
@@ -1209,13 +1209,13 @@ export default function ProfileChatSession({
                               {openMessageMenuId === message.id ? (
                                 <div
                                   role="menu"
-                                  className="absolute bottom-full right-0 z-20 mb-2 w-36 rounded-2xl border border-rose-100 bg-white p-1.5 shadow-[0_18px_36px_rgba(15,23,42,0.14)]"
+                                  className="absolute bottom-full right-0 z-20 mb-2 w-36 rounded-2xl border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 shadow-[0_18px_36px_rgba(15,23,42,0.14)]"
                                 >
                                   <button
                                     type="button"
                                     onClick={() => beginEditingMessage(message)}
                                     disabled={isMessageBusy}
-                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 dark:text-slate-300 transition-colors hover:bg-rose-50 dark:hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                                     role="menuitem"
                                   >
                                     {isMessageBusy && pendingMessageAction === "edit" ? (
@@ -1229,7 +1229,7 @@ export default function ProfileChatSession({
                                     type="button"
                                     onClick={() => void deleteMessage(message)}
                                     disabled={isMessageBusy}
-                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-rose-600 transition-colors hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-rose-600 transition-colors hover:bg-rose-50 dark:hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                                     role="menuitem"
                                   >
                                     {isMessageBusy && pendingMessageAction === "delete" ? (
@@ -1249,7 +1249,7 @@ export default function ProfileChatSession({
                                 event.stopPropagation();
                                 beginReplyingToMessage(message);
                               }}
-                              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold text-rose-500 transition-colors hover:bg-rose-100 hover:text-rose-600"
+                              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold text-rose-500 transition-colors hover:bg-rose-100 dark:hover:bg-slate-700 hover:text-rose-600"
                             >
                               <Reply className="h-3.5 w-3.5" />
                               Reply
@@ -1266,15 +1266,15 @@ export default function ProfileChatSession({
 
             {/* Handshake Overlays */}
             {showHandshakeOverlay && (
-              <div className="absolute inset-0 z-40 flex items-center justify-center bg-white/70 backdrop-blur-[2px]">
-                <div className="mx-4 w-full max-w-sm rounded-3xl border border-rose-100 bg-white p-6 text-center shadow-2xl">
-                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+              <div className="absolute inset-0 z-40 flex items-center justify-center bg-white dark:bg-slate-900/70 backdrop-blur-[2px]">
+                <div className="mx-4 w-full max-w-sm rounded-3xl border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 text-center shadow-2xl">
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 dark:bg-slate-800 text-rose-500">
                     <MessageCircle className="h-7 w-7" />
                   </div>
-                  <h3 className="font-display text-xl font-bold text-slate-900">
+                  <h3 className="font-display text-xl font-bold text-slate-900 dark:text-slate-100">
                     New Chat Request
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                  <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                     {chat.targetProfile.fullName} wants to start a chat with you. 
                     Accept to begin messaging.
                   </p>
@@ -1290,7 +1290,7 @@ export default function ProfileChatSession({
                     <button
                       onClick={() => handleHandshake("REJECT")}
                       disabled={handshaking}
-                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-6 py-3 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-60"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-700 px-6 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 transition-colors hover:bg-slate-50 disabled:opacity-60"
                     >
                       {handshaking ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
                       Decline
@@ -1301,7 +1301,7 @@ export default function ProfileChatSession({
             )}
 
             {showWaitingIndicator && (
-              <div className="border-b border-rose-100/50 bg-rose-50/30 px-5 py-2.5">
+              <div className="border-b border-rose-100 dark:border-slate-800/50 bg-rose-50 dark:bg-slate-800/30 px-5 py-2.5">
                 <div className="flex items-center justify-center gap-3 text-xs font-semibold text-rose-600">
                   <Loader2 className="h-4 w-4 animate-spin text-rose-400" />
                   Waiting for {chat.targetProfile.fullName.split(" ")[0]} to accept your chat request
@@ -1310,15 +1310,15 @@ export default function ProfileChatSession({
             )}
 
             {!chat.isUnlocked && !isPending && (
-              <div className="absolute inset-0 z-40 flex items-center justify-center bg-white/70 backdrop-blur-[2px]">
-                <div className="mx-4 w-full max-w-sm rounded-3xl border border-rose-100 bg-white p-6 text-center shadow-2xl">
-                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+              <div className="absolute inset-0 z-40 flex items-center justify-center bg-white dark:bg-slate-900/70 backdrop-blur-[2px]">
+                <div className="mx-4 w-full max-w-sm rounded-3xl border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 text-center shadow-2xl">
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 dark:bg-slate-800 text-rose-500">
                     <Lock className="h-7 w-7" />
                   </div>
-                  <h3 className="font-display text-xl font-bold text-slate-900">
+                  <h3 className="font-display text-xl font-bold text-slate-900 dark:text-slate-100">
                     Chat Locked
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                  <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                     You need to unlock this conversation to send and view messages.
                   </p>
                   <button
@@ -1333,7 +1333,7 @@ export default function ProfileChatSession({
 
             <form
               onSubmit={handleSubmit}
-              className="border-t border-rose-100/70 bg-white px-5 py-3"
+              className="border-t border-rose-100 dark:border-slate-800/70 bg-white dark:bg-slate-900 px-5 py-3"
             >
               <div
                 className={`ui-composer-shell rounded-[24px] border bg-[linear-gradient(135deg,rgba(255,251,252,0.98)_0%,rgba(255,246,248,0.92)_100%)] p-2.5 ${
@@ -1343,36 +1343,36 @@ export default function ProfileChatSession({
                 }`}
               >
                 {editingMessage ? (
-                  <div className="mb-3 flex items-center justify-between gap-3 rounded-[18px] border border-rose-100 bg-white/90 px-3 py-2 text-xs text-slate-600">
+                  <div className="mb-3 flex items-center justify-between gap-3 rounded-[18px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900/90 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
                     <div className="min-w-0">
-                      <p className="font-semibold text-slate-800">Editing message</p>
-                      <p className="truncate text-slate-500">
+                      <p className="font-semibold text-slate-800 dark:text-slate-200">Editing message</p>
+                      <p className="truncate text-slate-500 dark:text-slate-400">
                         Update your message and press Save.
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={cancelEditingMessage}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 dark:text-slate-400 transition-colors hover:bg-rose-50 dark:hover:bg-slate-800 hover:text-rose-600"
                       aria-label="Cancel editing"
                     >
                       <X className="h-4 w-4" />
                     </button>
                   </div>
                 ) : replyingMessage ? (
-                  <div className="mb-3 flex items-center justify-between gap-3 rounded-[18px] border border-rose-100 bg-white/90 px-3 py-2 text-xs text-slate-600">
+                  <div className="mb-3 flex items-center justify-between gap-3 rounded-[18px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900/90 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
                     <div className="min-w-0">
-                      <p className="font-semibold text-slate-800">
+                      <p className="font-semibold text-slate-800 dark:text-slate-200">
                         Replying to {chat.targetProfile.fullName.split(" ")[0]}
                       </p>
-                      <p className="truncate text-slate-500">
+                      <p className="truncate text-slate-500 dark:text-slate-400">
                         {replyingMessage.content}
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={cancelReplyingMessage}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 dark:text-slate-400 transition-colors hover:bg-rose-50 dark:hover:bg-slate-800 hover:text-rose-600"
                       aria-label="Cancel reply"
                     >
                       <X className="h-4 w-4" />
@@ -1394,7 +1394,7 @@ export default function ProfileChatSession({
                   }
                   rows={2}
                   maxLength={1000}
-                  className="w-full resize-none bg-transparent px-2 py-0.5 text-sm leading-5 text-slate-700 outline-none transition-colors duration-300 placeholder:text-slate-400"
+                  className="w-full resize-none bg-transparent px-2 py-0.5 text-sm leading-5 text-slate-700 dark:text-slate-300 outline-none transition-colors duration-300 placeholder:text-slate-400"
                 />
 
                 <div className="mt-2 flex items-center justify-between gap-3">
@@ -1402,7 +1402,7 @@ export default function ProfileChatSession({
                     <button
                       type="button"
                       onClick={() => setEmojiPickerOpen((current) => !current)}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-100 bg-white/80 text-slate-500 transition-colors hover:border-rose-200 hover:text-rose-600"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 transition-colors hover:border-rose-200 hover:text-rose-600"
                       aria-label="Open emoji picker"
                     >
                       <SmilePlus className="h-4.5 w-4.5" />
@@ -1411,9 +1411,9 @@ export default function ProfileChatSession({
                     {emojiPickerOpen ? (
                       <div
                         ref={emojiPickerRef}
-                        className="absolute bottom-full left-0 z-10 mb-3 w-[240px] rounded-[20px] border border-rose-100 bg-white p-3 shadow-[0_20px_45px_rgba(15,23,42,0.14)]"
+                        className="absolute bottom-full left-0 z-10 mb-3 w-[240px] rounded-[20px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 shadow-[0_20px_45px_rgba(15,23,42,0.14)]"
                       >
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">
                           Add Emoji
                         </p>
                         <div className="grid grid-cols-4 gap-2">
@@ -1422,7 +1422,7 @@ export default function ProfileChatSession({
                               key={emoji}
                               type="button"
                               onClick={() => insertEmoji(emoji)}
-                              className="inline-flex h-11 items-center justify-center rounded-2xl border border-transparent text-xl transition-colors hover:border-rose-100 hover:bg-rose-50"
+                              className="inline-flex h-11 items-center justify-center rounded-2xl border border-transparent text-xl transition-colors hover:border-rose-100 hover:bg-rose-50 dark:hover:bg-slate-800"
                               aria-label={`Insert ${emoji}`}
                             >
                               {emoji}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { isAfter, subDays } from "date-fns";
 import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
 import {
+
   ChevronDown,
   Search,
   ShieldCheck,
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import EmptyState from "@/components/common/EmptyState";
 import { PageLoader } from "@/components/common/LoadingSpinner";
+import Pagination from "@/components/common/Pagination";
 import UnlockedProfileCard, {
   type UnlockedProfileCardData,
 } from "@/components/profile/UnlockedProfileCard";
@@ -29,8 +31,6 @@ interface UnlockItem {
 
 type FilterKey = "all" | "recent" | "contact";
 
-const INITIAL_VISIBLE_COUNT = 8;
-const LOAD_MORE_COUNT = 4;
 const RECENT_UNLOCK_DAYS = 14;
 
 export default function UnlockedPageClient({
@@ -47,7 +47,7 @@ export default function UnlockedPageClient({
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [showFilterMenu, setShowFilterMenu] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
+  const [currentPage, setCurrentPage] = useState(1);
   const deferredSearchTerm = useDeferredValue(searchTerm);
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function UnlockedPageClient({
   });
 
   useEffect(() => {
-    setVisibleCount(INITIAL_VISIBLE_COUNT);
+    setCurrentPage(1);
   }, [deferredSearchTerm, activeFilter]);
 
   useEffect(() => {
@@ -149,8 +149,7 @@ export default function UnlockedPageClient({
       return searchableText.includes(normalizedSearch);
     });
 
-  const visibleCards = unlockCards.slice(0, visibleCount);
-  const canLoadMore = visibleCount < unlockCards.length;
+  const visibleCards = unlockCards.slice((currentPage - 1) * 8, currentPage * 8);
 
   return (
     <div className="space-y-8">
@@ -164,10 +163,10 @@ export default function UnlockedPageClient({
               <Unlock className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="font-display text-[1.8rem] font-bold tracking-tight text-slate-900">
+              <h1 className="font-display text-[1.8rem] font-bold tracking-tight text-slate-900 dark:text-slate-100">
                 Unlocked Profiles
               </h1>
-              <p className="mt-1 text-[15px] text-slate-600">
+              <p className="mt-1 text-[15px] text-slate-600 dark:text-slate-400">
                 These profiles are now unlocked. You can view full details and connect.
               </p>
             </div>
@@ -185,7 +184,7 @@ export default function UnlockedPageClient({
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search unlocked profiles..."
-              className="h-12 w-full rounded-[18px] border border-emerald-100 bg-white pl-12 pr-4 text-sm text-slate-700 outline-none shadow-sm transition-colors placeholder:text-slate-400 focus:border-emerald-300"
+              className="h-12 w-full rounded-[18px] border border-emerald-100 dark:border-slate-800 bg-white dark:bg-slate-900 pl-12 pr-4 text-sm text-slate-700 dark:text-slate-300 outline-none shadow-sm transition-colors placeholder:text-slate-400 focus:border-emerald-300"
             />
           </label>
 
@@ -193,7 +192,7 @@ export default function UnlockedPageClient({
             <button
               type="button"
               onClick={() => setShowFilterMenu((current) => !current)}
-              className="ui-link-shift inline-flex h-12 w-12 items-center justify-center rounded-[16px] border border-emerald-100 bg-white text-slate-700 shadow-sm transition-colors hover:border-emerald-200 hover:text-emerald-700"
+              className="ui-link-shift inline-flex h-12 w-12 items-center justify-center rounded-[16px] border border-emerald-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 shadow-sm transition-colors hover:border-emerald-200 hover:text-emerald-700"
               aria-label="Filter unlocked profiles"
               title="Filter unlocked profiles"
             >
@@ -201,7 +200,7 @@ export default function UnlockedPageClient({
             </button>
 
             {showFilterMenu ? (
-              <div className="ui-enter-up absolute right-0 top-14 z-20 min-w-[210px] overflow-hidden rounded-[20px] border border-emerald-100 bg-white py-2 shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
+              <div className="ui-enter-up absolute right-0 top-14 z-20 min-w-[210px] overflow-hidden rounded-[20px] border border-emerald-100 dark:border-slate-800 bg-white dark:bg-slate-900 py-2 shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
                 {[
                   { key: "all", label: "All Profiles" },
                   { key: "recent", label: "Recently Unlocked" },
@@ -217,7 +216,7 @@ export default function UnlockedPageClient({
                     className={`ui-link-shift flex w-full items-center justify-between px-4 py-2.5 text-left text-sm font-medium transition-colors ${
                       activeFilter === option.key
                         ? "bg-emerald-50 text-emerald-700"
-                        : "text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700"
                     }`}
                   >
                     <span>{option.label}</span>
@@ -246,13 +245,13 @@ export default function UnlockedPageClient({
         </div>
       ) : unlockCards.length === 0 ? (
         <section
-          className="ui-enter-scale ui-card-lift-soft rounded-[30px] border border-emerald-100 bg-white px-6 py-12 text-center shadow-sm"
+          className="ui-enter-scale ui-card-lift-soft rounded-[30px] border border-emerald-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-12 text-center shadow-sm"
           style={{ animationDelay: "160ms", animationFillMode: "forwards" }}
         >
-          <h2 className="font-display text-[1.6rem] font-bold text-slate-900">
+          <h2 className="font-display text-[1.6rem] font-bold text-slate-900 dark:text-slate-100">
             No unlocked profiles found
           </h2>
-          <p className="mt-2 text-[15px] text-slate-500">
+          <p className="mt-2 text-[15px] text-slate-500 dark:text-slate-400">
             Try a different search or filter to see more unlocked profiles.
           </p>
         </section>
@@ -276,26 +275,16 @@ export default function UnlockedPageClient({
             ))}
           </section>
 
-          {canLoadMore ? (
-            <div
-              className="ui-enter-up flex justify-center"
-              style={{ animationDelay: "200ms", animationFillMode: "forwards" }}
-            >
-              <button
-                type="button"
-                onClick={() => setVisibleCount((current) => current + LOAD_MORE_COUNT)}
-                className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-[18px] border border-emerald-100 bg-white px-8 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:border-emerald-200 hover:text-emerald-700"
-              >
-                Load More
-                <ChevronDown className="h-[18px] w-[18px]" />
-              </button>
-            </div>
-          ) : null}
+          <Pagination 
+            currentPage={currentPage}
+            totalPages={Math.ceil(unlockCards.length / 8)}
+            onPageChange={setCurrentPage}
+          />
         </>
       )}
 
       <section
-        className="ui-enter-up ui-card-lift-soft flex flex-col gap-5 rounded-[30px] border border-rose-100/80 bg-white px-6 py-5 shadow-sm md:flex-row md:items-center md:justify-between"
+        className="ui-enter-up ui-card-lift-soft flex flex-col gap-5 rounded-[30px] border border-rose-100/80 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-5 shadow-sm md:flex-row md:items-center md:justify-between"
         style={{ animationDelay: "240ms", animationFillMode: "forwards" }}
       >
         <div className="flex items-start gap-4">
@@ -303,10 +292,10 @@ export default function UnlockedPageClient({
             <ShieldCheck className="h-6 w-6" />
           </div>
           <div>
-            <h2 className="font-display text-[1.4rem] font-bold text-slate-900">
+            <h2 className="font-display text-[1.4rem] font-bold text-slate-900 dark:text-slate-100">
               Safe & Secure
             </h2>
-            <p className="mt-1 text-[15px] text-slate-500">
+            <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
               Your privacy is our priority. Contact details are visible only after you
               choose to connect.
             </p>

@@ -148,7 +148,7 @@ export default function SupportPageClient({
   return (
     <div className="flex h-[calc(100dvh-8.5rem)] min-h-0 flex-col gap-4">
       <section
-        className="ui-enter-up ui-card-lift-soft relative shrink-0 overflow-hidden rounded-[28px] border border-rose-100 bg-[radial-gradient(circle_at_top_left,_rgba(255,241,242,0.96),_rgba(255,255,255,1)_42%),linear-gradient(135deg,_rgba(255,255,255,1),_rgba(255,247,250,0.95))] px-4 py-2.5 shadow-sm sm:px-6 sm:py-3"
+        className="ui-enter-up ui-card-lift-soft relative shrink-0 overflow-hidden rounded-[28px] border border-rose-100 dark:border-slate-800 bg-[radial-gradient(circle_at_top_left,_rgba(255,241,242,0.96),_rgba(255,255,255,1)_42%),linear-gradient(135deg,_rgba(255,255,255,1),_rgba(255,247,250,0.95))] dark:bg-[radial-gradient(circle_at_top_left,_rgba(30,41,59,0.96),_rgba(15,23,42,1)_42%),linear-gradient(135deg,_rgba(15,23,42,1),_rgba(30,41,59,0.95))] px-4 py-2.5 shadow-sm sm:px-6 sm:py-3"
         style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
       >
         <div className="absolute -right-16 top-0 h-40 w-40 rounded-full bg-rose-100/55 blur-3xl" />
@@ -170,10 +170,10 @@ export default function SupportPageClient({
                   <LifeBuoy className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
-                  <h1 className="mt-1.5 font-display text-[1.55rem] font-bold tracking-tight text-slate-900 sm:text-[1.75rem]">
+                  <h1 className="mt-1.5 font-display text-[1.55rem] font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-[1.75rem]">
                     Support Center
                   </h1>
-                  <p className="mt-0.5 max-w-2xl text-[13px] leading-5 text-slate-600">
+                  <p className="mt-0.5 max-w-2xl text-[13px] leading-5 text-slate-600 dark:text-slate-300">
                     Ask about your account, profile, matches, payments, notifications, or any platform issue in one continuous conversation with the support bot.
                   </p>
                 </div>
@@ -184,7 +184,7 @@ export default function SupportPageClient({
       </section>
 
       <section
-        className="ui-enter-up ui-card-lift-soft relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[32px] border border-rose-100 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.06)]"
+        className="ui-enter-up ui-card-lift-soft relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[32px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_30px_80px_rgba(15,23,42,0.06)]"
         style={{ animationDelay: "100ms", animationFillMode: "forwards" }}
       >
         <div className="absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,_rgba(255,241,242,0.7),_rgba(255,255,255,0))]" />
@@ -247,7 +247,7 @@ export default function SupportPageClient({
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <p
-                              className={`font-semibold text-slate-900 ${
+                              className={`font-semibold text-slate-900 dark:text-slate-100 ${
                                 isBot ? "text-[14px]" : "text-[14px]"
                               }`}
                             >
@@ -268,7 +268,7 @@ export default function SupportPageClient({
                         </div>
                       </div>
                       <p
-                        className={`whitespace-pre-line text-slate-700 ${
+                        className={`whitespace-pre-line text-slate-700 dark:text-slate-300 ${
                           isBot ? "text-[14px] leading-6" : "text-[14px] leading-6"
                         }`}
                       >
@@ -288,7 +288,7 @@ export default function SupportPageClient({
                       </div>
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-[15px] font-semibold text-slate-900">
+                          <p className="text-[15px] font-semibold text-slate-900 dark:text-slate-100">
                             Support Bot
                           </p>
                           <span className="rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-sky-700">
@@ -297,7 +297,7 @@ export default function SupportPageClient({
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Thinking about the best reply...
                     </div>
@@ -307,12 +307,12 @@ export default function SupportPageClient({
             </div>
           </div>
 
-          <div className="relative z-10 shrink-0 border-t border-rose-100/90 bg-white/92 px-4 py-2.5 backdrop-blur sm:px-6">
+          <div className="relative z-10 shrink-0 border-t border-rose-100/90 dark:border-slate-800/90 bg-white/92 dark:bg-slate-900/92 px-4 py-2.5 backdrop-blur sm:px-6">
             <div className="mx-auto w-full max-w-5xl">
               <form onSubmit={handleSubmit} className="space-y-2">
                 <div className="rounded-[28px] border border-rose-100 bg-[linear-gradient(180deg,_rgba(255,255,255,1),_rgba(255,247,250,0.96))] p-2 shadow-[0_18px_40px_rgba(15,23,42,0.04)] sm:p-2.5">
                   <div className="mb-2 flex justify-end">
-                    <span className="inline-flex shrink-0 items-center rounded-full border border-slate-200 bg-white/90 px-3 py-1 text-xs font-medium text-slate-500 shadow-sm">
+                    <span className="inline-flex shrink-0 items-center rounded-full border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-800/90 px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 shadow-sm">
                       {message.trim().length}/1500
                     </span>
                   </div>
@@ -325,7 +325,7 @@ export default function SupportPageClient({
                       onChange={(event) => setMessage(event.target.value)}
                       onKeyDown={handleMessageKeyDown}
                       placeholder="Example: In the Find Match page, the profile photo is not shown after I refresh the page."
-                      className="min-h-[60px] w-full flex-1 rounded-[22px] border border-slate-200 bg-white/95 px-4 py-2 text-sm leading-5 text-slate-700 outline-none shadow-inner shadow-slate-100/80 transition-colors hover:border-rose-200 focus:border-rose-300"
+                      className="min-h-[60px] w-full flex-1 rounded-[22px] border border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-800/95 px-4 py-2 text-sm leading-5 text-slate-700 dark:text-slate-200 outline-none shadow-inner shadow-slate-100/80 transition-colors hover:border-rose-200 dark:hover:border-slate-600 focus:border-rose-300 dark:focus:border-slate-500"
                     />
 
                     <button

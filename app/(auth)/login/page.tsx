@@ -110,18 +110,18 @@ function LoginForm() {
   }
 
   return (
-    <div className="hero-gradient flex min-h-screen items-center justify-center px-4 py-12">
+    <div className="hero-gradient flex min-h-[100dvh] items-center justify-center px-4 py-6 sm:py-12">
       <div className="ui-enter-scale w-full max-w-md">
         {/* Logo */}
-        <div className="mb-8 text-center">
+        <div className="mb-5 sm:mb-8 text-center">
           <Link href="/" className="ui-link-shift inline-flex items-center justify-center">
             <SiteLogo
               src={logoImageUrl}
               alt="FMLP Matrimony logo"
-              className="ui-soft-float h-14 max-w-[260px] sm:h-16 sm:max-w-[320px]"
+              className="ui-soft-float h-10 max-w-[220px] sm:h-16 sm:max-w-[320px]"
             />
           </Link>
-          <h1 className="ui-enter-up mt-5 mb-1 text-2xl font-display font-bold text-gray-900" style={{ animationDelay: "120ms" }}>
+          <h1 className="ui-enter-up mt-3 sm:mt-5 text-xl sm:text-2xl font-display font-bold text-gray-900" style={{ animationDelay: "120ms" }}>
             Welcome back
           </h1>
           <p className="ui-enter-up text-sm text-gray-500" style={{ animationDelay: "180ms" }}>
@@ -129,7 +129,7 @@ function LoginForm() {
           </p>
         </div>
 
-        <div className="ui-enter-up ui-card-lift rounded-2xl bg-white p-8 shadow-xl" style={{ animationDelay: "240ms" }}>
+        <div className="ui-enter-up ui-card-lift rounded-2xl bg-white p-5 sm:p-8 shadow-xl" style={{ animationDelay: "240ms" }}>
           {authErrorMessage ? (
             <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
               {authErrorMessage}
@@ -141,7 +141,7 @@ function LoginForm() {
             onClick={handleGoogle}
             disabled={isGoogleLoading}
             suppressHydrationWarning
-            className="ui-link-shift mb-6 flex w-full items-center justify-center gap-3 rounded-xl border-2 border-gray-200 px-4 py-3 font-medium text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50 disabled:opacity-60"
+            className="ui-link-shift mb-5 flex w-full items-center justify-center gap-3 rounded-xl border-2 border-gray-200 px-4 py-2.5 sm:py-3 font-medium text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50 disabled:opacity-60"
           >
             {isGoogleLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -156,7 +156,7 @@ function LoginForm() {
             Continue with Google
           </button>
 
-          <div className="relative mb-6">
+          <div className="relative mb-5">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200" />
             </div>
@@ -165,9 +165,9 @@ function LoginForm() {
              </div>
            </div>
 
-           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
              <div>
-               <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="login-identifier">
+               <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="login-identifier">
                  Email Address or Name
                </label>
                <input
@@ -176,7 +176,7 @@ function LoginForm() {
                  autoComplete="username"
                  {...register("identifier")}
                  suppressHydrationWarning
-                 className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
+                 className="w-full border border-gray-300 rounded-xl px-4 py-2.5 sm:py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
                  placeholder="you@example.com or your name"
                />
                {errors.identifier && (
@@ -185,7 +185,7 @@ function LoginForm() {
              </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center justify-between mb-1">
                 <label className="block text-sm font-medium text-gray-700" htmlFor="login-password">
                   Password
                 </label>
@@ -200,7 +200,7 @@ function LoginForm() {
                   autoComplete="current-password"
                   {...register("password")}
                   suppressHydrationWarning
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 sm:py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
                   placeholder="Enter your password"
                 />
                 <button
@@ -221,7 +221,7 @@ function LoginForm() {
               type="submit"
               disabled={isSubmitting}
               suppressHydrationWarning
-              className="btn-primary ui-link-shift flex w-full items-center justify-center gap-2 rounded-xl py-3"
+              className="btn-primary ui-link-shift flex w-full items-center justify-center gap-2 rounded-xl py-2.5 sm:py-3 mt-2"
             >
               {isSubmitting ? (
                 <><Loader2 className="w-5 h-5 animate-spin" /> Signing in...</>
@@ -231,7 +231,7 @@ function LoginForm() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-600 mt-6">
+          <p className="text-center text-sm text-gray-600 mt-5">
             Don&apos;t have an account?{" "}
             <Link href="/register" className="ui-link-shift font-semibold text-rose-600 hover:text-rose-700">
               Register Free

@@ -743,10 +743,10 @@ export default function NotificationBell({
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className={`group inline-flex items-center text-sm font-semibold text-gray-700 transition-all ui-link-shift hover:text-rose-600 ${
+        className={`group inline-flex items-center text-sm font-semibold text-gray-700 dark:text-slate-100 transition-all ui-link-shift hover:text-rose-600 ${
           compact
-            ? "relative h-10 w-10 justify-center rounded-full border border-transparent bg-transparent p-0 text-gray-500 hover:bg-rose-50"
-            : "gap-3 rounded-2xl border border-white/80 bg-white px-4 py-3 shadow-sm hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md"
+            ? "relative h-10 w-10 justify-center rounded-full border border-transparent bg-transparent p-0 text-gray-500 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-slate-800"
+            : "gap-3 rounded-2xl border border-white/80 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 shadow-sm hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md"
         }`}
         aria-expanded={open}
         aria-haspopup="dialog"
@@ -774,8 +774,8 @@ export default function NotificationBell({
         </div>
         {!compact ? (
           <div className="text-left">
-            <div>Notifications</div>
-            <div className="text-xs font-medium text-gray-400 group-hover:text-rose-400">
+            <div className="text-slate-900 dark:text-slate-100">Notifications</div>
+            <div className="text-xs font-medium text-gray-400 dark:text-slate-400 group-hover:text-rose-400">
               {notificationCount > 0 ? `${notificationCount} new alerts` : "No new alerts"}
             </div>
           </div>
@@ -787,27 +787,27 @@ export default function NotificationBell({
           role="dialog"
           aria-label="Your notifications"
           aria-hidden={!open}
-          className={`absolute right-0 top-[calc(100%+12px)] z-30 w-[min(92vw,400px)] origin-top-right overflow-hidden rounded-[28px] border border-rose-100 bg-white shadow-2xl shadow-rose-100/60 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          className={`fixed inset-x-4 top-[72px] sm:absolute sm:inset-auto sm:right-0 sm:top-[calc(100%+12px)] z-30 sm:w-[400px] origin-top-right overflow-hidden rounded-[28px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl shadow-rose-100/60 dark:shadow-slate-900/60 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
             open
               ? "translate-y-0 scale-100 opacity-100"
               : "pointer-events-none -translate-y-2 scale-95 opacity-0"
           }`}
         >
           <div
-            className={`border-b border-rose-100 bg-gradient-to-r from-rose-50 to-pink-50 px-5 py-4 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            className={`border-b border-rose-100 dark:border-slate-800 bg-gradient-to-r from-rose-50 dark:from-slate-800/80 to-pink-50 dark:to-slate-800/80 px-5 py-4 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
               open ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
             }`}
             style={{ transitionDelay: open ? "60ms" : "0ms" }}
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-rose-500 shadow-sm ui-icon-lift">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 text-rose-500 shadow-sm ui-icon-lift">
                 <Bell className="h-4.5 w-4.5" />
               </div>
               <div>
-                <h3 className="font-display text-base font-bold text-gray-900">
+                <h3 className="font-display text-base font-bold text-gray-900 dark:text-slate-100">
                   Notifications
                 </h3>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-slate-400">
                   Unread chat messages and profile activity for your account.
                 </p>
               </div>
@@ -821,17 +821,17 @@ export default function NotificationBell({
               }`}
               style={{ transitionDelay: open ? "90ms" : "0ms" }}
             >
-              <div className="ui-soft-float mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-300">
+              <div className="ui-soft-float mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 dark:bg-slate-800 text-rose-300">
                 <Bell className="h-7 w-7" />
               </div>
-              <p className="font-semibold text-gray-900">No new notifications</p>
-              <p className="mt-1 text-sm leading-6 text-gray-500">
+              <p className="font-semibold text-gray-900 dark:text-slate-100">No new notifications</p>
+              <p className="mt-1 text-sm leading-6 text-gray-500 dark:text-slate-400">
                 When someone likes your profile or sends you a message, it will show here.
               </p>
             </div>
           ) : (
             <div
-              className={`max-h-[28rem] overflow-y-auto p-2 custom-scrollbar transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              className={`max-h-[min(28rem,calc(100vh-12rem))] overflow-y-auto p-2 custom-scrollbar transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 open ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
               }`}
               style={{ transitionDelay: open ? "80ms" : "0ms" }}
@@ -870,10 +870,10 @@ export default function NotificationBell({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-gray-900">
+                        <p className="truncate text-sm font-semibold text-gray-900 dark:text-slate-100">
                           {item.title}
                         </p>
-                        <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-gray-500">
+                        <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-gray-500 dark:text-slate-400">
                           {item.subtitle}
                         </p>
                       </div>
@@ -890,11 +890,11 @@ export default function NotificationBell({
                         {accent.label}
                       </span>
                       {item.actorProfession ? (
-                        <span className="rounded-full bg-gray-50 px-2.5 py-1 text-[11px] text-gray-600">
+                        <span className="rounded-full bg-gray-50 dark:bg-slate-800 px-2.5 py-1 text-[11px] text-gray-600 dark:text-slate-300">
                           {item.actorProfession}
                         </span>
                       ) : null}
-                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2.5 py-1 text-[11px] text-slate-600">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-50 dark:bg-slate-800 px-2.5 py-1 text-[11px] text-slate-600 dark:text-slate-300">
                         <MapPin className="h-3 w-3" />
                         {item.actorLocation}
                       </span>
@@ -916,7 +916,7 @@ export default function NotificationBell({
                       href={item.href}
                       onClick={() => setOpen(false)}
                       tabIndex={open ? 0 : -1}
-                      className={`group ui-card-lift-soft flex items-start gap-3 rounded-2xl px-3 py-3 hover:bg-rose-50/70 ${transitionClassName}`}
+                      className={`group ui-card-lift-soft flex items-start gap-3 rounded-2xl px-3 py-3 hover:bg-rose-50/70 dark:hover:bg-slate-800/80 ${transitionClassName}`}
                       style={transitionStyle}
                     >
                       {actorAvatar}
@@ -935,7 +935,7 @@ export default function NotificationBell({
                       href={item.href}
                       onClick={() => setOpen(false)}
                       tabIndex={open ? 0 : -1}
-                      className="group flex items-start gap-3 rounded-2xl transition-colors hover:bg-rose-50/70"
+                      className="group flex items-start gap-3 rounded-2xl transition-colors hover:bg-rose-50/70 dark:hover:bg-slate-800/80"
                     >
                       {actorAvatar}
                       {contentBlock}
@@ -959,7 +959,7 @@ export default function NotificationBell({
                         type="button"
                         onClick={() => void handleReject(item)}
                         disabled={isPending}
-                        className="inline-flex min-w-[112px] items-center justify-center gap-2 rounded-full border border-rose-200 bg-white px-4 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 disabled:cursor-not-allowed disabled:border-rose-100 disabled:text-rose-300"
+                        className="inline-flex min-w-[112px] items-center justify-center gap-2 rounded-full border border-rose-200 dark:border-rose-900 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 dark:hover:bg-slate-800 disabled:cursor-not-allowed disabled:border-rose-100 disabled:text-rose-300"
                       >
                         {isPending ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />

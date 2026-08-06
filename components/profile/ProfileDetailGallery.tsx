@@ -111,8 +111,8 @@ export default function ProfileDetailGallery({
 
   return (
     <div>
-      <div className="ui-card-lift-soft overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_16px_38px_rgba(15,23,42,0.08)]">
-        <div className="relative aspect-[11/10] w-full bg-[linear-gradient(180deg,#fff7f9_0%,#fff1f5_100%)]">
+      <div className="ui-card-lift-soft overflow-hidden rounded-[16px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_16px_38px_rgba(15,23,42,0.08)] dark:shadow-[0_16px_38px_rgba(0,0,0,0.3)]">
+        <div className="relative aspect-[11/10] w-full bg-[linear-gradient(180deg,#fff7f9_0%,#fff1f5_100%)] dark:bg-[linear-gradient(180deg,#0f172a_0%,#1e293b_100%)]">
           {activePhoto ? (
             <Image
               src={activePhoto}
@@ -126,8 +126,8 @@ export default function ProfileDetailGallery({
               quality={100}
             />
           ) : (
-            <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top,#fff6f8_0%,#fff0f4_42%,#ffe5ee_100%)]">
-              <div className="flex h-32 w-32 items-center justify-center rounded-full bg-white/94 shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
+            <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top,#fff6f8_0%,#fff0f4_42%,#ffe5ee_100%)] dark:bg-[radial-gradient(circle_at_top,#1e293b_0%,#0f172a_42%,#020617_100%)]">
+              <div className="flex h-32 w-32 items-center justify-center rounded-full bg-white/94 dark:bg-slate-900/94 shadow-[0_18px_40px_rgba(15,23,42,0.12)] dark:shadow-[0_18px_40px_rgba(0,0,0,0.5)]">
                 <UserCircle2 className="h-20 w-20 text-rose-300" />
               </div>
             </div>
@@ -139,7 +139,7 @@ export default function ProfileDetailGallery({
             </div>
           ) : null}
 
-          <div className="ui-icon-lift absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-rose-500 shadow-[0_12px_26px_rgba(15,23,42,0.16)]">
+          <div className="ui-icon-lift absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white dark:bg-slate-800 text-rose-500 shadow-[0_12px_26px_rgba(15,23,42,0.16)] dark:shadow-[0_12px_26px_rgba(0,0,0,0.4)]">
             <Heart className="h-5 w-5" />
           </div>
 
@@ -152,7 +152,7 @@ export default function ProfileDetailGallery({
         </div>
 
         {photoUrls.length > 1 ? (
-          <div className="border-t border-rose-100 bg-white p-2.5">
+          <div className="border-t border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5">
             <div className="grid grid-cols-5 gap-2">
               {photoUrls
                 .slice(0, extraPhotoCount > 0 ? 4 : 5)
@@ -164,10 +164,10 @@ export default function ProfileDetailGallery({
                       key={`${photoUrl}-${index}`}
                       type="button"
                       onClick={() => setActivePhoto(photoUrl)}
-                      className={`ui-card-lift-soft group relative aspect-[4/5] overflow-hidden rounded-[10px] border bg-white transition-all ${
+                      className={`ui-card-lift-soft group relative aspect-[4/5] overflow-hidden rounded-[10px] border bg-white dark:bg-slate-900 transition-all ${
                         isActive
-                          ? "border-rose-300 ring-2 ring-rose-100"
-                          : "border-gray-200 hover:border-rose-200"
+                          ? "border-rose-300 dark:border-rose-600 ring-2 ring-rose-100 dark:ring-slate-800"
+                          : "border-gray-200 dark:border-slate-700 hover:border-rose-200 dark:hover:border-slate-600"
                       }`}
                       aria-label={`View photo ${index + 1}`}
                     >
@@ -189,7 +189,7 @@ export default function ProfileDetailGallery({
                 <button
                   type="button"
                   onClick={() => setActivePhoto(photoUrls[4])}
-                  className="ui-card-lift-soft group relative aspect-[4/5] overflow-hidden rounded-[10px] border border-gray-200 bg-white"
+                  className="ui-card-lift-soft group relative aspect-[4/5] overflow-hidden rounded-[10px] border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900"
                   aria-label={`View ${extraPhotoCount} more photos`}
                 >
                   <Image
@@ -211,8 +211,8 @@ export default function ProfileDetailGallery({
             </div>
           </div>
         ) : (
-          <div className="ui-card-lift-soft border-t border-dashed border-rose-200 bg-white/90 px-4 py-5 text-center text-sm text-gray-500">
-            <div className="ui-icon-lift mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-rose-50 text-rose-400">
+          <div className="ui-card-lift-soft border-t border-dashed border-rose-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/90 px-4 py-5 text-center text-sm text-gray-500 dark:text-slate-400">
+            <div className="ui-icon-lift mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-rose-50 dark:bg-slate-800 text-rose-400">
               <ImageIcon className="h-4.5 w-4.5" />
             </div>
             More photos will appear here when available.

@@ -64,21 +64,21 @@ export default function HealthDetailsModal({ profileId, profileName, isOpen, onC
       onClick={onClose}
     >
       <div
-        className="ui-modal-pop w-full max-w-md overflow-hidden rounded-[24px] border border-rose-100 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.14)]"
+        className="ui-modal-pop w-full max-w-md overflow-hidden rounded-[24px] border border-rose-100 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.14)] dark:border-slate-700 dark:bg-slate-900"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
       >
-        <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-6">
+        <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-6 dark:!bg-slate-800 dark:!bg-none">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-rose-500 shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-rose-500 shadow-sm dark:bg-slate-800 dark:shadow-none">
               <HeartPulse className="h-6 w-6" />
             </div>
             <div>
-              <h3 className="font-display text-xl font-bold text-slate-900">
+              <h3 className="font-display text-xl font-bold text-slate-900 dark:text-slate-100">
                 Health Details
               </h3>
-              <p className="text-sm text-slate-600">{profileName}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">{profileName}</p>
             </div>
           </div>
         </div>
@@ -90,36 +90,36 @@ export default function HealthDetailsModal({ profileId, profileName, isOpen, onC
             </div>
           ) : details ? (
             <div className="space-y-4">
-              <div className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+              <div className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
                 <Activity className="mt-0.5 h-5 w-5 shrink-0 text-rose-400" />
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Blood Pressure</p>
-                  <p className="font-medium text-slate-900">{details.bloodPressure || "Not specified"}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Blood Pressure</p>
+                  <p className="font-medium text-slate-900 dark:text-slate-100">{details.bloodPressure || "Not specified"}</p>
                 </div>
               </div>
               
-              <div className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+              <div className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
                 <Droplet className="mt-0.5 h-5 w-5 shrink-0 text-rose-400" />
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Diabetes Status</p>
-                  <p className="font-medium text-slate-900">{details.diabetesStatus || "Not specified"}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Diabetes Status</p>
+                  <p className="font-medium text-slate-900 dark:text-slate-100">{details.diabetesStatus || "Not specified"}</p>
                   {details.diabetesDetails && (
-                    <p className="mt-1 text-sm text-slate-600">{details.diabetesDetails}</p>
+                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{details.diabetesDetails}</p>
                   )}
                 </div>
               </div>
 
               {details.medicalReportUrl && (
-                <div className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                <div className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
                   <FileText className="mt-0.5 h-5 w-5 shrink-0 text-rose-400" />
                   <div className="flex flex-col items-start">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Medical Report</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Medical Report</p>
                     <div className="mt-1.5">
                       <a
                         href={details.medicalReportUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="-ml-3 inline-flex items-center gap-1.5 rounded-lg bg-rose-50 px-3 py-1.5 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-100"
+                        className="-ml-3 inline-flex items-center gap-1.5 rounded-lg bg-rose-50 px-3 py-1.5 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-400 dark:hover:bg-rose-900/50"
                       >
                         <FileText className="h-4 w-4" />
                         View Document
@@ -130,7 +130,7 @@ export default function HealthDetailsModal({ profileId, profileName, isOpen, onC
               )}
             </div>
           ) : (
-            <div className="py-8 text-center text-slate-500">
+            <div className="py-8 text-center text-slate-500 dark:text-slate-400">
               <p>No health details have been added by {profileName}.</p>
             </div>
           )}
@@ -138,7 +138,7 @@ export default function HealthDetailsModal({ profileId, profileName, isOpen, onC
           <div className="mt-6">
             <button
               onClick={onClose}
-              className="w-full rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200"
+              className="w-full rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             >
               Close
             </button>

@@ -60,17 +60,17 @@ export default function DeleteAccountSection({
     <>
       <section
         id="delete-profile"
-        className="flex flex-col gap-4 rounded-[24px] border border-rose-200 bg-[linear-gradient(135deg,rgba(255,255,255,0.98)_0%,rgba(255,245,247,0.96)_100%)] px-6 py-5 shadow-sm md:flex-row md:items-center md:justify-between"
+        className="flex flex-col gap-4 rounded-[24px] border border-rose-200 dark:border-rose-900/50 bg-[linear-gradient(135deg,rgba(255,255,255,0.98)_0%,rgba(255,245,247,0.96)_100%)] dark:bg-none dark:bg-slate-900 px-6 py-5 shadow-sm md:flex-row md:items-center md:justify-between"
       >
         <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400">
             <Trash2 className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="font-display text-[1.35rem] font-bold text-slate-900">
+            <h2 className="font-display text-[1.35rem] font-bold text-slate-900 dark:text-slate-100">
               Delete Profile
             </h2>
-            <p className="mt-2 max-w-2xl text-[15px] text-slate-500">
+            <p className="mt-2 max-w-2xl text-[15px] text-slate-500 dark:text-slate-400">
               Once you delete your profile, your account, email login, password,
               matches, likes, unlocked profiles, and saved details will be removed permanently.
             </p>
@@ -80,7 +80,7 @@ export default function DeleteAccountSection({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-[16px] border border-rose-400 px-5 py-3 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+          className="inline-flex items-center justify-center gap-2 rounded-[16px] border border-rose-400 dark:border-rose-500/50 px-5 py-3 text-sm font-semibold text-rose-600 dark:text-rose-400 transition-colors hover:bg-rose-50 dark:hover:bg-rose-500/10"
         >
           <Trash2 className="h-4.5 w-4.5" />
           Delete Profile
@@ -96,7 +96,7 @@ export default function DeleteAccountSection({
             }
           }}
         >
-          <div className="relative w-full max-w-xl rounded-[28px] border border-rose-100 bg-white p-6 shadow-[0_28px_80px_rgba(15,23,42,0.22)] sm:p-7">
+          <div className="relative w-full max-w-xl rounded-[28px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-[0_28px_80px_rgba(15,23,42,0.22)] sm:p-7">
             <button
               type="button"
               onClick={closeModal}
@@ -107,22 +107,22 @@ export default function DeleteAccountSection({
             </button>
 
             <div className="mb-6 flex items-start gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400">
                 <AlertTriangle className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="font-display text-[1.6rem] font-bold text-slate-900">
+                <h3 className="font-display text-[1.6rem] font-bold text-slate-900 dark:text-slate-100">
                   Delete your account?
                 </h3>
-                <p className="mt-2 text-[15px] leading-7 text-slate-500">
+                <p className="mt-2 text-[15px] leading-7 text-slate-500 dark:text-slate-400">
                   This permanently deletes your full account, including the registered email
-                  <span className="font-semibold text-slate-700"> {email}</span>,
+                  <span className="font-semibold text-slate-700 dark:text-slate-300"> {email}</span>,
                   password login, profile details, likes, matches, payments, and unlocked profiles.
                 </p>
               </div>
             </div>
 
-            <div className="rounded-[20px] border border-amber-200 bg-amber-50 px-4 py-4 text-[14px] leading-7 text-amber-800">
+            <div className="rounded-[20px] border border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-900/20 px-4 py-4 text-[14px] leading-7 text-amber-800 dark:text-amber-300">
               This action cannot be undone. Please choose a reason before you
               continue with deleting your account.
             </div>
@@ -131,7 +131,7 @@ export default function DeleteAccountSection({
               <div>
                 <label
                   htmlFor="delete-account-reason"
-                  className="mb-2 block text-sm font-semibold text-slate-800"
+                  className="mb-2 block text-sm font-semibold text-slate-800 dark:text-slate-200"
                 >
                   Reason
                 </label>
@@ -140,7 +140,7 @@ export default function DeleteAccountSection({
                     id="delete-account-reason"
                     value={deletionReason}
                     onChange={(event) => setDeletionReason(event.target.value)}
-                    className="h-11 w-full appearance-none rounded-[16px] border border-slate-200 bg-white px-4 pr-11 text-[15px] text-slate-700 outline-none transition-colors focus:border-rose-300"
+                    className="h-11 w-full appearance-none rounded-[16px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 pr-11 text-[15px] text-slate-700 dark:text-slate-100 outline-none transition-colors focus:border-rose-300"
                   >
                     <option value="">Select a reason</option>
                     {deleteAccountReasonOptions.map((reason) => (
@@ -157,7 +157,7 @@ export default function DeleteAccountSection({
                 <div>
                   <label
                     htmlFor="delete-account-password"
-                    className="mb-2 block text-sm font-semibold text-slate-800"
+                    className="mb-2 block text-sm font-semibold text-slate-800 dark:text-slate-200"
                   >
                     Current Password
                   </label>
@@ -167,7 +167,7 @@ export default function DeleteAccountSection({
                     value={currentPassword}
                     onChange={(event) => setCurrentPassword(event.target.value)}
                     placeholder="Enter your current password"
-                    className="h-11 w-full rounded-[16px] border border-slate-200 px-4 text-[15px] text-slate-700 outline-none transition-colors placeholder:text-slate-400 focus:border-rose-300"
+                    className="h-11 w-full rounded-[16px] border border-slate-200 dark:border-slate-700 bg-transparent px-4 text-[15px] text-slate-700 dark:text-slate-100 outline-none transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-rose-300"
                   />
                 </div>
               ) : null}
@@ -177,7 +177,7 @@ export default function DeleteAccountSection({
               <button
                 type="button"
                 onClick={closeModal}
-                className="inline-flex items-center justify-center rounded-[16px] border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50"
+                className="inline-flex items-center justify-center rounded-[16px] border border-slate-200 dark:border-slate-700 px-5 py-3 text-sm font-semibold text-slate-600 dark:text-slate-300 transition-colors hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800"
               >
                 Cancel
               </button>

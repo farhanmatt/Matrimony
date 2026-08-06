@@ -219,14 +219,14 @@ function VideoStatusBanner({ status }: { status?: "PENDING" | "APPROVED" | "REJE
   
   if (status === "APPROVED") {
     return (
-      <div className="rounded-[18px] border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
+      <div className="rounded-[18px] border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-900/30 p-5 shadow-sm">
         <div className="flex items-start">
-          <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-emerald-100">
-            <ShieldCheck className="h-5 w-5 text-emerald-600" />
+          <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-800/50">
+            <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="ml-3 flex-1">
-            <h3 className="text-[15px] font-bold text-emerald-900">Selfie Video Verified</h3>
-            <p className="mt-1 text-sm text-emerald-700">Your profile is marked as highly trusted, increasing your chances of finding a match.</p>
+            <h3 className="text-[15px] font-bold text-emerald-900 dark:text-emerald-100">Selfie Video Verified</h3>
+            <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300">Your profile is marked as highly trusted, increasing your chances of finding a match.</p>
           </div>
         </div>
       </div>
@@ -235,14 +235,14 @@ function VideoStatusBanner({ status }: { status?: "PENDING" | "APPROVED" | "REJE
 
   if (status === "PENDING") {
     return (
-      <div className="rounded-[18px] border border-amber-200 bg-amber-50 p-5 shadow-sm">
+      <div className="rounded-[18px] border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-900/30 p-5 shadow-sm">
         <div className="flex items-start">
-          <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-amber-100">
-            <Video className="h-5 w-5 text-amber-600" />
+          <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-amber-100 dark:bg-amber-800/50">
+            <Video className="h-5 w-5 text-amber-600 dark:text-amber-400" />
           </div>
           <div className="ml-3 flex-1">
-            <h3 className="text-[15px] font-bold text-amber-900">Video Verification Pending</h3>
-            <p className="mt-1 text-sm text-amber-700">Your selfie video is currently being reviewed by our team. This usually takes a few hours.</p>
+            <h3 className="text-[15px] font-bold text-amber-900 dark:text-amber-100">Video Verification Pending</h3>
+            <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">Your selfie video is currently being reviewed by our team. This usually takes a few hours.</p>
           </div>
         </div>
       </div>
@@ -251,18 +251,18 @@ function VideoStatusBanner({ status }: { status?: "PENDING" | "APPROVED" | "REJE
 
   if (status === "REJECTED") {
     return (
-      <div className="rounded-[18px] border border-rose-200 bg-rose-50 p-5 shadow-sm">
+      <div className="rounded-[18px] border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-900/30 p-5 shadow-sm">
         <div className="flex items-start">
-          <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-rose-100">
-            <AlertTriangle className="h-5 w-5 text-rose-600" />
+          <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-rose-100 dark:bg-rose-800/50">
+            <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400" />
           </div>
           <div className="ml-3 flex-1">
-            <h3 className="text-[15px] font-bold text-rose-900">Video Verification Failed</h3>
-            <p className="mt-1 text-sm text-rose-700">Your selfie video was rejected. Please ensure you are clearly visible and the video is up to 10 seconds.</p>
+            <h3 className="text-[15px] font-bold text-rose-900 dark:text-rose-100">Video Verification Failed</h3>
+            <p className="mt-1 text-sm text-rose-700 dark:text-rose-300">Your selfie video was rejected. Please ensure you are clearly visible and the video is up to 10 seconds.</p>
             <div className="mt-3">
               <Link
                 href="/dashboard/profile/edit"
-                className="text-sm font-semibold text-rose-700 hover:text-rose-800 underline underline-offset-2"
+                className="text-sm font-semibold text-rose-700 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 underline underline-offset-2"
               >
                 Re-record Selfie Video
               </Link>
@@ -698,16 +698,16 @@ export default async function DashboardPage() {
 
   if (dbUnavailable) {
     return (
-      <div className="ui-enter-scale ui-card-lift-soft rounded-[32px] border border-amber-200 bg-white p-6 shadow-sm sm:p-8">
+      <div className="ui-enter-scale ui-card-lift-soft rounded-[32px] border border-amber-200 dark:border-amber-900/50 bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl bg-amber-100 text-amber-700">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
             <DatabaseZap className="h-7 w-7" />
           </div>
           <div className="flex-1">
-            <h1 className="font-display text-2xl font-bold text-gray-900">
+            <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-slate-100">
               Dashboard temporarily unavailable
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600 dark:text-slate-400">
               We could not reach your database right now, so the personalized home
               dashboard could not load. Once the connection is back, your home page
               will show matches, recommendations, and profile insights again.
@@ -722,7 +722,7 @@ export default async function DashboardPage() {
               </Link>
               <Link
                 href="/"
-                className="ui-link-shift inline-flex items-center gap-2 rounded-full border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:border-rose-300 hover:text-rose-600"
+                className="ui-link-shift inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-300 transition-colors hover:border-rose-300 hover:text-rose-600"
               >
                 Back to Home
               </Link>
@@ -737,10 +737,10 @@ export default async function DashboardPage() {
     <div className="grid gap-6 xl:grid-cols-[minmax(0,2.05fr)_290px]">
       <div className="space-y-6">
         <section
-          className="ui-enter-up ui-card-lift-soft group relative overflow-hidden rounded-[14px] border border-rose-100 bg-[linear-gradient(135deg,#fff9f3_0%,#fff6ef_22%,#ffe9ef_58%,#fff7fb_100%)] shadow-[0_22px_60px_rgba(15,23,42,0.08)]"
+          className="ui-enter-up ui-card-lift-soft group relative overflow-hidden rounded-[14px] border border-rose-100 dark:border-slate-800 bg-[linear-gradient(135deg,#fff9f3_0%,#fff6ef_22%,#ffe9ef_58%,#fff7fb_100%)] dark:bg-[none] dark:bg-slate-900 shadow-[0_22px_60px_rgba(15,23,42,0.08)]"
           style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
         >
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 dark:hidden">
             <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.78)_0%,rgba(255,248,238,0.72)_28%,rgba(255,232,240,0.28)_66%,rgba(255,255,255,0.1)_100%)]" />
             <div className="ui-soft-float absolute -left-20 top-10 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(255,231,180,0.88)_0%,rgba(255,231,180,0.34)_42%,rgba(255,231,180,0)_74%)] blur-[6px]" />
             <div
@@ -755,15 +755,15 @@ export default async function DashboardPage() {
             <div className="absolute inset-y-8 right-[18%] w-px bg-rose-100/40" />
           </div>
 
-          <div className="relative z-10 flex flex-col gap-7 px-6 py-5 sm:px-10 xl:min-h-[220px] xl:flex-row xl:items-center xl:justify-between">
+          <div className="relative z-10 flex flex-col gap-8 sm:gap-7 px-3.5 py-6 sm:px-10 sm:py-8 xl:min-h-[220px] xl:flex-row xl:items-center xl:justify-between">
             <div
               className="ui-enter-left max-w-[42rem] xl:max-w-[26rem]"
               style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
             >
-              <h1 className="font-display text-[1.15rem] font-bold leading-tight text-gray-900 sm:text-[1.45rem] sm:whitespace-nowrap lg:text-[1.6rem]">
+              <h1 className="font-display text-[1.15rem] font-bold leading-tight text-gray-900 dark:text-slate-100 sm:text-[1.45rem] sm:whitespace-nowrap lg:text-[1.6rem]">
                 Let&apos;s find your <span className="text-rose-600">perfect match</span>
               </h1>
-              <p className="mt-3 max-w-[28rem] text-[14px] leading-relaxed text-gray-700">
+              <p className="mt-3 max-w-[28rem] text-[14px] leading-relaxed text-gray-700 dark:text-slate-300">
                 {profile ? (
                   "Explore Your Life Partner"
                 ) : (
@@ -781,18 +781,18 @@ export default async function DashboardPage() {
                   className="ui-link-shift inline-flex items-center gap-2.5 rounded-[10px] bg-[#e11d48] px-3.5 py-2 text-[13px] font-semibold text-white shadow-lg shadow-rose-200 transition-all hover:-translate-y-0.5 hover:bg-[#be123c] hover:shadow-xl"
                 >
                   {profile ? "Explore Matches" : "Create / Update Your Profile"}
-                  <span className="ui-icon-lift flex h-7 w-7 items-center justify-center rounded-full bg-white text-rose-600 shadow-sm">
+                  <span className="ui-icon-lift flex h-7 w-7 items-center justify-center rounded-full bg-white dark:bg-slate-800 text-rose-600 shadow-sm">
                     <ArrowRight className="ui-arrow-shift h-3 w-3" />
                   </span>
                 </Link>
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:ml-8 xl:min-w-0 xl:flex-1 xl:grid-cols-5 xl:gap-0 xl:divide-x xl:divide-rose-100/60">
+            <div className="grid grid-cols-5 gap-2 sm:gap-3 xl:ml-8 xl:min-w-0 xl:flex-1 xl:gap-0 xl:divide-x xl:divide-rose-100/60 dark:xl:divide-slate-700">
               {statCards.map((card, index) => (
                 <div
                   key={card.label}
-                  className="ui-enter-scale ui-card-lift-soft group rounded-[22px] border border-white/70 bg-white/88 px-4 py-3 shadow-sm backdrop-blur-sm xl:rounded-none xl:border-0 xl:bg-transparent xl:px-5 xl:py-1 xl:shadow-none"
+                  className="ui-enter-scale ui-card-lift-soft group rounded-[16px] sm:rounded-[22px] border border-white/70 dark:border-slate-800/70 bg-white/88 dark:bg-slate-900/88 px-1 py-3 sm:px-4 sm:py-3 shadow-sm backdrop-blur-sm xl:rounded-none xl:border-0 xl:bg-transparent xl:dark:bg-transparent xl:px-5 xl:py-1 xl:shadow-none"
                   style={{
                     animationDelay: `${180 + index * 70}ms`,
                     animationFillMode: "forwards",
@@ -800,17 +800,18 @@ export default async function DashboardPage() {
                 >
                   <div className="flex flex-col items-center text-center">
                     <div
-                      className={`ui-icon-lift inline-flex h-9 w-9 items-center justify-center rounded-full ${card.iconWrap}`}
+                      className={`ui-icon-lift inline-flex h-6 w-6 sm:h-9 sm:w-9 items-center justify-center rounded-full ${card.iconWrap}`}
                     >
-                      <card.icon className="h-4 w-4" />
+                      <card.icon className="h-3 w-3 sm:h-4 sm:w-4" />
                     </div>
-                    <div className="mt-3 text-[1.5rem] font-display font-bold leading-none text-gray-900">
+                    <div className="mt-1.5 sm:mt-3 text-base sm:text-[1.5rem] font-display font-bold leading-none text-gray-900 dark:text-slate-100">
                       {card.value}
                     </div>
-                    <p className="mt-2 text-[11px] font-semibold text-gray-900">
-                      {card.label}
+                    <p className="mt-1 sm:mt-2 text-[9px] sm:text-[11px] font-semibold tracking-tight sm:tracking-normal text-gray-900 dark:text-slate-100 leading-tight">
+                      <span className="sm:hidden">{card.label.split(' ').pop()}</span>
+                      <span className="hidden sm:inline">{card.label}</span>
                     </p>
-                    <p className={`mt-1 text-[9px] leading-4 ${card.helperColor}`}>
+                    <p className={`hidden sm:block mt-1 text-[9px] leading-4 ${card.helperColor}`}>
                       {card.helper}
                     </p>
                   </div>
@@ -830,21 +831,21 @@ export default async function DashboardPage() {
         )}
 
         <section
-          className="ui-enter-up rounded-[30px] border border-gray-100 bg-white p-5 shadow-sm sm:p-6"
+          className="ui-enter-up rounded-[30px] border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm sm:p-6"
           style={{ animationDelay: "140ms", animationFillMode: "forwards" }}
         >
           <div className="mb-5 flex items-center justify-between gap-4">
             <div>
-              <h2 className="font-display text-2xl font-bold text-gray-900">
+              <h2 className="font-display text-2xl font-bold text-gray-900 dark:text-slate-100">
                 Recommended Profiles for You
               </h2>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
                 Curated suggestions to help you start meaningful conversations.
               </p>
             </div>
             <Link
               href="/dashboard/browse"
-              className="ui-link-shift shrink-0 text-sm font-semibold text-rose-600 transition-colors hover:text-rose-700"
+              className="ui-link-shift shrink-0 text-sm font-semibold text-rose-600 dark:text-rose-400 transition-colors hover:text-rose-700 dark:hover:text-rose-300"
             >
               View All
             </Link>
@@ -855,13 +856,13 @@ export default async function DashboardPage() {
               {visibleRecommendedCards.map((candidate, index) => (
                 <article
                   key={candidate.id}
-                  className="ui-enter-scale ui-card-lift group overflow-hidden rounded-[18px] border border-gray-100 bg-white shadow-sm"
+                  className="ui-enter-scale ui-card-lift group overflow-hidden rounded-[18px] border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm"
                   style={{
                     animationDelay: `${220 + index * 70}ms`,
                     animationFillMode: "forwards",
                   }}
                 >
-                  <div className="relative h-40 bg-rose-50">
+                  <div className="relative h-56 bg-rose-50 dark:bg-slate-800/50">
                     <Image
                       src={candidate.image}
                       alt={candidate.fullName}
@@ -870,17 +871,17 @@ export default async function DashboardPage() {
                       sizes="(max-width: 640px) 100vw, 260px"
                       unoptimized
                     />
-                    <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-rose-600 shadow-sm backdrop-blur">
+                    <span className="absolute left-3 top-3 rounded-full bg-white/90 dark:bg-slate-800/90 px-3 py-1 text-[11px] font-semibold text-rose-600 dark:text-rose-400 shadow-sm backdrop-blur">
                       {candidate.badge}
                     </span>
                   </div>
 
                   <div className="p-3.5">
-                    <h3 className="text-base font-semibold text-gray-900">
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">
                       {candidate.fullName}, {candidate.age}
                     </h3>
-                    <p className="mt-1 text-[13px] text-gray-600">{candidate.profession}</p>
-                    <p className="mt-1 inline-flex items-center gap-1 text-[11px] text-gray-500">
+                    <p className="mt-1 text-[13px] text-gray-600 dark:text-slate-300">{candidate.profession}</p>
+                    <p className="mt-1 inline-flex items-center gap-1 text-[11px] text-gray-500 dark:text-slate-400">
                       <MapPin className="h-3 w-3 text-rose-400" />
                       {candidate.location}
                     </p>
@@ -889,11 +890,11 @@ export default async function DashboardPage() {
               ))}
             </div>
           ) : (
-            <div className="ui-enter-scale rounded-[18px] border border-dashed border-gray-200 bg-rose-50/40 px-6 py-12 text-center">
-              <p className="text-sm font-semibold text-gray-900">
+            <div className="ui-enter-scale rounded-[18px] border border-dashed border-gray-200 dark:border-slate-800 bg-rose-50/40 dark:bg-slate-800/40 px-6 py-12 text-center">
+              <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">
                 No recommended profiles yet
               </p>
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
                 This section will show only members who have registered and created
                 their profile.
               </p>
@@ -906,16 +907,16 @@ export default async function DashboardPage() {
           style={{ animationDelay: "220ms", animationFillMode: "forwards" }}
         >
           <div
-            className="ui-enter-up ui-card-lift-soft rounded-[28px] border border-gray-100 bg-white p-5 shadow-sm"
+            className="ui-enter-up ui-card-lift-soft rounded-[28px] border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm"
             style={{ animationDelay: "260ms", animationFillMode: "forwards" }}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-display text-xl font-bold text-gray-900">
+              <h3 className="font-display text-xl font-bold text-gray-900 dark:text-slate-100">
                 Recent Interests
               </h3>
               <Link
                 href="/dashboard/liked"
-                className="ui-link-shift text-xs font-semibold text-rose-600 transition-colors hover:text-rose-700"
+                className="ui-link-shift text-xs font-semibold text-rose-600 dark:text-rose-400 transition-colors hover:text-rose-700 dark:hover:text-rose-300"
               >
                 View All
               </Link>
@@ -928,7 +929,7 @@ export default async function DashboardPage() {
                     key={item.id}
                     className="flex items-center gap-3 rounded-2xl transition-transform duration-300 hover:translate-x-1"
                   >
-                    <div className="relative h-12 w-12 overflow-hidden rounded-2xl bg-rose-50">
+                    <div className="relative h-12 w-12 overflow-hidden rounded-2xl bg-rose-50 dark:bg-slate-800/50">
                       <Image
                         src={item.avatar}
                         alt={item.name}
@@ -939,25 +940,25 @@ export default async function DashboardPage() {
                       />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-gray-900">
+                      <p className="truncate text-sm font-semibold text-gray-900 dark:text-slate-100">
                         {item.name}
                       </p>
-                      <p className="truncate text-xs text-gray-500">
+                      <p className="truncate text-xs text-gray-500 dark:text-slate-400">
                         {item.location}
                       </p>
                     </div>
-                    <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
+                    <span className="rounded-full bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                       {item.status}
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="rounded-2xl border border-dashed border-gray-200 bg-rose-50/40 px-4 py-6 text-center">
-                <p className="text-sm font-semibold text-gray-900">
+              <div className="rounded-2xl border border-dashed border-gray-200 dark:border-slate-800 bg-rose-50/40 dark:bg-slate-800/40 px-4 py-6 text-center">
+                <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">
                   No recent interests right now
                 </p>
-                <p className="mt-2 text-xs leading-6 text-gray-500">
+                <p className="mt-2 text-xs leading-6 text-gray-500 dark:text-slate-400">
                   New received likes that are not already mutual will appear here.
                 </p>
               </div>
@@ -965,16 +966,16 @@ export default async function DashboardPage() {
           </div>
 
           <div
-            className="ui-enter-up ui-card-lift-soft rounded-[28px] border border-gray-100 bg-white p-5 shadow-sm"
+            className="ui-enter-up ui-card-lift-soft rounded-[28px] border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm"
             style={{ animationDelay: "330ms", animationFillMode: "forwards" }}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-display text-xl font-bold text-gray-900">
+              <h3 className="font-display text-xl font-bold text-gray-900 dark:text-slate-100">
                 Mutual Interest
               </h3>
               <Link
                 href="/dashboard/matches"
-                className="ui-link-shift text-xs font-semibold text-rose-600 transition-colors hover:text-rose-700"
+                className="ui-link-shift text-xs font-semibold text-rose-600 dark:text-rose-400 transition-colors hover:text-rose-700 dark:hover:text-rose-300"
               >
                 View All
               </Link>
@@ -987,7 +988,7 @@ export default async function DashboardPage() {
                     key={item.id}
                     className="flex items-center gap-3 rounded-2xl transition-transform duration-300 hover:translate-x-1"
                   >
-                    <div className="relative h-12 w-12 overflow-hidden rounded-2xl bg-rose-50">
+                    <div className="relative h-12 w-12 overflow-hidden rounded-2xl bg-rose-50 dark:bg-slate-800/50">
                       <Image
                         src={item.avatar}
                         alt={item.name}
@@ -998,25 +999,25 @@ export default async function DashboardPage() {
                       />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-gray-900">
+                      <p className="truncate text-sm font-semibold text-gray-900 dark:text-slate-100">
                         {item.name}
                       </p>
-                      <p className="truncate text-xs text-gray-500">
+                      <p className="truncate text-xs text-gray-500 dark:text-slate-400">
                         {item.location}
                       </p>
                     </div>
-                    <span className="rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-600">
+                    <span className="rounded-full bg-sky-50 dark:bg-sky-900/30 px-2.5 py-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400">
                       {item.status}
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="rounded-2xl border border-dashed border-gray-200 bg-sky-50/40 px-4 py-6 text-center">
-                <p className="text-sm font-semibold text-gray-900">
+              <div className="rounded-2xl border border-dashed border-gray-200 dark:border-slate-800 bg-sky-50/40 dark:bg-slate-800/40 px-4 py-6 text-center">
+                <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">
                   No mutual interests yet
                 </p>
-                <p className="mt-2 text-xs leading-6 text-gray-500">
+                <p className="mt-2 text-xs leading-6 text-gray-500 dark:text-slate-400">
                   Profiles will appear here only after both of you like each other.
                 </p>
               </div>
@@ -1024,19 +1025,19 @@ export default async function DashboardPage() {
           </div>
 
           <div
-            className="ui-enter-up ui-card-lift-soft group rounded-[28px] border border-gray-100 bg-white p-5 shadow-sm"
+            className="ui-enter-up ui-card-lift-soft group rounded-[28px] border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm"
             style={{ animationDelay: "400ms", animationFillMode: "forwards" }}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-display text-xl font-bold text-gray-900">
+              <h3 className="font-display text-xl font-bold text-gray-900 dark:text-slate-100">
                 Success Story
               </h3>
-              <span className="text-xs font-semibold text-rose-600">
+              <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">
                 Featured
               </span>
             </div>
 
-            <div className="overflow-hidden rounded-[24px] bg-rose-50">
+            <div className="overflow-hidden rounded-[24px] bg-rose-50 dark:bg-slate-800/50">
               <div className="relative h-44">
                 <Image
                   src={fallbackSuccessStory.image}
@@ -1047,10 +1048,10 @@ export default async function DashboardPage() {
                 />
               </div>
               <div className="p-4">
-                <h4 className="font-display text-lg font-bold text-gray-900">
+                <h4 className="font-display text-lg font-bold text-gray-900 dark:text-slate-100">
                   {fallbackSuccessStory.title}
                 </h4>
-                <p className="mt-2 text-sm leading-7 text-gray-600">
+                <p className="mt-2 text-sm leading-7 text-gray-600 dark:text-slate-400">
                   {fallbackSuccessStory.quote}
                 </p>
               </div>
@@ -1059,7 +1060,7 @@ export default async function DashboardPage() {
         </section>
 
         <section
-          className="ui-enter-up grid gap-4 rounded-[30px] border border-rose-100 bg-gradient-to-r from-white via-rose-50 to-pink-50 p-5 shadow-sm sm:grid-cols-2 xl:grid-cols-4"
+          className="ui-enter-up grid gap-4 rounded-[30px] border border-rose-100 dark:border-slate-800 bg-gradient-to-r from-white via-rose-50 to-pink-50 dark:from-slate-900 dark:via-slate-900/90 dark:to-slate-900 p-5 shadow-sm sm:grid-cols-2 xl:grid-cols-4"
           style={{ animationDelay: "300ms", animationFillMode: "forwards" }}
         >
           {[
@@ -1092,12 +1093,12 @@ export default async function DashboardPage() {
                 animationFillMode: "forwards",
               }}
             >
-              <div className="ui-icon-lift flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-rose-500 shadow-sm">
+              <div className="ui-icon-lift flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 text-rose-500 dark:text-rose-400 shadow-sm">
                 <item.icon className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">{item.title}</p>
-                <p className="mt-1 text-xs leading-6 text-gray-500">
+                <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">{item.title}</p>
+                <p className="mt-1 text-xs leading-6 text-gray-500 dark:text-slate-400">
                   {item.description}
                 </p>
               </div>

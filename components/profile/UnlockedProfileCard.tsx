@@ -139,17 +139,17 @@ export default function UnlockedProfileCard({
 
   return (
     <article
-      className="ui-card-lift group relative cursor-pointer overflow-hidden rounded-[26px] border border-emerald-100/80 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.07)]"
+      className="ui-card-lift group relative cursor-pointer overflow-hidden rounded-[26px] border border-emerald-100/80 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.07)] dark:border-slate-800 dark:bg-slate-900"
       onClick={openProfile}
       onKeyDown={handleCardKeyDown}
       role="link"
       tabIndex={0}
       aria-label={`Open ${profile.fullName} full profile`}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(236,253,245,0.6)_0%,rgba(255,255,255,0)_36%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(236,253,245,0.6)_0%,rgba(255,255,255,0)_36%)] dark:!bg-slate-800 dark:!bg-none" />
 
       <div className="relative px-4 pb-4 pt-4">
-        <div className="relative h-[182px] overflow-hidden rounded-[20px] bg-[linear-gradient(135deg,#e8faf0_0%,#f5fff9_100%)]">
+        <div className="relative h-[182px] overflow-hidden rounded-[20px] bg-[linear-gradient(135deg,#e8faf0_0%,#f5fff9_100%)] dark:!bg-slate-800 dark:!bg-none">
           {primaryPhoto ? (
             <Image
               src={primaryPhoto}
@@ -161,7 +161,7 @@ export default function UnlockedProfileCard({
             />
           ) : (
             <div className="flex h-full items-center justify-center">
-              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/90 shadow-lg shadow-emerald-100">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/90 shadow-lg shadow-emerald-100 dark:bg-slate-800 dark:shadow-none">
                 <span className="text-3xl font-display font-bold text-emerald-600">
                   {profile.fullName[0]}
                 </span>
@@ -171,7 +171,7 @@ export default function UnlockedProfileCard({
 
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0)_0%,rgba(15,23,42,0.04)_100%)]" />
 
-          <div className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/96 px-3 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm">
+          <div className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/96 px-3 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm dark:bg-slate-800 dark:text-emerald-400">
             <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
             Unlocked
           </div>
@@ -190,11 +190,11 @@ export default function UnlockedProfileCard({
             </button>
 
             {isMenuOpen ? (
-              <div className="ui-enter-up absolute right-0 top-12 w-48 overflow-hidden rounded-[18px] border border-emerald-100 bg-white py-2 shadow-[0_20px_44px_rgba(15,23,42,0.16)]">
+              <div className="ui-enter-up absolute right-0 top-12 w-48 overflow-hidden rounded-[18px] border border-emerald-100 bg-white py-2 shadow-[0_20px_44px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
                 <Link
                   href={profileHref}
                   onClick={() => setIsMenuOpen(false)}
-                  className="ui-link-shift flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+                  className="ui-link-shift flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-emerald-400"
                 >
                   <ExternalLink className="h-4 w-4" />
                   Open full profile
@@ -205,7 +205,7 @@ export default function UnlockedProfileCard({
                     stopCardNavigation(event);
                     void copyPhoneNumber();
                   }}
-                  className="ui-link-shift flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+                  className="ui-link-shift flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-emerald-400"
                 >
                   <Copy className="h-4 w-4" />
                   Copy phone number
@@ -216,7 +216,7 @@ export default function UnlockedProfileCard({
                     target="_blank"
                     rel="noreferrer"
                     onClick={stopCardNavigation}
-                    className="ui-link-shift flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+                    className="ui-link-shift flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-emerald-400"
                   >
                     <MessageCircle className="h-4 w-4" />
                     Open WhatsApp
@@ -229,13 +229,13 @@ export default function UnlockedProfileCard({
 
         <div className="px-1 pb-1 pt-5">
           <div className="flex items-center gap-2">
-            <h3 className="font-display text-[1.52rem] font-bold tracking-tight text-slate-900">
+            <h3 className="font-display text-[1.52rem] font-bold tracking-tight text-slate-900 dark:text-slate-100">
               {profile.fullName.split(" ")[0]}, {age}
             </h3>
             <BadgeCheck className="ui-icon-lift h-[18px] w-[18px] text-emerald-500" />
           </div>
 
-          <div className="mt-4 space-y-2.5 text-[14px] text-slate-600">
+          <div className="mt-4 space-y-2.5 text-[14px] text-slate-600 dark:text-slate-300">
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
               <span className="truncate">{location}</span>
@@ -260,7 +260,7 @@ export default function UnlockedProfileCard({
             ) : null}
           </div>
 
-          <div className="ui-card-lift-soft mt-4 rounded-[14px] bg-[linear-gradient(90deg,rgba(236,253,245,0.95)_0%,rgba(240,253,244,0.72)_100%)] px-4 py-2.5 text-center text-[13px] font-semibold text-emerald-700">
+          <div className="ui-card-lift-soft mt-4 rounded-[14px] bg-[linear-gradient(90deg,rgba(236,253,245,0.95)_0%,rgba(240,253,244,0.72)_100%)] px-4 py-2.5 text-center text-[13px] font-semibold text-emerald-700 dark:!bg-emerald-900/30 dark:!bg-none dark:text-emerald-400">
             Unlocked on {formatDate(unlockedAt)}
           </div>
         </div>

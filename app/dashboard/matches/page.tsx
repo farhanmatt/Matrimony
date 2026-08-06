@@ -164,11 +164,11 @@ export default function MatchesPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 text-rose-500 shadow-sm">
               <HeartHandshake className="h-5 w-5" />
             </div>
-            <h1 className="font-display text-[1.75rem] font-bold tracking-tight text-slate-900">
+            <h1 className="font-display text-[1.75rem] font-bold tracking-tight text-slate-900 dark:text-slate-100">
               Mutual Interest
             </h1>
           </div>
-          <p className="max-w-2xl text-[15px] text-slate-600">
+          <p className="max-w-2xl text-[15px] text-slate-600 dark:text-slate-400">
             These are your mutual interests - both of you showed interest in each other.
           </p>
         </div>
@@ -181,7 +181,7 @@ export default function MatchesPage() {
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search mutual interests..."
-              className="h-12 w-full rounded-[18px] border border-rose-100 bg-white pl-12 pr-4 text-sm text-slate-700 outline-none shadow-sm transition-colors placeholder:text-slate-400 focus:border-rose-300"
+              className="h-12 w-full rounded-[18px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 pl-12 pr-4 text-sm text-slate-700 dark:text-slate-300 outline-none shadow-sm transition-colors placeholder:text-slate-400 focus:border-rose-300"
             />
           </label>
 
@@ -189,14 +189,14 @@ export default function MatchesPage() {
             <button
               type="button"
               onClick={() => setShowFilterMenu((current) => !current)}
-              className="inline-flex h-12 w-12 items-center justify-center rounded-[14px] border border-rose-100 bg-white text-slate-700 shadow-sm transition-colors hover:border-rose-200 hover:text-rose-600"
+              className="inline-flex h-12 w-12 items-center justify-center rounded-[14px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 shadow-sm transition-colors hover:border-rose-200 dark:hover:border-slate-700 hover:text-rose-600 dark:hover:text-rose-400"
               aria-label="Open filters"
             >
               <SlidersHorizontal className="h-4.5 w-4.5" />
             </button>
 
             {showFilterMenu ? (
-              <div className="absolute right-0 top-14 z-20 min-w-[180px] overflow-hidden rounded-2xl border border-rose-100 bg-white py-2 shadow-[0_16px_40px_rgba(15,23,42,0.12)]">
+              <div className="absolute right-0 top-14 z-20 min-w-[180px] overflow-hidden rounded-2xl border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 py-2 shadow-[0_16px_40px_rgba(15,23,42,0.12)]">
                 {[
                   { key: "all", label: "All Mutual Interests" },
                   { key: "recent", label: "Recent Mutual Interests" },
@@ -210,8 +210,8 @@ export default function MatchesPage() {
                     }}
                     className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-sm font-medium transition-colors ${
                       activeFilter === option.key
-                        ? "bg-rose-50 text-rose-600"
-                        : "text-slate-700 hover:bg-rose-50 hover:text-rose-600"
+                        ? "bg-rose-50 dark:bg-slate-800 text-rose-600 dark:text-rose-400"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-slate-800 hover:text-rose-600 dark:hover:text-rose-400"
                     }`}
                   >
                     <span>{option.label}</span>
@@ -247,11 +247,11 @@ export default function MatchesPage() {
           }}
         />
       ) : filteredMatches.length === 0 ? (
-        <section className="rounded-[28px] border border-rose-100 bg-white px-6 py-10 text-center shadow-sm">
-          <h2 className="font-display text-[1.55rem] font-bold text-slate-900">
+        <section className="rounded-[28px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-10 text-center shadow-sm">
+          <h2 className="font-display text-[1.55rem] font-bold text-slate-900 dark:text-slate-100">
             No mutual interests found
           </h2>
-          <p className="mt-2 text-slate-500">
+          <p className="mt-2 text-slate-500 dark:text-slate-400">
             Try adjusting your search or filters to find what you're looking for.
           </p>
         </section>
@@ -279,7 +279,7 @@ export default function MatchesPage() {
                 onClick={() =>
                   setVisibleCount((current) => current + LOAD_MORE_COUNT)
                 }
-                className="inline-flex items-center justify-center gap-2 rounded-[16px] border border-rose-100 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:border-rose-200 hover:text-rose-600"
+                className="inline-flex items-center justify-center gap-2 rounded-[16px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition-colors hover:border-rose-200 dark:hover:border-slate-700 hover:text-rose-600 dark:hover:text-rose-400"
               >
                 Load More
                 <RefreshCw className="h-4.5 w-4.5" />
@@ -289,16 +289,16 @@ export default function MatchesPage() {
         </>
       )}
 
-      <section className="flex flex-col gap-5 rounded-[28px] border border-rose-100/80 bg-white px-6 py-5 shadow-sm md:flex-row md:items-center md:justify-between">
+      <section className="flex flex-col gap-5 rounded-[28px] border border-rose-100/80 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-5 shadow-sm md:flex-row md:items-center md:justify-between">
         <div className="flex items-start gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 dark:bg-slate-800 text-rose-500">
             <ShieldCheck className="h-6 w-6" />
           </div>
           <div>
-            <h2 className="font-display text-[1.4rem] font-bold text-slate-900">
+            <h2 className="font-display text-[1.4rem] font-bold text-slate-900 dark:text-slate-100">
               Safe & Secure
             </h2>
-            <p className="mt-1 text-[15px] text-slate-500">
+            <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
               Your privacy is our priority. Contact details stay protected until
               you unlock the profile.
             </p>

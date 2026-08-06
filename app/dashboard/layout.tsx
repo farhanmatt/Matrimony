@@ -12,6 +12,7 @@ import DashboardWelcomeIntro from "@/components/dashboard/DashboardWelcomeIntro"
 import DashboardSidebar from "@/components/layout/DashboardSidebar";
 import { getDashboardProfileSummary } from "@/lib/server/dashboard-page-data";
 import { getAdminSettingsSnapshot } from "@/lib/utils/admin-settings";
+import { ThemeProvider } from "@/components/dashboard/ThemeProvider";
 
 export default async function DashboardLayout({
   children,
@@ -50,32 +51,34 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardAutoRefresh />
-      <DashboardRealtimeEvents />
-      <DashboardWelcomeIntro
-        initialOpen={!introStatus?.hasSeenDashboardIntro}
-      />
-      <DashboardSidebar
-        initialUser={{
-          id: session.user.id,
-          name: session.user.name ?? null,
-          email: session.user.email ?? null,
-          image: session.user.image ?? null,
-        }}
-        initialHasProfile={Boolean(profileSummary?.id ?? notificationState.profileId)}
-        initialProfileUserId={profileSummary?.profileUserId ?? null}
-        initialAccountImage={profileSummary?.accountImage ?? null}
-        initialNotificationProfileId={notificationState.profileId}
-        initialNotifications={notificationState.items}
-        initialChatFeatureEnabled={adminSettings.isChatFeatureEnabled}
-        initialHealthDetailsEnabled={adminSettings.isHealthDetailsEnabled}
-      />
-      <main className="min-h-screen pt-[72px]">
-        <div className="mx-auto max-w-[1600px] px-4 pt-3 pb-4 sm:px-6 sm:pt-4 sm:pb-6 lg:px-8 lg:pt-4 lg:pb-8">
-          {children}
-        </div>
-      </main>
-    </div>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-200">
+        <DashboardAutoRefresh />
+        <DashboardRealtimeEvents />
+        <DashboardWelcomeIntro
+          initialOpen={!introStatus?.hasSeenDashboardIntro}
+        />
+        <DashboardSidebar
+          initialUser={{
+            id: session.user.id,
+            name: session.user.name ?? null,
+            email: session.user.email ?? null,
+            image: session.user.image ?? null,
+          }}
+          initialHasProfile={Boolean(profileSummary?.id ?? notificationState.profileId)}
+          initialProfileUserId={profileSummary?.profileUserId ?? null}
+          initialAccountImage={profileSummary?.accountImage ?? null}
+          initialNotificationProfileId={notificationState.profileId}
+          initialNotifications={notificationState.items}
+          initialChatFeatureEnabled={adminSettings.isChatFeatureEnabled}
+          initialHealthDetailsEnabled={adminSettings.isHealthDetailsEnabled}
+        />
+        <main className="min-h-screen pt-[72px] pb-[88px] lg:pb-0 overflow-x-hidden lg:overflow-x-visible">
+          <div className="mx-auto max-w-[1600px] px-4 pt-3 pb-4 sm:px-6 sm:pt-4 sm:pb-6 lg:px-8 lg:pt-4 lg:pb-8">
+            {children}
+          </div>
+        </main>
+      </div>
+    </ThemeProvider>
   );
 }

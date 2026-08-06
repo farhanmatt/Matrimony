@@ -839,7 +839,7 @@ function SearchableDropdownInput({
               ref={panelRef}
               id={`${id}-dropdown`}
               role="listbox"
-              className="fixed z-[9999] overflow-hidden border border-gray-400 bg-white shadow-sm"
+              className="fixed z-[9999] overflow-hidden border border-gray-400 bg-white dark:bg-slate-900 shadow-sm"
               style={{
                 left: `${menuPosition.left}px`,
                 width: `${menuPosition.width}px`,
@@ -880,7 +880,7 @@ function SearchableDropdownInput({
                             ? "bg-blue-600 text-white"
                             : isSelected
                               ? "bg-blue-600 text-white"
-                              : "text-gray-900 hover:bg-blue-50"
+                              : "text-gray-900 dark:text-slate-100 hover:bg-blue-50"
                         }`}
                       >
                         {item.label}
@@ -888,7 +888,7 @@ function SearchableDropdownInput({
                     );
                   })
                 ) : (
-                  <div className="px-6 py-2 text-base text-gray-500">
+                  <div className="px-6 py-2 text-base text-gray-500 dark:text-slate-400">
                     {emptyMessage}
                   </div>
                 )}
@@ -979,6 +979,15 @@ function formatTimeOfBirth(parts: TimeOfBirthParts) {
 
 function scrollToTop() {
   if (typeof window !== "undefined") {
+    if (window.innerWidth < 1280) {
+      const container = document.getElementById("profile-form-container");
+      if (container) {
+        const yOffset = -20;
+        const y = container.getBoundingClientRect().top + window.scrollY + yOffset;
+        window.scrollTo({ top: y, behavior: "smooth" });
+        return;
+      }
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 }
@@ -1015,12 +1024,12 @@ function SectionBlock({
         animationFillMode: "forwards",
       }}
     >
-      <div className="border-b border-gray-100 pb-3 mb-6">
-        <h2 className="text-base font-display font-semibold text-gray-900">
+      <div className="border-b border-gray-100 dark:border-slate-800 pb-3 mb-6">
+        <h2 className="text-base font-display font-semibold text-gray-900 dark:text-slate-100">
           {title}
         </h2>
         {description ? (
-          <p className="mt-1 text-sm text-gray-500">{description}</p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{description}</p>
         ) : null}
       </div>
       {children}
@@ -1155,7 +1164,7 @@ function ProfileCreatedSuccessModal({
       />
 
       <div
-        className="relative z-10 w-full max-w-[460px] overflow-hidden rounded-[20px] border border-white/20 bg-white shadow-[0_32px_80px_rgba(0,0,0,0.18)]"
+        className="relative z-10 w-full max-w-[460px] overflow-hidden rounded-[20px] border border-white/20 bg-white dark:bg-slate-900 shadow-[0_32px_80px_rgba(0,0,0,0.18)]"
         style={{ animation: "pcsm-card-in 400ms cubic-bezier(0.16,1,0.3,1) 100ms forwards", opacity: 0 }}
       >
         <div className="h-[6px] bg-gradient-to-r from-rose-500 via-pink-500 to-rose-400" />
@@ -1170,7 +1179,7 @@ function ProfileCreatedSuccessModal({
 
           <h2
             id="profile-created-success-title"
-            className="mt-5 font-display text-[1.55rem] font-bold leading-tight text-gray-900"
+            className="mt-5 font-display text-[1.55rem] font-bold leading-tight text-gray-900 dark:text-slate-100"
             style={{ animation: "pcsm-slide-up 400ms ease-out 450ms forwards", opacity: 0 }}
           >
             🎉 Profile Created Successfully!
@@ -1178,15 +1187,15 @@ function ProfileCreatedSuccessModal({
 
           <p
             id="profile-created-success-description"
-            className="mt-3 text-[15px] leading-relaxed text-gray-600"
+            className="mt-3 text-[15px] leading-relaxed text-gray-600 dark:text-slate-300"
             style={{ animation: "pcsm-slide-up 400ms ease-out 520ms forwards", opacity: 0 }}
           >
-            Hi <span className="font-semibold text-gray-900">{firstName}</span>,
+            Hi <span className="font-semibold text-gray-900 dark:text-slate-100">{firstName}</span>,
             your profile has been created successfully.
           </p>
 
           <div
-            className="mx-auto mt-6 max-w-[340px] overflow-hidden rounded-[14px] border border-rose-100 bg-gradient-to-br from-rose-50/80 via-pink-50/60 to-white"
+            className="mx-auto mt-6 max-w-[340px] overflow-hidden rounded-[14px] border border-rose-100 dark:border-slate-800 bg-gradient-to-br from-rose-50/80 via-pink-50/60 to-white"
             style={{ animation: "pcsm-slide-up 400ms ease-out 590ms forwards", opacity: 0 }}
           >
             <div className="px-5 py-4">
@@ -1194,14 +1203,14 @@ function ProfileCreatedSuccessModal({
                 Your User ID
               </p>
               <div className="mt-2 flex items-center justify-center gap-2.5">
-                <span className="font-mono text-[1.35rem] font-bold tracking-wider text-gray-900">
+                <span className="font-mono text-[1.35rem] font-bold tracking-wider text-gray-900 dark:text-slate-100">
                   {profileUserId || "—"}
                 </span>
                 {profileUserId ? (
                   <button
                     type="button"
                     onClick={handleCopy}
-                    className="group flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-rose-500 transition-all hover:border-rose-300 hover:bg-rose-50 active:scale-95"
+                    className="group flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-rose-500 transition-all hover:border-rose-300 hover:bg-rose-50 active:scale-95"
                     title="Copy User ID"
                   >
                     {copied ? (
@@ -1383,12 +1392,12 @@ export default function ProfileForm({
   }, [currentStep, isCreateDraftHydrated, isEdit, watch, session?.user?.id, maxStepReached]);
 
   const inputClass = isEdit
-    ? "w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
-    : "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 shadow-[0_10px_30px_rgba(15,23,42,0.04)] outline-none transition-all focus:border-rose-300 focus:ring-4 focus:ring-rose-100";
+    ? "w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
+    : "w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-gray-700 dark:text-slate-200 shadow-[0_10px_30px_rgba(15,23,42,0.04)] outline-none transition-all focus:border-rose-300 focus:ring-4 focus:ring-rose-100";
   const selectClass = inputClass;
   const labelClass = isEdit
-    ? "block text-sm font-medium text-gray-700 mb-1"
-    : "mb-2 block text-[13px] font-medium text-gray-700";
+    ? "block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1"
+    : "mb-2 block text-[13px] font-medium text-gray-700 dark:text-slate-200";
   const errorClass = "mt-1 text-xs text-rose-500";
   const selectedHeight = watch("height");
   const availableMaritalOptions = isEdit
@@ -2954,7 +2963,7 @@ export default function ProfileForm({
       </div>
 
       {!isEdit ? (
-        <p className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <p className="rounded-2xl border border-rose-100 dark:border-slate-800 bg-rose-50 px-4 py-3 text-sm text-rose-700">
           Horoscope image upload is available in the final photo stage so the create
           flow stays clean and step-by-step.
         </p>
@@ -3099,7 +3108,7 @@ export default function ProfileForm({
   const renderPartnerPreferences = () => (
     <div className="space-y-8">
       <section>
-        <h3 className="mb-5 border-b border-gray-100 pb-3 text-base font-display font-semibold text-gray-900">
+        <h3 className="mb-5 border-b border-gray-100 dark:border-slate-800 pb-3 text-base font-display font-semibold text-gray-900 dark:text-slate-100">
           Basic Preferences
         </h3>
         <div className="grid gap-5 sm:grid-cols-2">
@@ -3221,7 +3230,7 @@ export default function ProfileForm({
       </section>
 
       <section>
-        <h3 className="mb-5 border-b border-gray-100 pb-3 text-base font-display font-semibold text-gray-900">
+        <h3 className="mb-5 border-b border-gray-100 dark:border-slate-800 pb-3 text-base font-display font-semibold text-gray-900 dark:text-slate-100">
           Community & Lifestyle
         </h3>
         <div className="grid gap-5 sm:grid-cols-2">
@@ -3395,7 +3404,7 @@ export default function ProfileForm({
         ) : null}
       </div>
       
-      <div className="pt-6 border-t border-gray-100">
+      <div className="pt-6 border-t border-gray-100 dark:border-slate-800">
         <Controller
           name="selfieImages"
           control={control}
@@ -3409,7 +3418,7 @@ export default function ProfileForm({
         />
       </div>
 
-      <div className="pt-8 mt-8 border-t border-gray-100">
+      <div className="pt-8 mt-8 border-t border-gray-100 dark:border-slate-800">
         <Controller
           name="selfieVideoUrl"
           control={control}
@@ -3424,7 +3433,7 @@ export default function ProfileForm({
         />
       </div>
 
-      <p className="text-sm text-gray-500 pt-4">
+      <p className="text-sm text-gray-500 dark:text-slate-400 pt-4">
         You can upload photos and videos now and update them later anytime from Edit Profile.
       </p>
     </div>
@@ -3458,11 +3467,11 @@ export default function ProfileForm({
       <form onSubmit={handleFormSubmit} className="space-y-8">
         {!isEdit ? (
           <>
-            <div className="ui-card-lift-soft overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_24px_72px_rgba(15,23,42,0.06)]">
+            <div className="ui-card-lift-soft overflow-hidden rounded-[16px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_24px_72px_rgba(15,23,42,0.06)]">
               <div className="grid xl:grid-cols-[290px_minmax(0,1fr)]">
-                <aside className="border-b border-gray-100 bg-[linear-gradient(180deg,#fffdfd_0%,#fff7fa_100%)] p-6 sm:p-7 xl:border-b-0 xl:border-r xl:p-8">
-                  <div className="ui-card-lift-soft bg-white/85 p-5 backdrop-blur-sm">
-                    <h2 className="whitespace-nowrap text-[1.15rem] font-semibold text-gray-900">
+                <aside className="border-b border-gray-100 dark:border-slate-800 bg-[linear-gradient(180deg,#fffdfd_0%,#fff7fa_100%)] p-6 sm:p-7 xl:border-b-0 xl:border-r xl:p-8">
+                  <div className="ui-card-lift-soft bg-white dark:bg-slate-900/85 p-5 backdrop-blur-sm">
+                    <h2 className="whitespace-nowrap text-[1.15rem] font-semibold text-gray-900 dark:text-slate-100">
                       Complete Your Profile
                     </h2>
                     <div className="mt-4 text-[2.15rem] font-display font-bold leading-none text-rose-600">
@@ -3474,7 +3483,7 @@ export default function ProfileForm({
                         style={{ width: `${completionPercentage}%` }}
                       />
                     </div>
-                    <p className="mt-3 text-sm text-gray-500">
+                    <p className="mt-3 text-sm text-gray-500 dark:text-slate-400">
                       {completedStepCount} of {activeCreateProfileSteps.length} sections
                       completed
                     </p>
@@ -3503,7 +3512,7 @@ export default function ProfileForm({
                                   ? "border-transparent bg-red-500 text-white shadow-sm ring-2 ring-red-100"
                                   : status === "completed"
                                     ? "border-transparent bg-emerald-500 text-white shadow-sm"
-                                    : "border-gray-200 bg-white text-gray-500"
+                                    : "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-500 dark:text-slate-400"
                             } ${isClickable ? "group-hover:scale-105 group-active:scale-95 shadow-sm ring-rose-50" : ""}`}
                           >
                             {status === "completed" ? (
@@ -3521,12 +3530,12 @@ export default function ProfileForm({
                                     ? "text-red-600"
                                     : status === "completed"
                                       ? "text-emerald-700"
-                                      : "text-gray-900"
+                                      : "text-gray-900 dark:text-slate-100"
                               } ${isClickable ? "group-hover:text-rose-500 transition-colors" : ""}`}
                             >
                               {step.title}
                             </p>
-                            <p className="mt-1 text-[13px] leading-5 text-gray-500">
+                            <p className="mt-1 text-[13px] leading-5 text-gray-500 dark:text-slate-400">
                               {step.sidebarDescription}
                             </p>
                           </div>
@@ -3536,8 +3545,8 @@ export default function ProfileForm({
                   </div>
                 </aside>
 
-                <div className="bg-white p-6 sm:p-7 xl:p-8">
-                  <div className="ui-card-lift-soft rounded-[14px] border border-gray-100 bg-[linear-gradient(180deg,#ffffff_0%,#fffdfd_100%)] p-6 shadow-[0_18px_48px_rgba(15,23,42,0.04)] sm:p-7 lg:p-8">
+                <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 xl:p-8" id="profile-form-container">
+                  <div className="ui-card-lift-soft rounded-[14px] border border-gray-100 dark:border-slate-800 bg-[linear-gradient(180deg,#ffffff_0%,#fffdfd_100%)] p-6 shadow-[0_18px_48px_rgba(15,23,42,0.04)] sm:p-7 lg:p-8">
                     <div className="ui-soft-float mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-50 text-rose-500 ring-1 ring-rose-100">
                       <CurrentCreateStepIcon className="h-8 w-8" />
                     </div>
@@ -3546,10 +3555,10 @@ export default function ProfileForm({
                       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-rose-500">
                         Stage {currentStep + 1} of {activeCreateProfileSteps.length}
                       </p>
-                      <h2 className="mt-3 font-display text-[1.9rem] font-bold text-gray-900">
+                      <h2 className="mt-3 font-display text-[1.9rem] font-bold text-gray-900 dark:text-slate-100">
                         {currentCreateStep.title}
                       </h2>
-                      <p className="mt-2 text-base text-gray-500">
+                      <p className="mt-2 text-base text-gray-500 dark:text-slate-400">
                         {currentCreateStep.panelDescription}
                       </p>
                     </div>
@@ -3557,7 +3566,7 @@ export default function ProfileForm({
                     <div className="mt-8">{renderCreateStepContent()}</div>
 
                     {!isEdit && isLastCreateStep && (
-                      <div className="mt-6 flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                      <div className="mt-6 flex items-start gap-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-sm">
                         <div className="flex h-5 items-center">
                           <input
                             id="privacy-consent"
@@ -3566,20 +3575,20 @@ export default function ProfileForm({
                             {...register("hasConsented")}
                           />
                         </div>
-                        <div className="text-sm text-gray-700">
-                          <label htmlFor="privacy-consent" className="font-medium text-gray-900 cursor-pointer select-none">
+                        <div className="text-sm text-gray-700 dark:text-slate-200">
+                          <label htmlFor="privacy-consent" className="font-medium text-gray-900 dark:text-slate-100 cursor-pointer select-none">
                             I agree to share my profile information with authorized third parties in accordance with the <Link href="/privacy" className="text-rose-600 hover:underline" target="_blank">Privacy Policy</Link> and <Link href="/terms" className="text-rose-600 hover:underline" target="_blank">Terms &amp; Conditions</Link>.
                           </label>
                         </div>
                       </div>
                     )}
 
-                    <div className="mt-8 flex flex-col gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="mt-8 flex flex-col gap-3 border-t border-gray-100 dark:border-slate-800 pt-6 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex flex-col gap-3 sm:flex-row">
                         <button
                           type="button"
                           onClick={handleSaveAndExit}
-                          className="ui-link-shift inline-flex items-center justify-center rounded-xl border border-rose-200 px-6 py-3 text-sm font-semibold text-rose-600 transition-colors hover:border-rose-300 hover:bg-rose-50"
+                          className="ui-link-shift inline-flex items-center justify-center rounded-xl border border-rose-200 dark:border-slate-700 px-6 py-3 text-sm font-semibold text-rose-600 transition-colors hover:border-rose-300 hover:bg-rose-50"
                         >
                           Save & Exit
                         </button>
@@ -3588,7 +3597,7 @@ export default function ProfileForm({
                           <button
                             type="button"
                             onClick={handlePreviousStep}
-                            className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-6 py-3 text-sm font-semibold text-gray-600 transition-colors hover:border-rose-200 hover:text-rose-600"
+                            className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-slate-700 px-6 py-3 text-sm font-semibold text-gray-600 dark:text-slate-300 transition-colors hover:border-rose-200 dark:border-slate-700 hover:text-rose-600"
                           >
                             <ArrowLeft className="ui-arrow-shift h-4 w-4" />
                             Back
@@ -3603,7 +3612,7 @@ export default function ProfileForm({
                             onClick={() => {
                               handleNextStep();
                             }}
-                            className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-6 py-3 text-sm font-semibold text-gray-500 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                            className="inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-slate-700 px-6 py-3 text-sm font-semibold text-gray-500 dark:text-slate-400 transition-colors hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                           >
                             Skip
                           </button>
@@ -3645,16 +3654,16 @@ export default function ProfileForm({
               </div>
             </div>
 
-            <div className="ui-card-lift-soft rounded-[12px] border border-rose-100 bg-[linear-gradient(135deg,#fff7fa_0%,#fff1f6_100%)] px-5 py-4 shadow-sm">
+            <div className="ui-card-lift-soft rounded-[12px] border border-rose-100 dark:border-slate-800 bg-[linear-gradient(135deg,#fff7fa_0%,#fff1f6_100%)] px-5 py-4 shadow-sm">
               <div className="flex items-center gap-4">
-                <div className="ui-icon-lift flex h-12 w-12 items-center justify-center rounded-xl bg-white text-rose-500 shadow-sm">
+                <div className="ui-icon-lift flex h-12 w-12 items-center justify-center rounded-xl bg-white dark:bg-slate-900 text-rose-500 shadow-sm">
                   <Sparkles className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">
                     Your information is safe and secure with us.
                   </p>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
                     We don&apos;t share your details with anyone.
                   </p>
                 </div>
@@ -3665,7 +3674,7 @@ export default function ProfileForm({
           <>
             {displayProfileUserId ? (
               <div
-                className="ui-enter-up rounded-2xl border border-rose-100 bg-[linear-gradient(135deg,#fff7fa_0%,#ffffff_100%)] p-5 shadow-sm"
+                className="ui-enter-up rounded-2xl border border-rose-100 dark:border-slate-800 bg-[linear-gradient(135deg,#fff7fa_0%,#ffffff_100%)] dark:!bg-none dark:bg-slate-900 p-5 shadow-sm"
                 style={{ animationDelay: "20ms", animationFillMode: "forwards" }}
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -3673,11 +3682,11 @@ export default function ProfileForm({
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">
                       Your User ID
                     </p>
-                    <p className="mt-2 font-mono text-2xl font-bold tracking-[0.08em] text-gray-900">
+                    <p className="mt-2 font-mono text-2xl font-bold tracking-[0.08em] text-gray-900 dark:text-slate-100">
                       {displayProfileUserId}
                     </p>
                   </div>
-                  <p className="max-w-md text-sm leading-6 text-gray-500">
+                  <p className="max-w-md text-sm leading-6 text-gray-500 dark:text-slate-400">
                     This ID is generated automatically and cannot be edited.
                   </p>
                 </div>
@@ -3758,7 +3767,7 @@ export default function ProfileForm({
 
         {isEdit ? (
           <div
-            className="ui-enter-up flex flex-col gap-3 border-t border-gray-100 pt-2 sm:flex-row sm:justify-start"
+            className="ui-enter-up flex flex-col gap-3 border-t border-gray-100 dark:border-slate-800 pt-2 sm:flex-row sm:justify-start"
             style={{ animationDelay: "600ms", animationFillMode: "forwards" }}
           >
             <div className="flex flex-col gap-3 sm:flex-row">

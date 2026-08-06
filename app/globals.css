@@ -37,6 +37,10 @@
     scroll-behavior: smooth;
   }
 
+  html.dark {
+    color-scheme: dark;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -386,11 +390,11 @@
 
   /* Button Premium */
   .btn-primary {
-    @apply bg-gradient-to-r from-rose-600 to-pink-500 text-white font-semibold rounded-full px-8 py-3 shadow-lg hover:shadow-rose-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0;
+    @apply bg-gradient-to-r from-rose-600 to-pink-500 text-white font-semibold rounded-full px-8 py-3 shadow-lg hover:shadow-rose-200 dark:hover:shadow-rose-900/40 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0;
   }
 
   .btn-outline {
-    @apply border-2 border-rose-500 text-rose-600 font-semibold rounded-full px-8 py-3 hover:bg-rose-50 transition-all duration-300;
+    @apply border-2 border-rose-500 text-rose-600 dark:text-rose-400 font-semibold rounded-full px-8 py-3 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all duration-300;
   }
 
   /* Section heading */

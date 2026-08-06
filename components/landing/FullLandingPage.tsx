@@ -30,6 +30,7 @@ import LandingNavbar from "@/components/landing/LandingNavbar";
 import LandingHeroBanner from "@/components/landing/LandingHeroBanner";
 import LandingReveal from "@/components/landing/LandingReveal";
 import SuccessStoryModal from "@/components/landing/SuccessStoryModal";
+import FeaturedProfilesCarousel from "@/components/landing/FeaturedProfilesCarousel";
 import { blogCardImageOverrides } from "@/lib/constants/blog-card-image-overrides";
 import { blogPosts } from "@/lib/constants/blog";
 
@@ -403,59 +404,7 @@ export default function FullLandingPage({
           </LandingReveal>
 
           {featuredProfiles.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
-              {featuredProfiles.map((profile, index) => (
-                <LandingReveal
-                  key={profile.cardKey}
-                  delayMs={80 + index * 70}
-                  variant="scale"
-                >
-                  <article className="landing-surface group overflow-hidden rounded-[1.5rem] border border-rose-100 bg-white shadow-[0_14px_34px_rgba(15,23,42,0.06)]">
-                    <div className="relative h-52">
-                      {profile.previewImageUrl ? (
-                        <Image
-                          src={profile.previewImageUrl}
-                          alt="Featured profile preview"
-                          fill
-                          className="landing-surface-media object-cover"
-                          sizes="(max-width: 1280px) 50vw, 16vw"
-                          unoptimized
-                        />
-                      ) : (
-                        <div className="h-full bg-[radial-gradient(circle_at_top,#ffe4eb_0%,#f8bbd0_42%,#f48fb1_100%)]" />
-                      )}
-                      <div className="absolute inset-0 bg-black/20" />
-                      <div className="absolute left-3 top-3 rounded-full bg-gradient-to-r from-rose-600 to-pink-500 px-3 py-1 text-xs font-semibold text-white">
-                        Featured
-                      </div>
-                    </div>
-                    <div className="px-4 py-3">
-                      <div className="min-h-[1.9rem]">
-                        {profile.nameLabelUrl ? (
-                          <Image
-                            src={profile.nameLabelUrl}
-                            alt="Featured profile name"
-                            width={360}
-                            height={42}
-                            className="block h-7 w-auto max-w-full"
-                            sizes="180px"
-                            unoptimized
-                          />
-                        ) : (
-                          <div className="text-lg font-bold text-slate-900">
-                            Featured Profile
-                          </div>
-                        )}
-                      </div>
-                      <div className="mt-2 flex items-center gap-2 text-sm text-slate-500">
-                        <MapPin className="h-4 w-4 text-rose-400" />
-                        {profile.location}
-                      </div>
-                    </div>
-                  </article>
-                </LandingReveal>
-              ))}
-            </div>
+            <FeaturedProfilesCarousel profiles={featuredProfiles} />
           ) : (
             <LandingReveal delayMs={90}>
               <div className="rounded-[1.5rem] border border-rose-100 bg-white px-6 py-10 text-center text-sm text-slate-500 shadow-[0_14px_34px_rgba(15,23,42,0.05)]">
@@ -677,11 +626,11 @@ export default function FullLandingPage({
                   autoComplete="email"
                   suppressHydrationWarning
                   placeholder="Enter your email"
-                  className="h-12 flex-1 rounded-xl border border-white/15 bg-white/95 px-4 text-sm text-slate-700 outline-none"
+                  className="h-12 sm:h-11 w-full flex-1 rounded-lg border border-white/20 bg-white px-5 py-2.5 text-base sm:text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20"
                 />
                 <Link
                   href="/register"
-                  className="landing-inline-hover inline-flex h-12 items-center justify-center rounded-xl bg-gradient-to-r from-rose-500 to-pink-400 px-6 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(244,63,94,0.24)]"
+                  className="landing-inline-hover inline-flex h-12 sm:h-11 w-full sm:w-auto items-center justify-center rounded-xl bg-gradient-to-r from-rose-500 to-pink-400 px-8 text-base font-bold text-white shadow-[0_12px_24px_rgba(244,63,94,0.24)] transition-transform hover:-translate-y-0.5"
                 >
                   Subscribe
                 </Link>

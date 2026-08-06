@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import AccountSettingsForm from "@/components/dashboard/AccountSettingsForm";
 import DeleteAccountSection from "@/components/dashboard/DeleteAccountSection";
+import AppearanceSettings from "@/components/dashboard/AppearanceSettings";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getInitials } from "@/lib/utils/helpers";
@@ -85,20 +86,20 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-6">
       <section
-        className="ui-enter-up relative overflow-hidden rounded-[30px] border border-rose-100/80 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.98)_0%,rgba(255,247,249,0.96)_45%,rgba(255,239,243,0.92)_100%)] px-6 py-7 shadow-[0_24px_70px_rgba(15,23,42,0.05)] sm:px-8 sm:py-8"
+        className="ui-enter-up relative overflow-hidden rounded-[30px] border border-rose-100/80 dark:border-slate-800 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.98)_0%,rgba(255,247,249,0.96)_45%,rgba(255,239,243,0.92)_100%)] dark:bg-none dark:bg-slate-900 px-6 py-7 shadow-[0_24px_70px_rgba(15,23,42,0.05)] sm:px-8 sm:py-8"
         style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
       >
         <div className="absolute -right-10 top-2 hidden h-52 w-52 rounded-full bg-rose-100/60 blur-3xl lg:block" />
         <div className="absolute right-16 top-10 hidden lg:block">
-          <div className="ui-soft-float relative flex h-28 w-28 items-center justify-center rounded-[28px] bg-white/70 shadow-[0_18px_42px_rgba(244,63,94,0.12)] backdrop-blur-sm">
-            <div className="absolute inset-3 rounded-[24px] bg-gradient-to-br from-rose-50 to-pink-50" />
+          <div className="ui-soft-float relative flex h-28 w-28 items-center justify-center rounded-[28px] bg-white/70 dark:bg-slate-800/70 shadow-[0_18px_42px_rgba(244,63,94,0.12)] backdrop-blur-sm">
+            <div className="absolute inset-3 rounded-[24px] bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-500/10 dark:to-pink-500/10" />
             <LockKeyhole className="relative z-10 h-10 w-10 text-rose-400" />
           </div>
         </div>
 
         <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center">
           {user.image ? (
-            <div className="h-[76px] w-[76px] shrink-0 overflow-hidden rounded-[22px] border border-rose-100 bg-white shadow-sm">
+            <div className="h-[76px] w-[76px] shrink-0 overflow-hidden rounded-[22px] border border-rose-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={user.image}
@@ -113,15 +114,15 @@ export default async function SettingsPage() {
           )}
 
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 dark:border-emerald-500/20 bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
               <ShieldCheck className="h-3.5 w-3.5" />
               Secure Account
             </div>
             <div>
-              <h1 className="font-display text-[2.15rem] font-bold tracking-tight text-slate-900">
+              <h1 className="font-display text-[2.15rem] font-bold tracking-tight text-slate-900 dark:text-slate-100">
                 Account Settings
               </h1>
-              <p className="mt-2 max-w-2xl text-[15px] text-slate-600">
+              <p className="mt-2 max-w-2xl text-[15px] text-slate-600 dark:text-slate-400">
                 Manage your account details, password and preferences from one place.
               </p>
             </div>
@@ -134,7 +135,7 @@ export default async function SettingsPage() {
           className="ui-enter-left space-y-6"
           style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
         >
-          <section className="ui-card-lift-soft rounded-[28px] border border-rose-100/80 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)] sm:p-8">
+          <section className="ui-card-lift-soft rounded-[28px] border border-rose-100/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)] sm:p-8">
             <AccountSettingsForm
               user={{
                 name: displayName,
@@ -145,19 +146,21 @@ export default async function SettingsPage() {
             />
           </section>
 
+          <AppearanceSettings />
+
           <section
             id="notification-settings"
-            className="ui-card-lift-soft rounded-[24px] border border-slate-200 bg-white px-6 py-5 shadow-sm scroll-mt-28"
+            className="ui-card-lift-soft rounded-[24px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-5 shadow-sm scroll-mt-28"
           >
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-500 ui-icon-lift">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 ui-icon-lift">
                 <BellRing className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="font-display text-[1.35rem] font-bold text-slate-900">
+                <h2 className="font-display text-[1.35rem] font-bold text-slate-900 dark:text-slate-100">
                   Notification Settings
                 </h2>
-                <p className="mt-2 text-[15px] text-slate-500">
+                <p className="mt-2 text-[15px] text-slate-500 dark:text-slate-400">
                   Email, SMS and in-app notification controls will appear here soon.
                   Your profile-like alerts are still available from the dashboard bell.
                 </p>
@@ -175,16 +178,16 @@ export default async function SettingsPage() {
           className="ui-enter-right space-y-5"
           style={{ animationDelay: "190ms", animationFillMode: "forwards" }}
         >
-          <section className="ui-card-lift-soft rounded-[24px] border border-rose-100/80 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)]">
+          <section className="ui-card-lift-soft rounded-[24px] border border-rose-100/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)]">
             <div className="mb-4 flex items-start gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500 ui-icon-lift">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 ui-icon-lift">
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="font-display text-[1.45rem] font-bold text-slate-900">
+                <h2 className="font-display text-[1.45rem] font-bold text-slate-900 dark:text-slate-100">
                   Profile Status
                 </h2>
-                <p className="mt-2 text-[15px] text-slate-500">
+                <p className="mt-2 text-[15px] text-slate-500 dark:text-slate-400">
                   {user.profile
                     ? "Your profile is connected to this account."
                     : "Create your matrimony profile to unlock all dashboard features."}
@@ -199,12 +202,12 @@ export default async function SettingsPage() {
             </span>
           </section>
 
-          <section className="ui-card-lift-soft rounded-[24px] border border-rose-100/80 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)]">
-            <h2 className="font-display text-[1.45rem] font-bold text-slate-900">
+          <section className="ui-card-lift-soft rounded-[24px] border border-rose-100/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-[0_24px_70px_rgba(15,23,42,0.05)]">
+            <h2 className="font-display text-[1.45rem] font-bold text-slate-900 dark:text-slate-100">
               Quick Links
             </h2>
 
-            <div className="mt-5 divide-y divide-slate-100">
+            <div className="mt-5 divide-y divide-slate-100 dark:divide-slate-800">
               {quickLinks.map((item, index) => (
                 <Link
                   key={item.title}
@@ -212,14 +215,14 @@ export default async function SettingsPage() {
                   className="group ui-enter-right ui-link-shift flex items-start gap-4 py-5 first:pt-0 last:pb-0"
                   style={{ animationDelay: `${250 + index * 55}ms`, animationFillMode: "forwards" }}
                 >
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 transition-colors group-hover:bg-rose-100 ui-icon-lift">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400 transition-colors group-hover:bg-rose-100 dark:group-hover:bg-rose-500/20 ui-icon-lift">
                     <item.icon className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[1.03rem] font-semibold text-slate-900">
+                    <p className="text-[1.03rem] font-semibold text-slate-900 dark:text-slate-100">
                       {item.title}
                     </p>
-                    <p className="mt-1 text-[15px] leading-7 text-slate-500">
+                    <p className="mt-1 text-[15px] leading-7 text-slate-500 dark:text-slate-400">
                       {item.description}
                     </p>
                   </div>

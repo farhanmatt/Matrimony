@@ -97,9 +97,9 @@ export default function ReceivedLikePreviewCard({
 
   return (
     <article
-      className="ui-card-lift overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_14px_42px_rgba(15,23,42,0.06)]"
+      className="ui-card-lift overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_14px_42px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900"
     >
-      <div className="relative h-[118px] overflow-hidden bg-[linear-gradient(135deg,#fff4f7_0%,#ffe6ee_100%)]">
+      <div className="relative h-[118px] overflow-hidden bg-[linear-gradient(135deg,#fff4f7_0%,#ffe6ee_100%)] dark:!bg-slate-800 dark:!bg-none">
         {primaryPhoto ? (
           <Image
             src={primaryPhoto}
@@ -115,7 +115,7 @@ export default function ReceivedLikePreviewCard({
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/95 shadow-lg shadow-rose-100">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/95 shadow-lg shadow-rose-100 dark:bg-slate-800 dark:shadow-none">
               <UserCircle2 className="h-10 w-10 text-rose-400" />
             </div>
           </div>
@@ -146,8 +146,8 @@ export default function ReceivedLikePreviewCard({
           disabled={loading || likedBack}
           className={`ui-link-shift absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full shadow-md transition-all ${
             likedBack
-              ? "bg-rose-500 text-white"
-              : "bg-white text-gray-400 hover:bg-rose-50 hover:text-rose-500"
+              ? "bg-rose-500 text-white dark:bg-rose-500"
+              : "bg-white text-gray-400 hover:bg-rose-50 hover:text-rose-500 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
           } disabled:cursor-not-allowed disabled:opacity-80`}
           aria-label={likedBack ? "Liked back" : "Like profile back"}
         >
@@ -157,12 +157,12 @@ export default function ReceivedLikePreviewCard({
 
       <div className="px-3 py-2.5">
         <div className="mb-1.5 min-w-0">
-          <h3 className="truncate font-display text-[1.05rem] font-bold text-slate-900">
+          <h3 className="truncate font-display text-[1.05rem] font-bold text-slate-900 dark:text-slate-100">
             {item.profile.fullName}, {age}
           </h3>
         </div>
 
-        <div className="space-y-1 text-[13px] text-slate-600">
+        <div className="space-y-1 text-[13px] text-slate-600 dark:text-slate-400">
           <div className="flex items-center gap-2">
             <Briefcase className="h-4 w-4 shrink-0 text-rose-400" />
             <span className="truncate">
@@ -180,16 +180,16 @@ export default function ReceivedLikePreviewCard({
         </div>
 
         <div className="mt-2.5 flex flex-wrap gap-1.5">
-          <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[11px] font-medium text-rose-600">
+          <span className="rounded-full bg-rose-50 dark:bg-slate-800 px-2.5 py-0.5 text-[11px] font-medium text-rose-600 dark:text-rose-400">
             {MARITAL_STATUS_LABELS[item.profile.maritalStatus]}
           </span>
           {item.profile.religion ? (
-            <span className="rounded-full bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium text-slate-600">
+            <span className="rounded-full bg-slate-50 dark:bg-slate-800 px-2.5 py-0.5 text-[11px] font-medium text-slate-600 dark:text-slate-400">
               {item.profile.religion}
             </span>
           ) : null}
           {item.profile.height ? (
-            <span className="rounded-full bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium text-slate-600">
+            <span className="rounded-full bg-slate-50 dark:bg-slate-800 px-2.5 py-0.5 text-[11px] font-medium text-slate-600 dark:text-slate-400">
               {cmToFeetInches(item.profile.height)}
             </span>
           ) : null}
