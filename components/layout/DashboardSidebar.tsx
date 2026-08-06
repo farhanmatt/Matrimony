@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import NotificationBell from "@/components/dashboard/NotificationBell";
 import type { DashboardNotificationItem } from "@/lib/utils/notifications";
 import SiteLogo from "@/components/common/SiteLogo";
@@ -73,7 +73,6 @@ export default function DashboardSidebar({
   initialChatFeatureEnabled?: boolean;
   initialHealthDetailsEnabled?: boolean;
 }) {
-  const { data: session } = useSession();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
@@ -119,10 +118,10 @@ export default function DashboardSidebar({
   }, [initialHasProfile, pathname]);
 
   useEffect(() => {
-    if (session?.user?.image) {
-      setAccountImage(session.user.image);
+    if (initialUser.image) {
+      setAccountImage(initialUser.image);
     }
-  }, [session?.user?.image]);
+  }, [initialUser.image]);
 
   useEffect(() => {
     setLogoImageUrl(resolveAllowedImageSrc(document.body.dataset.logoImageUrl ?? "", null));
@@ -199,7 +198,7 @@ export default function DashboardSidebar({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [logoutConfirmOpen, isSigningOut]);
 
-  const currentUser = session?.user ?? initialUser;
+  const currentUser = initialUser;
   const visibleAccountImage = hasProfile ? (accountImage ?? currentUser.image ?? null) : null;
   const brandLogoSrc = logoImageUrl || "/default-logo.svg";
   const accountSubtitle = hasProfile
@@ -233,9 +232,7 @@ export default function DashboardSidebar({
 
   const mobileNavItems = [
     activeBaseNavItems[0],
-    profileNavItem,
-    ...activeBaseNavItems.slice(1),
-    supportNavItem,
+    ...activeBaseNavItems.slice(1).filter(item => item.label !== "Preferences" && item.label !== "Settings" && item.label !== "Health"),
   ];
 
   const currentNavItem =
@@ -244,11 +241,22 @@ export default function DashboardSidebar({
   const accountMenuItems = [
     profileNavItem,
     { href: "/dashboard/preferences", icon: Star, label: "Preferences" },
+    ...(initialHealthDetailsEnabled ? [{ href: "/dashboard/health", icon: Activity, label: "Health", mobileOnly: true }] : []),
     settingsNavItem,
   ];
   const desktopAccountActive = accountMenuItems.some((item) =>
     isActivePath(pathname, item.href)
   );
+
+  const bottomNavItems = [
+    { href: "/dashboard", icon: LayoutDashboard, label: "Home" },
+    { href: "/dashboard/browse", icon: Search, label: "Search" },
+    { href: "/dashboard/liked", icon: Heart, label: "Interests" },
+    { href: "/dashboard/shortlist", icon: Bookmark, label: "Shortlist" },
+    { href: "/dashboard/received-likes", icon: Inbox, label: "Likes" },
+    { href: "/dashboard/matches", icon: HeartHandshake, label: "Mutual" },
+    { href: "/dashboard/unlocked", icon: Unlock, label: "Unlocked" },
+  ];
 
   const openLogoutConfirm = () => {
     if (isSigningOut) return;
@@ -280,18 +288,10 @@ export default function DashboardSidebar({
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-40 border-b border-rose-100/80 bg-white/95 backdrop-blur-md shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+      <header className="fixed inset-x-0 top-0 z-40 border-b border-rose-100/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
         <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setMobileOpen((open) => !open)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-rose-100 text-gray-700 transition-colors hover:border-rose-200 hover:text-rose-600 lg:hidden"
-                aria-label="Toggle dashboard menu"
-              >
-                {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </button>
 
               <Link href="/" className="inline-flex items-center gap-3" aria-label="Go to home page">
                 <SiteLogo
@@ -315,8 +315,8 @@ export default function DashboardSidebar({
                         className={cn(
                           "relative inline-flex shrink-0 items-center gap-2 px-2 py-3 text-sm font-medium transition-colors",
                           isActive
-                            ? "text-rose-600"
-                            : "text-gray-600 hover:text-rose-600"
+                            ? "text-rose-600 dark:text-rose-500"
+                            : "text-gray-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-500"
                         )}
                       >
                         <item.icon className="h-4 w-4" />
@@ -335,11 +335,11 @@ export default function DashboardSidebar({
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="hidden lg:block">
+              <div>
                 <NotificationBell
                   initialNotifications={initialNotifications}
                   initialProfileId={initialNotificationProfileId}
-                  shortlistUserId={session?.user?.id ?? initialUser.id}
+                  shortlistUserId={initialUser.id}
                   compact
                   chatFeatureEnabled={initialChatFeatureEnabled}
                 />
@@ -347,18 +347,19 @@ export default function DashboardSidebar({
 
               <div
                 ref={desktopAccountRef}
-                className="relative hidden lg:flex"
+                className="relative flex"
               >
+                {/* Desktop Button */}
                 <button
                   type="button"
                   onClick={() => setDesktopAccountOpen((open) => !open)}
                   aria-expanded={desktopAccountOpen}
                   aria-haspopup="menu"
                   className={cn(
-                    "group inline-flex items-center gap-3 rounded-full px-3 py-2 transition-all ui-link-shift",
+                    "group hidden lg:inline-flex items-center gap-3 rounded-full px-3 py-2 transition-all ui-link-shift",
                     desktopAccountActive
                       ? "text-rose-600 shadow-[0_10px_28px_rgba(244,63,94,0.12)]"
-                      : "hover:bg-rose-50/80"
+                      : "hover:bg-rose-50/80 dark:hover:bg-slate-800/80"
                   )}
                 >
                   {visibleAccountImage ? (
@@ -380,12 +381,12 @@ export default function DashboardSidebar({
                     <p
                       className={cn(
                         "truncate text-sm font-semibold",
-                        desktopAccountActive ? "text-rose-600" : "text-gray-900"
+                        desktopAccountActive ? "text-rose-600 dark:text-rose-500" : "text-gray-900 dark:text-slate-100"
                       )}
                       >
                       {currentUser.name ?? "User"}
                     </p>
-                    <p className="truncate text-xs text-gray-500">
+                    <p className="truncate text-xs text-gray-500 dark:text-slate-400">
                       {accountSubtitle}
                     </p>
                   </div>
@@ -393,9 +394,46 @@ export default function DashboardSidebar({
                     className={cn(
                       "h-4 w-4 shrink-0 transition-transform",
                       desktopAccountOpen ? "rotate-180" : "",
-                      desktopAccountActive ? "text-rose-500" : "text-gray-400"
+                      desktopAccountActive ? "text-rose-500" : "text-gray-400 dark:text-slate-400"
                     )}
                   />
+                </button>
+
+                {/* Mobile Button */}
+                <button
+                  type="button"
+                  onClick={() => setDesktopAccountOpen((open) => !open)}
+                  aria-expanded={desktopAccountOpen}
+                  aria-haspopup="menu"
+                  className="flex flex-col items-center justify-center lg:hidden"
+                >
+                  {visibleAccountImage ? (
+                    <div className="h-8 w-8 overflow-hidden rounded-full border border-gray-200 dark:border-slate-700 shadow-sm">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={visibleAccountImage}
+                        alt={currentUser.name ?? "User"}
+                        className="h-full w-full object-cover"
+                        onError={handleAccountImageError}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-rose-400 to-pink-500 text-xs font-bold text-white shadow-sm">
+                      {currentUser.name ? getInitials(currentUser.name) : "U"}
+                    </div>
+                  )}
+                  {(() => {
+                    if (!currentUser.name) return null;
+                    const parts = currentUser.name.trim().split(/\s+/);
+                    if (parts.length >= 2) {
+                      return (
+                        <span className="mt-0.5 text-[10px] font-semibold text-gray-700 dark:text-slate-300 leading-none">
+                          {`${parts[0][0]}${parts[1][0]}`.toUpperCase()}
+                        </span>
+                      );
+                    }
+                    return null;
+                  })()}
                 </button>
 
                 {desktopAccountMenuVisible ? (
@@ -403,7 +441,7 @@ export default function DashboardSidebar({
                     role="menu"
                     aria-hidden={!desktopAccountOpen}
                     className={cn(
-                      "absolute right-0 top-full z-50 mt-3 min-w-[180px] origin-top-right overflow-hidden rounded-2xl border border-rose-100 bg-white p-2 shadow-[0_20px_50px_rgba(15,23,42,0.12)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                      "absolute right-0 top-full z-50 mt-3 min-w-[180px] origin-top-right overflow-hidden rounded-2xl border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 shadow-[0_20px_50px_rgba(15,23,42,0.12)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                       desktopAccountOpen
                         ? "translate-y-0 scale-100 opacity-100"
                         : "pointer-events-none -translate-y-2 scale-95 opacity-0"
@@ -420,12 +458,13 @@ export default function DashboardSidebar({
                           tabIndex={desktopAccountOpen ? 0 : -1}
                           className={cn(
                             "ui-link-shift inline-flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                            (item as any).mobileOnly && "lg:hidden",
                             desktopAccountOpen
                               ? "translate-x-0 opacity-100"
                               : "translate-x-3 opacity-0",
                             isActive
-                              ? "bg-rose-50 text-rose-600"
-                              : "text-gray-600 hover:bg-rose-50 hover:text-rose-600"
+                              ? "bg-rose-50 dark:bg-slate-800/50 text-rose-600 dark:text-rose-500"
+                              : "text-gray-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-slate-800 hover:text-rose-600 dark:hover:text-rose-500"
                           )}
                           style={{
                             transitionDelay: desktopAccountOpen
@@ -443,7 +482,7 @@ export default function DashboardSidebar({
                       onClick={openLogoutConfirm}
                       tabIndex={desktopAccountOpen ? 0 : -1}
                       className={cn(
-                        "ui-link-shift inline-flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-gray-600 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-rose-50 hover:text-rose-600",
+                        "ui-link-shift inline-flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-gray-600 dark:text-slate-400 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-rose-50 dark:hover:bg-slate-800 hover:text-rose-600 dark:hover:text-rose-500",
                         desktopAccountOpen
                           ? "translate-x-0 opacity-100"
                           : "translate-x-3 opacity-0"
@@ -460,83 +499,10 @@ export default function DashboardSidebar({
                   </div>
                 ) : null}
               </div>
-
-              <div className="flex h-10 items-center rounded-full border border-rose-100 bg-rose-50 px-3 text-sm font-medium text-rose-600 lg:hidden">
-                {currentNavItem.label}
-              </div>
             </div>
           </div>
-
-          {mobileOpen ? (
-            <div className="border-t border-rose-100 py-4 lg:hidden">
-              <div className="mb-4">
-                <NotificationBell
-                  initialNotifications={initialNotifications}
-                  initialProfileId={initialNotificationProfileId}
-                  shortlistUserId={session?.user?.id ?? initialUser.id}
-                  chatFeatureEnabled={initialChatFeatureEnabled}
-                />
-              </div>
-
-              <div className="mb-4 flex items-center gap-3 rounded-3xl border border-rose-100 bg-white p-4 shadow-sm">
-                {visibleAccountImage ? (
-                  <div className="h-12 w-12 overflow-hidden rounded-full border border-gray-100">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={visibleAccountImage}
-                      alt={currentUser.name ?? "User"}
-                      className="h-full w-full object-cover"
-                      onError={handleAccountImageError}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-rose-400 to-pink-500 text-sm font-bold text-white">
-                    {currentUser.name ? getInitials(currentUser.name) : "U"}
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-gray-900">
-                    {currentUser.name ?? "User"}
-                  </p>
-                  <p className="truncate text-xs text-gray-500">
-                    {currentUser.email}
-                  </p>
-                </div>
-              </div>
-
-              <nav className="grid gap-2">
-                {mobileNavItems.map((item) => {
-                  const isActive = isActivePath(pathname, item.href);
-
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={cn(
-                        "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all",
-                        isActive
-                          ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md shadow-rose-200"
-                          : "border border-transparent text-gray-600 hover:border-rose-100 hover:bg-rose-50 hover:text-rose-600"
-                      )}
-                    >
-                      <item.icon className="h-4.5 w-4.5 shrink-0" />
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </nav>
-
-              <button
-                type="button"
-                onClick={openLogoutConfirm}
-                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-600 transition-colors hover:border-rose-200 hover:text-rose-600"
-              >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </button>
-            </div>
-          ) : null}
         </div>
+
       </header>
 
       {logoutConfirmOpen ? (
@@ -552,18 +518,18 @@ export default function DashboardSidebar({
             role="dialog"
             aria-modal="true"
             aria-labelledby="logout-confirm-title"
-            className="w-full max-w-sm rounded-[24px] border border-rose-100 bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.14)]"
+            className="w-full max-w-sm rounded-[24px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-[0_24px_60px_rgba(15,23,42,0.14)]"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 dark:bg-slate-800/50 text-rose-500">
               <LogOut className="h-5 w-5" />
             </div>
             <h3
               id="logout-confirm-title"
-              className="mt-4 font-display text-xl font-bold text-slate-900"
+              className="mt-4 font-display text-xl font-bold text-slate-900 dark:text-slate-100"
             >
               Logout from your account?
             </h3>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
+            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
               Are you sure you want to logout? You can sign in again anytime.
             </p>
 
@@ -572,7 +538,7 @@ export default function DashboardSidebar({
                 type="button"
                 onClick={closeLogoutConfirm}
                 disabled={isSigningOut}
-                className="inline-flex flex-1 items-center justify-center rounded-[16px] border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-rose-200 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex flex-1 items-center justify-center rounded-[16px] border border-slate-200 dark:border-slate-700 px-4 py-3 text-sm font-semibold text-slate-600 dark:text-slate-300 transition-colors hover:border-rose-200 dark:hover:border-slate-600 hover:text-rose-600 dark:hover:text-rose-400 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 No
               </button>
@@ -588,6 +554,29 @@ export default function DashboardSidebar({
           </div>
         </div>
       ) : null}
+
+      <nav className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between border-t border-rose-100/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 px-1 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur-md lg:hidden">
+        {bottomNavItems.map((item) => {
+          const isActive = isActivePath(pathname, item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-1 flex-col items-center justify-center gap-1 rounded-xl p-1 transition-colors",
+                isActive ? "text-rose-600 dark:text-rose-500" : "text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200"
+              )}
+            >
+              <div className={cn("flex h-8 w-8 items-center justify-center rounded-full transition-all", isActive ? "bg-rose-100/50 dark:bg-slate-800/80" : "")}>
+                <item.icon className={cn("h-5 w-5", isActive ? "text-rose-600 dark:text-rose-500" : "text-gray-500 dark:text-slate-400")} />
+              </div>
+              <span className={cn("text-[9px] font-medium leading-none tracking-tight text-center line-clamp-1", isActive ? "text-rose-600 dark:text-rose-500 font-semibold" : "")}>
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
     </>
   );
 }

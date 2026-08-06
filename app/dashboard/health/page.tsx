@@ -83,20 +83,20 @@ export default function HealthDetailsPage() {
   const renderSkeleton = () => (
     <div className="mx-auto max-w-4xl pb-12 animate-pulse">
       <div className="mb-8">
-        <div className="h-8 w-48 bg-slate-100 rounded-md mb-3" />
-        <div className="h-4 w-3/4 bg-slate-100 rounded-md" />
+        <div className="h-8 w-48 bg-slate-100 dark:bg-slate-800 rounded-md mb-3" />
+        <div className="h-4 w-3/4 bg-slate-100 dark:bg-slate-800 rounded-md" />
       </div>
-      <div className="rounded-[24px] border border-gray-100 bg-white p-6 sm:p-8 shadow-sm">
+      <div className="rounded-[24px] border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm">
         <div className="space-y-8">
           <div className="space-y-6">
-            <div className="h-6 w-32 bg-slate-100 rounded-md" />
+            <div className="h-6 w-32 bg-slate-100 dark:bg-slate-800 rounded-md" />
             <div className="space-y-4">
-              <div className="h-4 w-24 bg-slate-100 rounded-md" />
-              <div className="h-12 w-full bg-slate-100 rounded-xl" />
+              <div className="h-4 w-24 bg-slate-100 dark:bg-slate-800 rounded-md" />
+              <div className="h-12 w-full bg-slate-100 dark:bg-slate-800 rounded-xl" />
             </div>
             <div className="space-y-4">
-              <div className="h-4 w-24 bg-slate-100 rounded-md" />
-              <div className="h-12 w-full bg-slate-100 rounded-xl" />
+              <div className="h-4 w-24 bg-slate-100 dark:bg-slate-800 rounded-md" />
+              <div className="h-12 w-full bg-slate-100 dark:bg-slate-800 rounded-xl" />
             </div>
           </div>
         </div>
@@ -111,19 +111,19 @@ export default function HealthDetailsPage() {
   return (
     <div className="mx-auto max-w-4xl pb-12">
       <div className="mb-8">
-        <h1 className="text-2xl font-display font-bold text-gray-900 sm:text-3xl">
+        <h1 className="text-2xl font-display font-bold text-gray-900 dark:text-slate-100 sm:text-3xl">
           Health Details
         </h1>
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
           Share your health information. This helps in finding a compatible match. This information will be visible to users who unlock your profile.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-          <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
-            <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+        <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
+          <div className="border-b border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 px-6 py-4">
+            <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-slate-100">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
                 <Heart className="h-4 w-4" />
               </span>
               Medical Information
@@ -131,13 +131,13 @@ export default function HealthDetailsPage() {
           </div>
           <div className="grid gap-6 p-6 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <label className="mb-2 block text-sm font-medium text-gray-700">Blood Pressure (BP) <span className="text-rose-500">*</span></label>
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">Blood Pressure (BP) <span className="text-rose-500">*</span></label>
               <select
                 name="bloodPressure"
                 value={formData.bloodPressure}
                 onChange={handleChange}
                 required
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20"
+                className="w-full rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 px-4 py-2.5 text-sm outline-none transition-all focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20"
               >
                 <option value="">Select BP Status</option>
                 <option value="Normal">Normal</option>
@@ -147,13 +147,13 @@ export default function HealthDetailsPage() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="mb-2 block text-sm font-medium text-gray-700">Diabetes (Sugar) <span className="text-rose-500">*</span></label>
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">Diabetes (Sugar) <span className="text-rose-500">*</span></label>
               <select
                 name="diabetesStatus"
                 value={formData.diabetesStatus}
                 onChange={handleChange}
                 required
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20"
+                className="w-full rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 px-4 py-2.5 text-sm outline-none transition-all focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20"
               >
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
@@ -162,24 +162,24 @@ export default function HealthDetailsPage() {
 
             {formData.diabetesStatus === "Yes" && (
               <div className="sm:col-span-2 animate-in fade-in slide-in-from-top-2">
-                <label className="mb-2 block text-sm font-medium text-gray-700">Diabetes Details (Optional)</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">Diabetes Details (Optional)</label>
                 <input
                   type="text"
                   name="diabetesDetails"
                   value={formData.diabetesDetails}
                   onChange={handleChange}
                   placeholder="e.g. Type 1, Type 2, etc."
-                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20"
+                  className="w-full rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 px-4 py-2.5 text-sm outline-none transition-all focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20"
                 />
               </div>
             )}
           </div>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-          <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
-            <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
+        <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
+          <div className="border-b border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50 px-6 py-4">
+            <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-slate-100">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400">
                 <Info className="h-4 w-4" />
               </span>
               Medical Report Upload

@@ -178,9 +178,9 @@ export default function BrowseProfileCard({
       <Link 
         href={_profileHref}
         onClick={handleCardClick}
-        className="ui-card-lift group flex h-full flex-col overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)]"
+        className="ui-card-lift group flex h-full flex-col overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900"
       >
-        <div className="relative h-[184px] overflow-hidden bg-[linear-gradient(135deg,#fff2f6_0%,#ffe7ee_55%,#ffeef4_100%)]">
+        <div className="relative h-[224px] overflow-hidden bg-[linear-gradient(135deg,#fff2f6_0%,#ffe7ee_55%,#ffeef4_100%)] dark:!bg-slate-800 dark:!bg-none">
           {primaryPhoto ? (
             <Image
               src={primaryPhoto}
@@ -192,8 +192,8 @@ export default function BrowseProfileCard({
               unoptimized
             />
           ) : (
-            <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.95)_0%,_rgba(255,239,244,0.9)_52%,_rgba(255,231,238,0.82)_100%)]">
-              <div className="flex h-[122px] w-[122px] items-center justify-center rounded-full bg-white/95 shadow-[0_22px_46px_rgba(244,114,182,0.18)]">
+            <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.95)_0%,_rgba(255,239,244,0.9)_52%,_rgba(255,231,238,0.82)_100%)] dark:!bg-slate-800 dark:!bg-none">
+              <div className="flex h-[122px] w-[122px] items-center justify-center rounded-full bg-white/95 shadow-[0_22px_46px_rgba(244,114,182,0.18)] dark:bg-slate-700/90 dark:shadow-none">
                 <Image
                   src="/female-avatar.svg"
                   alt="Default profile avatar"
@@ -209,7 +209,7 @@ export default function BrowseProfileCard({
 
           <span
             className={cn(
-              "absolute left-4 top-4 inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold text-white shadow-[0_12px_28px_rgba(15,23,42,0.12)]",
+              "absolute left-3 top-3 inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold text-white shadow-[0_12px_28px_rgba(15,23,42,0.12)]",
               badge === "Premium"
                 ? "bg-[linear-gradient(135deg,#7c3aed_0%,#ec4899_100%)]"
                 : "bg-[linear-gradient(135deg,#22c55e_0%,#14b8a6_100%)]"
@@ -223,31 +223,31 @@ export default function BrowseProfileCard({
             onClick={handleLikeClick}
             disabled={loading || liked}
             className={cn(
-              "ui-link-shift absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/80 bg-white/95 shadow-[0_12px_28px_rgba(15,23,42,0.12)] backdrop-blur transition-all",
+              "ui-link-shift absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/80 bg-white/95 shadow-[0_12px_28px_rgba(15,23,42,0.12)] backdrop-blur transition-all dark:border-slate-700 dark:bg-slate-800 dark:shadow-none",
               liked
-                ? "border-rose-500 bg-rose-500 text-white"
-                : "text-slate-400 hover:border-rose-200 hover:text-rose-500",
+                ? "border-rose-500 bg-rose-500 text-white dark:border-rose-500 dark:bg-rose-500"
+                : "text-slate-400 hover:border-rose-200 hover:text-rose-500 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-rose-400",
               "disabled:cursor-not-allowed disabled:opacity-80"
             )}
             aria-label={liked ? "Liked" : "Like profile"}
           >
-            <Heart className={cn("h-4.5 w-4.5", liked ? "fill-current" : "")} />
+            <Heart className={cn("h-4 w-4", liked ? "fill-current" : "")} />
           </button>
         </div>
 
-        <div className="flex flex-1 flex-col px-4 pb-4 pt-[14px]">
+        <div className="flex flex-1 flex-col px-3.5 pb-2.5 pt-2.5">
           <div className="flex items-start gap-2">
-            <h3 className="min-w-0 flex-1 truncate font-display text-[1rem] font-bold leading-none text-slate-900 sm:text-[1.1rem]">
+            <h3 className="min-w-0 flex-1 truncate font-display text-[1rem] font-bold leading-none text-slate-900 sm:text-[1.1rem] dark:text-slate-100">
               {profile.fullName}, {age}
             </h3>
-            <span className="ui-icon-lift mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
+            <span className="ui-icon-lift mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 dark:bg-emerald-900/30 dark:text-emerald-400">
               <BadgeCheck className="h-3.5 w-3.5" />
             </span>
           </div>
 
-          <div className="mt-3 space-y-2 text-[12px] text-slate-600 sm:text-[13px]">
+          <div className="mt-2 space-y-1 text-[12px] text-slate-600 sm:text-[13px] dark:text-slate-300">
             <div className="flex min-w-0 items-center gap-2">
-              <Briefcase className="h-4 w-4 shrink-0 text-rose-400" />
+              <Briefcase className="h-4 w-4 shrink-0 text-rose-400 dark:text-rose-500" />
               <span className="truncate">{profile.profession || "Professional"}</span>
             </div>
             <div className="flex min-w-0 items-center gap-2">
@@ -260,34 +260,34 @@ export default function BrowseProfileCard({
             </div>
           </div>
 
-          <div className="mt-auto flex flex-wrap gap-2 pt-4">
-            <span className="rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-medium text-rose-600 sm:text-[11px]">
+          <div className="mt-auto flex flex-wrap gap-2 pt-2.5">
+            <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-600 sm:text-[11px] dark:bg-rose-900/30 dark:text-rose-400">
               {MARITAL_STATUS_LABELS[profile.maritalStatus]}
             </span>
             {profile.religion ? (
-              <span className="rounded-full bg-gray-50 px-2.5 py-1 text-[10px] font-medium text-gray-600 sm:text-[11px]">
+              <span className="rounded-full bg-gray-50 px-2 py-0.5 text-[10px] font-medium text-gray-600 sm:text-[11px] dark:bg-slate-800 dark:text-slate-300">
                 {profile.religion}
               </span>
             ) : null}
             {profile.height ? (
-              <span className="rounded-full bg-gray-50 px-2.5 py-1 text-[10px] font-medium text-gray-600 sm:text-[11px]">
+              <span className="rounded-full bg-gray-50 px-2 py-0.5 text-[10px] font-medium text-gray-600 sm:text-[11px] dark:bg-slate-800 dark:text-slate-300">
                 {cmToFeetInches(profile.height)}
               </span>
             ) : null}
           </div>
 
           {isHealthDetailsEnabled && (
-            <div className="mt-4 border-t border-rose-50 pt-4">
+            <div className="mt-2.5 border-t border-rose-50 pt-2.5 dark:border-slate-800">
               <button
                 onClick={handleHealthReqClick}
                 disabled={healthLoading || healthStatus === "PENDING"}
                 className={cn(
-                  "flex w-full items-center justify-center gap-2 rounded-[12px] px-4 py-2.5 text-[13px] font-semibold transition-all",
+                  "flex w-full items-center justify-center gap-1.5 rounded-[10px] px-3 py-2 text-[13px] font-semibold transition-all",
                   healthStatus === "ACCEPTED"
-                    ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                    ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
                     : healthStatus === "PENDING"
-                    ? "cursor-not-allowed bg-slate-50 text-slate-400"
-                    : "bg-rose-50 text-rose-600 hover:bg-rose-100"
+                    ? "cursor-not-allowed bg-slate-50 text-slate-400 dark:bg-slate-800 dark:text-slate-500"
+                    : "bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-400 dark:hover:bg-rose-900/50"
                 )}
               >
                 <Activity className="h-4 w-4" />
@@ -305,7 +305,7 @@ export default function BrowseProfileCard({
               onClick={() => setConfirmOpen(false)}
             >
               <div
-                className="ui-modal-pop w-full max-w-sm rounded-[24px] border border-rose-100 bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.14)]"
+                className="ui-modal-pop w-full max-w-sm rounded-[24px] border border-rose-100 bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.14)] dark:border-slate-700/50 dark:bg-slate-900"
                 onClick={(event) => event.stopPropagation()}
                 role="dialog"
                 aria-modal="true"
@@ -313,11 +313,11 @@ export default function BrowseProfileCard({
               >
                 <h3
                   id={`like-confirm-title-${profile.id}`}
-                  className="font-display text-xl font-bold text-slate-900"
+                  className="font-display text-xl font-bold text-slate-900 dark:text-slate-100"
                 >
                   Like this profile?
                 </h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600">
+                <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
                   Do you want to add {profile.fullName} to your interests?
                 </p>
 
@@ -326,7 +326,7 @@ export default function BrowseProfileCard({
                     type="button"
                     onClick={() => setConfirmOpen(false)}
                     disabled={loading}
-                    className="ui-link-shift inline-flex flex-1 items-center justify-center rounded-[16px] border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-rose-200 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="ui-link-shift inline-flex flex-1 items-center justify-center rounded-[16px] border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-rose-200 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800"
                   >
                     No
                   </button>

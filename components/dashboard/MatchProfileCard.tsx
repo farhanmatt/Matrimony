@@ -118,9 +118,9 @@ export default function MatchProfileCard({
   };
 
   return (
-    <article className="relative overflow-hidden rounded-[12px] border border-rose-100/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.07)]">
-      <div className="relative min-h-[138px] overflow-visible border-b border-rose-100/70">
-        <div className="absolute inset-0 overflow-hidden rounded-t-[12px] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.95)_0%,_rgba(255,240,245,0.92)_42%,_rgba(255,232,239,0.88)_100%)]">
+    <article className="relative overflow-hidden rounded-[12px] border border-rose-100/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_24px_70px_rgba(15,23,42,0.07)]">
+      <div className="relative min-h-[138px] overflow-visible border-b border-rose-100/70 dark:border-slate-800">
+        <div className="absolute inset-0 overflow-hidden rounded-t-[12px] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.95)_0%,_rgba(255,240,245,0.92)_42%,_rgba(255,232,239,0.88)_100%)] dark:!bg-none dark:bg-slate-800">
           {primaryPhoto ? (
             <Image
               src={primaryPhoto}
@@ -136,10 +136,10 @@ export default function MatchProfileCard({
             />
           ) : null}
 
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0.38)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0.38)_100%)] dark:!bg-none dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.18)_0%,rgba(15,23,42,0.68)_100%)]" />
         </div>
 
-        <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-[10px] border border-rose-200 bg-white/95 px-3 py-1 text-[13px] font-semibold text-rose-500 shadow-sm">
+        <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-[10px] border border-rose-200 dark:border-slate-700 bg-white/95 dark:bg-slate-800 px-3 py-1 text-[13px] font-semibold text-rose-500 dark:text-rose-400 shadow-sm">
           <Heart className="h-4 w-4 fill-current" />
           Matched
         </div>
@@ -148,20 +148,20 @@ export default function MatchProfileCard({
           <button
             type="button"
             onClick={() => setIsMenuOpen((current) => !current)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] bg-white/90 text-slate-500 shadow-sm transition-colors hover:bg-white hover:text-slate-700"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] bg-white/90 dark:bg-slate-800 text-slate-500 dark:text-slate-400 shadow-sm transition-colors hover:bg-white hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
             aria-label="Open match actions"
           >
             <EllipsisVertical className="h-4.5 w-4.5" />
           </button>
 
           {isMenuOpen ? (
-            <div className="absolute right-0 top-12 z-40 w-48 overflow-hidden rounded-[10px] border border-rose-100 bg-white py-2 shadow-[0_16px_40px_rgba(15,23,42,0.12)]">
+            <div className="absolute right-0 top-12 z-40 w-48 overflow-hidden rounded-[10px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 py-2 shadow-[0_16px_40px_rgba(15,23,42,0.12)]">
               {isUnlocked ? (
                 <>
                   <Link
                     href={profileHref}
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 transition-colors hover:bg-rose-50 dark:hover:bg-slate-800 hover:text-rose-600 dark:hover:text-rose-400"
                   >
                     <ExternalLink className="h-4 w-4" />
                     Open profile
@@ -169,7 +169,7 @@ export default function MatchProfileCard({
                   <button
                     type="button"
                     onClick={() => void copyProfileLink()}
-                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-slate-300 transition-colors hover:bg-rose-50 dark:hover:bg-slate-800 hover:text-rose-600 dark:hover:text-rose-400"
                   >
                     <Copy className="h-4 w-4" />
                     Copy profile link
@@ -177,7 +177,7 @@ export default function MatchProfileCard({
                   <button
                     type="button"
                     onClick={() => void copyPhoneNumber()}
-                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-slate-300 transition-colors hover:bg-rose-50 dark:hover:bg-slate-800 hover:text-rose-600 dark:hover:text-rose-400"
                   >
                     <Phone className="h-4 w-4" />
                     Copy phone
@@ -190,7 +190,7 @@ export default function MatchProfileCard({
                     onUnlock(matchId);
                     setIsMenuOpen(false);
                   }}
-                  className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                  className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-slate-300 transition-colors hover:bg-rose-50 dark:hover:bg-slate-800 hover:text-rose-600 dark:hover:text-rose-400"
                 >
                   <Eye className="h-4 w-4" />
                   Unlock profile
@@ -204,7 +204,7 @@ export default function MatchProfileCard({
           <div
             className={cn(
               "flex h-16 w-16 items-center justify-center rounded-[12px] shadow-[0_22px_46px_rgba(244,114,182,0.18)]",
-              isUnlocked ? "bg-white/90 text-rose-500" : "bg-rose-100/90 text-white"
+              isUnlocked ? "bg-white/90 dark:bg-slate-800 text-rose-500 dark:text-rose-400" : "bg-rose-100/90 dark:bg-rose-900/90 text-white dark:text-rose-200"
             )}
           >
             {isUnlocked && primaryPhoto ? (
@@ -226,7 +226,7 @@ export default function MatchProfileCard({
       <div className="space-y-3 px-5 pb-4 pt-3">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <h3 className="font-display text-[0.94rem] font-bold text-slate-900">
+            <h3 className="font-display text-[0.94rem] font-bold text-slate-900 dark:text-slate-100">
               {firstName}
             </h3>
             <BadgeCheck className="h-4.5 w-4.5 text-rose-500" />
@@ -235,17 +235,17 @@ export default function MatchProfileCard({
             ) : null}
           </div>
 
-          <p className="text-[14px] text-slate-500">
+          <p className="text-[14px] text-slate-500 dark:text-slate-400">
             {age} years
             {profile.religion ? ` - ${profile.religion}` : ""}
           </p>
 
-          <div className="space-y-1 text-[14px] text-slate-700">
+          <div className="space-y-1 text-[14px] text-slate-700 dark:text-slate-300">
             <div className="flex items-center gap-2">
               <Briefcase className="h-4 w-4 text-slate-400" />
               <span>{profile.profession || "Professional"}</span>
             </div>
-            <div className="flex items-center gap-2 text-slate-500">
+            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
               <Lock className="h-4 w-4 text-slate-400" />
               <span>
                 {isUnlocked && profile.phone
@@ -275,11 +275,11 @@ export default function MatchProfileCard({
           </button>
         )}
 
-        <div className="border-t border-slate-100 pt-1">
+        <div className="border-t border-slate-100 dark:border-slate-800 pt-1">
           <button
             type="button"
             onClick={() => setShowQuickInfo((current) => !current)}
-            className="inline-flex w-full items-center justify-center gap-2 px-3 py-2 text-[13px] font-semibold text-slate-500 transition-colors hover:text-rose-600"
+            className="inline-flex w-full items-center justify-center gap-2 px-3 py-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400 transition-colors hover:text-rose-600 dark:hover:text-rose-400"
           >
             View Quick Info
             {showQuickInfo ? (
@@ -290,7 +290,7 @@ export default function MatchProfileCard({
           </button>
 
           {showQuickInfo ? (
-            <div className="grid gap-3 rounded-[10px] bg-slate-50/80 px-4 py-3 text-[13px] text-slate-600">
+            <div className="grid gap-3 rounded-[10px] bg-slate-50/80 dark:bg-slate-800 px-4 py-3 text-[13px] text-slate-600 dark:text-slate-300">
               <div className="flex items-start gap-2">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" />
                 <span>{location}</span>
@@ -311,7 +311,7 @@ export default function MatchProfileCard({
                   <span>{profile.phone || "Phone not added"}</span>
                 </div>
               ) : (
-                <div className="rounded-xl border border-dashed border-rose-200 bg-white px-3 py-2 text-rose-500">
+                <div className="rounded-xl border border-dashed border-rose-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-rose-500 dark:text-rose-400">
                   Unlock this match to see full photos, contact details, and full
                   profile information.
                 </div>

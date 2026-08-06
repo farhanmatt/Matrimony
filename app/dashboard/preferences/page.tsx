@@ -27,13 +27,13 @@ export default async function PreferencesPage() {
     return (
       <div>
         <h1
-          className="ui-enter-up mb-2 text-2xl font-display font-bold text-gray-900"
+          className="ui-enter-up mb-2 text-2xl font-display font-bold text-gray-900 dark:text-slate-100"
           style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
         >
           Partner Preferences
         </h1>
         <p
-          className="ui-enter-up mb-8 text-sm text-gray-500"
+          className="ui-enter-up mb-8 text-sm text-gray-500 dark:text-slate-400"
           style={{ animationDelay: "110ms", animationFillMode: "forwards" }}
         >
           Create your profile first, then add the details you prefer in a life
@@ -41,7 +41,7 @@ export default async function PreferencesPage() {
         </p>
 
         <div
-          className="ui-enter-scale ui-card-lift-soft rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8"
+          className="ui-enter-scale ui-card-lift-soft rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8"
           style={{ animationDelay: "180ms", animationFillMode: "forwards" }}
         >
           <div className="flex flex-col sm:flex-row items-start gap-5">
@@ -49,10 +49,10 @@ export default async function PreferencesPage() {
               <Heart className="w-7 h-7" />
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-display font-bold text-gray-900 mb-2">
+              <h2 className="text-xl font-display font-bold text-gray-900 dark:text-slate-100 mb-2">
                 Complete your profile to continue
               </h2>
-              <p className="text-sm text-gray-600 leading-6">
+              <p className="text-sm text-gray-600 dark:text-slate-400 leading-6">
                 Preferences are connected to your matrimony profile, so we need
                 your profile details before saving partner preferences.
               </p>
@@ -96,10 +96,10 @@ export default async function PreferencesPage() {
           <Sparkles className="w-3.5 h-3.5" />
           Matchmaking Preferences
         </div>
-        <h1 className="text-2xl font-display font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl font-display font-bold text-gray-900 dark:text-slate-100 mb-2">
           Partner Preferences
         </h1>
-        <p className="text-gray-500 text-sm max-w-2xl">
+        <p className="text-gray-500 dark:text-slate-400 text-sm max-w-2xl">
           Tell us what kind of partner you are looking for. These details help
           keep your discovery experience focused and relevant.
         </p>
@@ -107,7 +107,7 @@ export default async function PreferencesPage() {
 
       <div className="grid items-start gap-6 lg:grid-cols-[1fr_280px]">
         <div
-          className="ui-enter-scale ui-card-lift-soft rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8"
+          className="ui-enter-scale ui-card-lift-soft rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8"
           style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
         >
           <PreferenceForm defaultValues={defaultValues} />

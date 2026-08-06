@@ -26,14 +26,14 @@ export default function EmptyState({
 
   return (
     <div
-      className={`flex w-full max-w-2xl flex-col items-center rounded-[28px] border border-rose-100 bg-white/95 px-6 py-16 text-center shadow-[0_18px_45px_rgba(15,23,42,0.04)] sm:px-10 ${className ?? ""}`}
+      className={`flex w-full max-w-2xl flex-col items-center rounded-[28px] border border-rose-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900 px-6 py-16 text-center shadow-[0_18px_45px_rgba(15,23,42,0.04)] sm:px-10 ${className ?? ""}`}
     >
-      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-rose-50 text-rose-300">
+      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-rose-50 dark:bg-slate-800 text-rose-300">
         <Icon className="h-12 w-12" />
       </div>
-      <h3 className="mt-8 text-2xl font-display font-bold text-gray-900">{title}</h3>
+      <h3 className="mt-8 text-2xl font-display font-bold text-gray-900 dark:text-slate-100">{title}</h3>
       {description && (
-        <p className="mt-4 max-w-md text-sm leading-7 text-gray-500">{description}</p>
+        <p className="mt-4 max-w-md text-sm leading-7 text-gray-500 dark:text-slate-400">{description}</p>
       )}
       {action && (
         <Link

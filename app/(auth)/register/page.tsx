@@ -27,6 +27,7 @@ type PendingRegistrationState = {
 export default function RegisterPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [logoImageUrl, setLogoImageUrl] = useState(DEFAULT_LOGO_IMAGE);
   const [pendingRegistration, setPendingRegistration] =
@@ -222,27 +223,27 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="hero-gradient flex min-h-screen items-center justify-center px-4 py-12">
+    <div className="hero-gradient flex min-h-[100dvh] items-center justify-center px-4 py-4 sm:py-12">
       <div className="ui-enter-scale w-full max-w-md">
-        <div className="mb-8 text-center">
+        <div className="mb-4 sm:mb-8 text-center">
           <Link href="/" className="ui-link-shift inline-flex items-center justify-center">
             <SiteLogo
               src={logoImageUrl}
               alt="FMLP Matrimony logo"
-              className="ui-soft-float h-14 max-w-[260px] sm:h-16 sm:max-w-[320px]"
+              className="ui-soft-float h-10 max-w-[220px] sm:h-16 sm:max-w-[320px]"
             />
           </Link>
-          <h1 className="ui-enter-up mt-5 mb-1 text-2xl font-display font-bold text-gray-900" style={{ animationDelay: "120ms" }}>
+          <h1 className="ui-enter-up mt-3 sm:mt-5 text-xl sm:text-2xl font-display font-bold text-gray-900" style={{ animationDelay: "120ms" }}>
             Create your account
           </h1>
         </div>
 
-        <div className="ui-enter-up ui-card-lift rounded-2xl bg-white p-8 shadow-xl" style={{ animationDelay: "240ms" }}>
+        <div className="ui-enter-up ui-card-lift rounded-2xl bg-white p-5 sm:p-8 shadow-xl" style={{ animationDelay: "240ms" }}>
           <button
             onClick={handleGoogle}
             disabled={isGoogleLoading}
             suppressHydrationWarning
-            className="ui-link-shift mb-6 flex w-full items-center justify-center gap-3 rounded-xl border-2 border-gray-200 px-4 py-3 font-medium text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50 disabled:opacity-60"
+            className="ui-link-shift mb-4 sm:mb-6 flex w-full items-center justify-center gap-3 rounded-xl border-2 border-gray-200 px-4 py-2 sm:py-3 font-medium text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50 disabled:opacity-60"
           >
             {isGoogleLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -257,7 +258,7 @@ export default function RegisterPage() {
             Continue with Google
           </button>
 
-          <div className="relative mb-6">
+          <div className="relative mb-4 sm:mb-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200" />
             </div>
@@ -267,8 +268,8 @@ export default function RegisterPage() {
           </div>
 
           {pendingRegistration ? (
-            <form onSubmit={handleVerifyOtp} className="space-y-5">
-              <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4">
+            <form onSubmit={handleVerifyOtp} className="space-y-4">
+              <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-3 sm:p-4">
                 <p className="text-sm font-semibold text-gray-900">
                   Check your email
                 </p>
@@ -280,7 +281,7 @@ export default function RegisterPage() {
                   .
                 </p>
                 <p
-                  className={`mt-3 text-sm font-semibold ${
+                  className={`mt-2 sm:mt-3 text-sm font-semibold ${
                     isOtpExpired ? "text-rose-600" : "text-gray-700"
                   }`}
                 >
@@ -293,7 +294,7 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="reg-otp">
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="reg-otp">
                   Email OTP
                 </label>
                 <input
@@ -306,7 +307,7 @@ export default function RegisterPage() {
                     setOtpCode(event.target.value.replace(/\D/g, "").slice(0, 6))
                   }
                   suppressHydrationWarning
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-2 sm:py-3 text-sm tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
                   placeholder="000000"
                 />
                 {isOtpExpired ? (
@@ -320,7 +321,7 @@ export default function RegisterPage() {
                 type="submit"
                 disabled={isVerifyingOtp || isOtpExpired}
                 suppressHydrationWarning
-                className="btn-primary ui-link-shift flex w-full items-center justify-center gap-2 rounded-xl py-3"
+                className="btn-primary ui-link-shift flex w-full items-center justify-center gap-2 rounded-xl py-2.5 sm:py-3"
               >
                 {isVerifyingOtp ? (
                   <><Loader2 className="w-5 h-5 animate-spin" /> Verifying...</>
@@ -357,9 +358,9 @@ export default function RegisterPage() {
               </div>
             </form>
           ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="reg-name">
+              <label className="block text-[0.8rem] sm:text-sm font-medium text-gray-700 mb-1" htmlFor="reg-name">
                 Full Name
               </label>
               <Controller
@@ -373,18 +374,18 @@ export default function RegisterPage() {
                     {...field}
                     value={field.value ?? ""}
                     suppressHydrationWarning
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-2 sm:py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
                     placeholder="Arjun Sharma"
                   />
                 )}
               />
               {errors.name && (
-                <p className="text-rose-500 text-xs mt-1">{errors.name.message}</p>
+                <p className="text-rose-500 text-xs mt-0.5">{errors.name.message}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="reg-email">
+              <label className="block text-[0.8rem] sm:text-sm font-medium text-gray-700 mb-1" htmlFor="reg-email">
                 Email Address
               </label>
               <Controller
@@ -398,18 +399,18 @@ export default function RegisterPage() {
                     {...field}
                     value={field.value ?? ""}
                     suppressHydrationWarning
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-2 sm:py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
                     placeholder="you@example.com"
                   />
                 )}
               />
               {errors.email && (
-                <p className="text-rose-500 text-xs mt-1">{errors.email.message}</p>
+                <p className="text-rose-500 text-xs mt-0.5">{errors.email.message}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="reg-password">
+              <label className="block text-[0.8rem] sm:text-sm font-medium text-gray-700 mb-1" htmlFor="reg-password">
                 Password
               </label>
               <div className="relative">
@@ -424,7 +425,7 @@ export default function RegisterPage() {
                       {...field}
                       value={field.value ?? ""}
                       suppressHydrationWarning
-                      className="w-full border border-gray-300 rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
+                      className="w-full border border-gray-300 rounded-xl px-4 py-2 sm:py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
                       placeholder="Min. 8 characters"
                     />
                   )}
@@ -439,32 +440,42 @@ export default function RegisterPage() {
                 </button>
               </div>
               {errors.password && (
-                <p className="text-rose-500 text-xs mt-1">{errors.password.message}</p>
+                <p className="text-rose-500 text-xs mt-0.5">{errors.password.message}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="reg-confirm">
+              <label className="block text-[0.8rem] sm:text-sm font-medium text-gray-700 mb-1" htmlFor="reg-confirm">
                 Confirm Password
               </label>
-              <Controller
-                name="confirmPassword"
-                control={control}
-                render={({ field }) => (
-                  <input
-                    id="reg-confirm"
-                    type="password"
-                    autoComplete="new-password"
-                    {...field}
-                    value={field.value ?? ""}
-                    suppressHydrationWarning
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
-                    placeholder="Repeat your password"
-                  />
-                )}
-              />
+              <div className="relative">
+                <Controller
+                  name="confirmPassword"
+                  control={control}
+                  render={({ field }) => (
+                    <input
+                      id="reg-confirm"
+                      type={showConfirmPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      {...field}
+                      value={field.value ?? ""}
+                      suppressHydrationWarning
+                      className="w-full border border-gray-300 rounded-xl px-4 py-2 sm:py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all"
+                      placeholder="Repeat your password"
+                    />
+                  )}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  suppressHydrationWarning
+                  className="ui-link-shift absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
               {errors.confirmPassword && (
-                <p className="text-rose-500 text-xs mt-1">{errors.confirmPassword.message}</p>
+                <p className="text-rose-500 text-xs mt-0.5">{errors.confirmPassword.message}</p>
               )}
             </div>
 
@@ -472,7 +483,7 @@ export default function RegisterPage() {
               type="submit"
               disabled={isSubmitting}
               suppressHydrationWarning
-              className="btn-primary ui-link-shift flex w-full items-center justify-center gap-2 rounded-xl py-3"
+              className="btn-primary ui-link-shift flex w-full items-center justify-center gap-2 rounded-xl py-2.5 sm:py-3 mt-2"
             >
               {isSubmitting ? (
                 <><Loader2 className="w-5 h-5 animate-spin" /> Sending OTP...</>
@@ -483,7 +494,7 @@ export default function RegisterPage() {
           </form>
           )}
 
-          <p className="text-center text-xs text-gray-500 mt-4 leading-relaxed">
+          <p className="text-center text-[0.7rem] sm:text-xs text-gray-500 mt-3 sm:mt-4 leading-relaxed">
             By registering, you agree to our{" "}
             <Link href="/terms" className="ui-link-shift text-rose-500 hover:underline">Terms</Link> and{" "}
             <Link href="/privacy" className="ui-link-shift text-rose-500 hover:underline">Privacy Policy</Link>.

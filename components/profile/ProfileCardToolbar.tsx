@@ -105,21 +105,21 @@ export default function ProfileCardToolbar({
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
-            className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition-colors hover:border-rose-200 hover:text-rose-600"
+            className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-400 transition-colors hover:border-rose-200 dark:hover:border-slate-600 hover:text-rose-600 dark:hover:text-slate-200"
             aria-label="More options"
           >
             <MoreHorizontal className="h-5 w-5" />
           </button>
 
           {menuOpen ? (
-            <div className="absolute right-0 top-14 z-50 w-52 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
+            <div className="absolute right-0 top-14 z-50 w-52 overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl">
               <button
                 type="button"
                 onClick={handleDownloadProfile}
                 disabled={!canDownloadProfile || downloading}
-                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-400"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 disabled:cursor-not-allowed disabled:text-gray-400 dark:disabled:text-slate-600"
               >
-                <Download className="h-4 w-4 text-gray-500" />
+                <Download className="h-4 w-4 text-gray-500 dark:text-slate-400" />
                 <span className="flex-1">
                   {downloading ? "Preparing PDF..." : "Download profile"}
                 </span>
@@ -127,16 +127,16 @@ export default function ProfileCardToolbar({
               <button
                 type="button"
                 onClick={handleCopyLink}
-                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
               >
-                {copied ? <Check className="h-4 w-4 text-green-600" /> : <Link2 className="h-4 w-4 text-gray-500" />}
+                {copied ? <Check className="h-4 w-4 text-green-600" /> : <Link2 className="h-4 w-4 text-gray-500 dark:text-slate-400" />}
                 {copied ? "Link copied" : "Copy profile link"}
               </button>
               <a
                 href={whatsappShareUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="flex w-full items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
+                className="flex w-full items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                 onClick={() => setMenuOpen(false)}
               >
                 <MessageCircle className="h-4 w-4 text-green-600" />

@@ -9,6 +9,7 @@ import { PageLoader } from "@/components/common/LoadingSpinner";
 import MatchProfileCard from "@/components/dashboard/MatchProfileCard";
 import PaymentModal from "@/components/payment/PaymentModal";
 import { useAutoRefresh } from "@/lib/hooks/useAutoRefresh";
+import Pagination from "@/components/common/Pagination";
 import {
   ChevronDown,
   HeartHandshake,
@@ -44,9 +45,6 @@ interface Match {
 
 type FilterKey = "all" | "recent";
 
-const INITIAL_VISIBLE_COUNT = 8;
-const LOAD_MORE_COUNT = 4;
-
 export default function MatchesPageClient({
   initialMatches,
   initialUnlockedMatchesCount,
@@ -71,7 +69,7 @@ export default function MatchesPageClient({
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [showFilterMenu, setShowFilterMenu] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
+  const [currentPage, setCurrentPage] = useState(1);
   const deferredSearchTerm = useDeferredValue(searchTerm);
 
   useEffect(() => {
@@ -120,7 +118,7 @@ export default function MatchesPageClient({
   });
 
   useEffect(() => {
-    setVisibleCount(INITIAL_VISIBLE_COUNT);
+    setCurrentPage(1);
   }, [deferredSearchTerm, activeFilter]);
 
   const handleUnlockSuccess = (
@@ -170,8 +168,7 @@ export default function MatchesPageClient({
     return searchableText.includes(normalizedSearch);
   });
 
-  const visibleMatches = filteredMatches.slice(0, visibleCount);
-  const canLoadMore = visibleCount < filteredMatches.length;
+  const visibleMatches = filteredMatches.slice((currentPage - 1) * 8, currentPage * 8);
 
   if (matches.length === 0) {
     return (
@@ -211,11 +208,11 @@ export default function MatchesPageClient({
             <div className="ui-soft-float flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 text-rose-500 shadow-sm">
               <HeartHandshake className="h-5 w-5" />
             </div>
-            <h1 className="font-display text-[1.75rem] font-bold tracking-tight text-slate-900">
+            <h1 className="font-display text-[1.75rem] font-bold tracking-tight text-slate-900 dark:text-slate-100">
               Mutual Interest
             </h1>
           </div>
-          <p className="max-w-2xl text-[15px] text-slate-600">
+          <p className="max-w-2xl text-[15px] text-slate-600 dark:text-slate-400">
             These are your mutual interests - both of you showed interest in each other.
           </p>
         </div>
@@ -231,7 +228,7 @@ export default function MatchesPageClient({
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search mutual interests..."
-              className="h-12 w-full rounded-[18px] border border-rose-100 bg-white pl-12 pr-4 text-sm text-slate-700 outline-none shadow-sm transition-colors placeholder:text-slate-400 focus:border-rose-300"
+              className="h-12 w-full rounded-[18px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 pl-12 pr-4 text-sm text-slate-700 dark:text-slate-300 outline-none shadow-sm transition-colors placeholder:text-slate-400 focus:border-rose-300"
             />
           </label>
 
@@ -239,14 +236,14 @@ export default function MatchesPageClient({
             <button
               type="button"
               onClick={() => setShowFilterMenu((current) => !current)}
-              className="ui-link-shift inline-flex h-12 w-12 items-center justify-center rounded-[14px] border border-rose-100 bg-white text-slate-700 shadow-sm transition-colors hover:border-rose-200 hover:text-rose-600"
+              className="ui-link-shift inline-flex h-12 w-12 items-center justify-center rounded-[14px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 shadow-sm transition-colors hover:border-rose-200 hover:text-rose-600"
               aria-label="Open filters"
             >
               <SlidersHorizontal className="h-4.5 w-4.5" />
             </button>
 
             {showFilterMenu ? (
-              <div className="ui-enter-up absolute right-0 top-14 z-20 min-w-[180px] overflow-hidden rounded-2xl border border-rose-100 bg-white py-2 shadow-[0_16px_40px_rgba(15,23,42,0.12)]">
+              <div className="ui-enter-up absolute right-0 top-14 z-20 min-w-[180px] overflow-hidden rounded-2xl border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 py-2 shadow-[0_16px_40px_rgba(15,23,42,0.12)]">
                 {[
                   { key: "all", label: "All Mutual Interests" },
                   { key: "recent", label: "Recent Mutual Interests" },
@@ -261,7 +258,7 @@ export default function MatchesPageClient({
                     className={`ui-link-shift flex w-full items-center justify-between px-4 py-2.5 text-left text-sm font-medium transition-colors ${
                       activeFilter === option.key
                         ? "bg-rose-50 text-rose-600"
-                        : "text-slate-700 hover:bg-rose-50 hover:text-rose-600"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600"
                     }`}
                   >
                     <span>{option.label}</span>
@@ -278,13 +275,13 @@ export default function MatchesPageClient({
 
       {filteredMatches.length === 0 ? (
         <section
-          className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 bg-white px-6 py-10 text-center shadow-sm"
+          className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-10 text-center shadow-sm"
           style={{ animationDelay: "160ms", animationFillMode: "forwards" }}
         >
-          <h2 className="font-display text-[1.55rem] font-bold text-slate-900">
+          <h2 className="font-display text-[1.55rem] font-bold text-slate-900 dark:text-slate-100">
             No mutual interests found
           </h2>
-          <p className="mt-2 text-[15px] text-slate-500">
+          <p className="mt-2 text-[15px] text-slate-500 dark:text-slate-400">
             Try a different search or filter to see more mutual interests.
           </p>
         </section>
@@ -313,28 +310,16 @@ export default function MatchesPageClient({
             ))}
           </section>
 
-          {canLoadMore ? (
-            <div
-              className="ui-enter-up flex justify-center"
-              style={{ animationDelay: "200ms", animationFillMode: "forwards" }}
-            >
-              <button
-                type="button"
-                onClick={() =>
-                  setVisibleCount((current) => current + LOAD_MORE_COUNT)
-                }
-                className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-[16px] border border-rose-100 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:border-rose-200 hover:text-rose-600"
-              >
-                Load More
-                <RefreshCw className="h-4.5 w-4.5" />
-              </button>
-            </div>
-          ) : null}
+          <Pagination 
+            currentPage={currentPage}
+            totalPages={Math.ceil(filteredMatches.length / 8)}
+            onPageChange={setCurrentPage}
+          />
         </>
       )}
 
       <section
-        className="ui-enter-up ui-card-lift-soft flex flex-col gap-5 rounded-[28px] border border-rose-100/80 bg-white px-6 py-5 shadow-sm md:flex-row md:items-center md:justify-between"
+        className="ui-enter-up ui-card-lift-soft flex flex-col gap-5 rounded-[28px] border border-rose-100/80 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-5 shadow-sm md:flex-row md:items-center md:justify-between"
         style={{ animationDelay: "240ms", animationFillMode: "forwards" }}
       >
         <div className="flex items-start gap-4">
@@ -342,10 +327,10 @@ export default function MatchesPageClient({
             <ShieldCheck className="h-6 w-6" />
           </div>
           <div>
-            <h2 className="font-display text-[1.4rem] font-bold text-slate-900">
+            <h2 className="font-display text-[1.4rem] font-bold text-slate-900 dark:text-slate-100">
               Safe & Secure
             </h2>
-            <p className="mt-1 text-[15px] text-slate-500">
+            <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
               Your privacy is our priority. Contact details stay protected until
               you unlock the profile.
             </p>

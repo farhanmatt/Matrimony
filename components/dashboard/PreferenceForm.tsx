@@ -122,8 +122,8 @@ export default function PreferenceForm({
   };
 
   const inputClass =
-    "w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all";
-  const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+    "w-full border border-gray-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500";
+  const labelClass = "block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1";
   const errorClass = "text-rose-500 text-xs mt-1";
   const selectedLanguage = watch("language");
   const isBusy = isSubmitting || isClearing;
@@ -131,15 +131,15 @@ export default function PreferenceForm({
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4 flex gap-3 text-sm text-rose-800">
-          <div className="w-10 h-10 rounded-xl bg-white text-rose-500 flex items-center justify-center shrink-0 shadow-sm">
+        <div className="rounded-2xl border border-rose-100 dark:border-slate-700 bg-rose-50/70 dark:bg-slate-800/50 p-4 flex gap-3 text-sm text-rose-800 dark:text-rose-300">
+          <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 text-rose-500 dark:text-rose-400 flex items-center justify-center shrink-0 shadow-sm">
             <SlidersHorizontal className="w-5 h-5" />
           </div>
           <div>
-            <p className="font-semibold text-gray-900">
+            <p className="font-semibold text-gray-900 dark:text-slate-100">
               Improve your match suggestions
             </p>
-            <p className="mt-1 text-rose-700">
+            <p className="mt-1 text-rose-700 dark:text-rose-300">
               Add the partner details that matter most to you. You can keep any
               field blank if you are open to all options.
             </p>
@@ -147,7 +147,7 @@ export default function PreferenceForm({
         </div>
 
         <section>
-          <h2 className="text-base font-display font-semibold text-gray-900 border-b border-gray-100 pb-3 mb-5">
+          <h2 className="text-base font-display font-semibold text-gray-900 dark:text-slate-100 border-b border-gray-100 dark:border-slate-800 pb-3 mb-5">
             Basic Preferences
           </h2>
           <div className="grid sm:grid-cols-2 gap-5">
@@ -249,7 +249,7 @@ export default function PreferenceForm({
         </section>
 
         <section>
-          <h2 className="text-base font-display font-semibold text-gray-900 border-b border-gray-100 pb-3 mb-5">
+          <h2 className="text-base font-display font-semibold text-gray-900 dark:text-slate-100 border-b border-gray-100 dark:border-slate-800 pb-3 mb-5">
             Community & Lifestyle
           </h2>
           <div className="grid sm:grid-cols-2 gap-5">
@@ -372,17 +372,17 @@ export default function PreferenceForm({
             aria-modal="true"
             aria-labelledby="clear-preferences-title"
             aria-describedby="clear-preferences-description"
-            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+            className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl"
           >
             <h3
               id="clear-preferences-title"
-              className="text-lg font-display font-semibold text-gray-900"
+              className="text-lg font-display font-semibold text-gray-900 dark:text-slate-100"
             >
               Clear partner preferences?
             </h3>
             <p
               id="clear-preferences-description"
-              className="mt-2 text-sm leading-6 text-gray-600"
+              className="mt-2 text-sm leading-6 text-gray-600 dark:text-slate-400"
             >
               This will remove your saved partner preferences from this form,
               Find Match, and Edit Profile.

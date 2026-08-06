@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import BrowseProfileCard from "@/components/profile/BrowseProfileCard";
 import { SkeletonGrid } from "@/components/common/SkeletonCard";
 import EmptyState from "@/components/common/EmptyState";
+import Pagination from "@/components/common/Pagination";
 import { useAutoRefresh } from "@/lib/hooks/useAutoRefresh";
 import {
   EMPTY_BROWSE_FILTERS,
@@ -86,31 +87,6 @@ interface Profile {
 }
 
 
-function getPaginationItems(currentPage: number, pageCount: number) {
-  if (pageCount <= 1) return [];
-
-  if (pageCount <= 6) {
-    return Array.from({ length: pageCount }, (_, index) => index + 1);
-  }
-
-  if (currentPage <= 3) {
-    return [1, 2, 3, 4, "end-ellipsis", pageCount];
-  }
-
-  if (currentPage >= pageCount - 2) {
-    return [1, "start-ellipsis", pageCount - 3, pageCount - 2, pageCount - 1, pageCount];
-  }
-
-  return [
-    1,
-    "start-ellipsis",
-    currentPage - 1,
-    currentPage,
-    currentPage + 1,
-    "end-ellipsis",
-    pageCount,
-  ];
-}
 
 export default function BrowsePage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -207,7 +183,7 @@ export default function BrowsePage() {
       try {
         const params = new URLSearchParams({
           page: String(page),
-          limit: "12",
+          limit: "8",
           sort: sortOrder,
           ...(searchQuery && { search: searchQuery }),
           ...(religion && { religion }),
@@ -575,7 +551,7 @@ export default function BrowsePage() {
   const filterLabelClass =
     "mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-gray-500";
   const filterControlClass =
-    "w-full rounded-[16px] border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none input-focus";
+    "w-full rounded-[16px] border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-gray-700 dark:text-slate-300 outline-none input-focus";
 
   const renderFilterFields = () => (
     <>
@@ -736,11 +712,11 @@ export default function BrowsePage() {
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
             placeholder="Search by name, profession, or location..."
-            className="h-[48px] w-full rounded-[10px] border border-slate-200/80 bg-white px-5 pr-14 text-[15px] text-slate-700 outline-none input-focus"
+            className="h-[48px] w-full rounded-[10px] border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 pr-14 text-[15px] text-slate-700 dark:text-slate-300 outline-none input-focus"
           />
           <button
             type="submit"
-            className="ui-link-shift absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-500"
+            className="ui-link-shift absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-rose-50 dark:hover:bg-slate-800 hover:text-rose-500 dark:hover:text-rose-400"
             aria-label="Search profiles"
           >
             <Search className="h-5 w-5" />
@@ -756,7 +732,7 @@ export default function BrowsePage() {
               setSortOrder(event.target.value);
               setPage(1);
             }}
-            className="h-[48px] min-w-[210px] appearance-none rounded-[10px] border border-slate-200/80 bg-white px-5 pr-12 text-[15px] font-medium text-slate-700 outline-none input-focus"
+            className="h-[48px] min-w-[210px] appearance-none rounded-[10px] border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 pr-12 text-[15px] font-medium text-slate-700 dark:text-slate-300 outline-none input-focus"
           >
             {sortOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -770,7 +746,7 @@ export default function BrowsePage() {
         <button
           type="button"
           onClick={openFilterModal}
-          className="ui-link-shift relative inline-flex h-[48px] w-[48px] items-center justify-center rounded-[10px] border border-slate-200/80 bg-white text-slate-600 shadow-[0_10px_24px_rgba(15,23,42,0.06)] transition-all hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+          className="ui-link-shift relative inline-flex h-[48px] w-[48px] items-center justify-center rounded-[10px] border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 shadow-[0_10px_24px_rgba(15,23,42,0.06)] transition-all hover:border-rose-200 dark:hover:border-slate-700 hover:bg-rose-50 dark:hover:bg-slate-800 hover:text-rose-600 dark:hover:text-rose-400"
           aria-label="Open filters"
           title="Open filters"
         >
@@ -788,7 +764,7 @@ export default function BrowsePage() {
   const renderRightRail = () => (
     <aside className="hidden xl:flex xl:w-[330px] xl:flex-col xl:gap-6 2xl:w-[350px]">
       <div
-        className="ui-enter-right ui-card-lift-soft group relative h-[414px] overflow-hidden rounded-[16px] border border-rose-100/90 bg-[#fff7f8] shadow-[0_20px_50px_rgba(15,23,42,0.06)]"
+        className="ui-enter-right ui-card-lift-soft group relative h-[414px] overflow-hidden rounded-[16px] border border-rose-100/90 dark:border-slate-800 bg-[#fff7f8] dark:bg-slate-900 shadow-[0_20px_50px_rgba(15,23,42,0.06)]"
         style={{ animationDelay: "220ms", animationFillMode: "forwards" }}
       >
         <Image
@@ -810,7 +786,7 @@ export default function BrowsePage() {
       </div>
 
       <div
-        className="ui-enter-right ui-card-lift-soft relative overflow-hidden rounded-[18px] border border-rose-100/90 bg-[radial-gradient(circle_at_top_right,#fff7f8_0%,#fff4f6_44%,#ffffff_100%)] px-6 pb-4 pt-5 shadow-[0_20px_50px_rgba(15,23,42,0.06)]"
+        className="ui-enter-right ui-card-lift-soft relative overflow-hidden rounded-[18px] border border-rose-100/90 dark:border-slate-800 bg-[radial-gradient(circle_at_top_right,#fff7f8_0%,#fff4f6_44%,#ffffff_100%)] dark:!bg-none dark:bg-slate-900 px-6 pb-4 pt-5 shadow-[0_20px_50px_rgba(15,23,42,0.06)]"
         style={{ animationDelay: "300ms", animationFillMode: "forwards" }}
       >
         <Heart
@@ -818,16 +794,16 @@ export default function BrowsePage() {
           strokeWidth={1.5}
         />
 
-        <h3 className="pr-16 whitespace-nowrap font-display text-[1.5rem] font-bold leading-none text-slate-900">
+        <h3 className="pr-16 whitespace-nowrap font-display text-[1.5rem] font-bold leading-none text-slate-900 dark:text-slate-100">
           Trusted by thousands
         </h3>
-        <p className="mt-4 max-w-[13rem] text-sm leading-7 text-slate-600">
+        <p className="mt-4 max-w-[13rem] text-sm leading-7 text-slate-600 dark:text-slate-400">
           Lakhs of successful matches and happy families.
         </p>
 
         <div className="relative mt-6 h-24">
           <div
-            className="ui-soft-float absolute bottom-1 right-24 h-20 w-16 rotate-[-8deg] overflow-hidden rounded-[16px] border-[3px] border-white bg-white shadow-[0_14px_28px_rgba(15,23,42,0.12)]"
+            className="ui-soft-float absolute bottom-1 right-24 h-20 w-16 rotate-[-8deg] overflow-hidden rounded-[16px] border-[3px] border-white dark:border-slate-800 bg-white dark:bg-slate-800 shadow-[0_14px_28px_rgba(15,23,42,0.12)]"
             style={{ animationDelay: "0.5s" }}
           >
             <Image
@@ -838,7 +814,7 @@ export default function BrowsePage() {
               sizes="64px"
             />
           </div>
-          <div className="ui-soft-float absolute bottom-2 right-10 h-24 w-16 overflow-hidden rounded-[16px] border-[3px] border-white bg-white shadow-[0_16px_30px_rgba(15,23,42,0.14)]">
+          <div className="ui-soft-float absolute bottom-2 right-10 h-24 w-16 overflow-hidden rounded-[16px] border-[3px] border-white dark:border-slate-800 bg-white dark:bg-slate-800 shadow-[0_16px_30px_rgba(15,23,42,0.14)]">
             <Image
               src="/main.jpeg"
               alt="Matrimony memories collage"
@@ -848,7 +824,7 @@ export default function BrowsePage() {
             />
           </div>
           <div
-            className="ui-soft-float absolute bottom-1 right-0 h-20 w-16 rotate-[8deg] overflow-hidden rounded-[16px] border-[3px] border-white bg-white shadow-[0_14px_28px_rgba(15,23,42,0.12)]"
+            className="ui-soft-float absolute bottom-1 right-0 h-20 w-16 rotate-[8deg] overflow-hidden rounded-[16px] border-[3px] border-white dark:border-slate-800 bg-white dark:bg-slate-800 shadow-[0_14px_28px_rgba(15,23,42,0.12)]"
             style={{ animationDelay: "1s" }}
           >
             <Image
@@ -863,20 +839,20 @@ export default function BrowsePage() {
       </div>
 
       <div
-        className="ui-enter-right ui-card-lift-soft relative overflow-hidden rounded-[18px] border border-rose-100/90 bg-[radial-gradient(circle_at_bottom_right,#fff5f7_0%,#ffffff_55%)] p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)]"
+        className="ui-enter-right ui-card-lift-soft relative overflow-hidden rounded-[18px] border border-rose-100/90 dark:border-slate-800 bg-[radial-gradient(circle_at_bottom_right,#fff5f7_0%,#ffffff_55%)] dark:!bg-none dark:bg-slate-900 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)]"
         style={{ animationDelay: "380ms", animationFillMode: "forwards" }}
       >
-        <div className="absolute bottom-4 right-4 h-24 w-24 rounded-full bg-rose-50" />
+        <div className="absolute bottom-4 right-4 h-24 w-24 rounded-full bg-rose-50 dark:bg-slate-800" />
         <div className="relative min-h-[210px]">
           <div>
-            <h3 className="pr-20 whitespace-nowrap font-display text-[1.42rem] font-bold leading-none text-slate-900">
+            <h3 className="pr-20 whitespace-nowrap font-display text-[1.42rem] font-bold leading-none text-slate-900 dark:text-slate-100">
               We&apos;re here for you
             </h3>
-            <p className="mt-4 max-w-[11.5rem] text-[13px] leading-6 text-slate-600">
+            <p className="mt-4 max-w-[11.5rem] text-[13px] leading-6 text-slate-600 dark:text-slate-400">
               Our support team is always ready to assist you in your journey to find the right match.
             </p>
           </div>
-          <div className="ui-soft-float absolute bottom-0 right-0 inline-flex h-24 w-24 items-center justify-center rounded-full bg-[linear-gradient(135deg,rgba(255,228,236,0.95)_0%,rgba(255,241,244,0.98)_100%)] text-rose-500">
+          <div className="ui-soft-float absolute bottom-0 right-0 inline-flex h-24 w-24 items-center justify-center rounded-full bg-[linear-gradient(135deg,rgba(255,228,236,0.95)_0%,rgba(255,241,244,0.98)_100%)] dark:!bg-none dark:bg-slate-800 text-rose-500">
             <Headphones className="h-10 w-10" strokeWidth={1.8} />
           </div>
         </div>
@@ -884,38 +860,35 @@ export default function BrowsePage() {
     </aside>
   );
 
-  const hasPreviousPage = page > 1;
-  const hasNextPage = page < totalPages;
-  const paginationItems = getPaginationItems(page, totalPages);
 
   if (profileRequired) {
     return (
       <div className="space-y-8">
         <div className="ui-enter-up" style={{ animationDelay: "40ms", animationFillMode: "forwards" }}>
           <div>
-            <h1 className="font-display text-[2.6rem] font-bold leading-none text-slate-900">
+            <h1 className="font-display text-[2.6rem] font-bold leading-none text-slate-900 dark:text-slate-100">
               Browse Profiles
             </h1>
             <span className="mt-4 block h-[3px] w-14 rounded-full bg-rose-500" />
-            <p className="mt-4 max-w-xl text-[16px] leading-8 text-slate-600">
+            <p className="mt-4 max-w-xl text-[16px] leading-8 text-slate-600 dark:text-slate-400">
               Find and connect with your perfect life partner.
             </p>
           </div>
         </div>
 
         <div
-          className="ui-enter-scale ui-card-lift-soft rounded-[32px] border border-rose-100 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-8"
+          className="ui-enter-scale ui-card-lift-soft rounded-[32px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-8"
           style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
         >
           <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-            <div className="ui-soft-float flex h-16 w-16 shrink-0 items-center justify-center rounded-[24px] bg-rose-50 text-rose-500">
+            <div className="ui-soft-float flex h-16 w-16 shrink-0 items-center justify-center rounded-[24px] bg-rose-50 dark:bg-slate-800 text-rose-500">
               <Search className="h-7 w-7" />
             </div>
             <div className="flex-1">
-              <h2 className="mb-2 font-display text-2xl font-bold text-slate-900">
+              <h2 className="mb-2 font-display text-2xl font-bold text-slate-900 dark:text-slate-100">
                 Create your profile to browse matches
               </h2>
-              <p className="max-w-2xl text-sm leading-7 text-slate-600">
+              <p className="max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-400">
                 We only show other profiles after you create your own profile.
                 Complete your details first, then profile suggestions will appear
                 here for you.
@@ -939,17 +912,17 @@ export default function BrowsePage() {
       {isFilterOpen ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
           <div
-            className="ui-overlay-fade absolute inset-0 bg-slate-950/35 backdrop-blur-sm"
+            className="ui-overlay-fade absolute inset-0 bg-slate-950/35 dark:bg-slate-950/70 backdrop-blur-sm"
             onClick={closeFilterModal}
           />
 
-          <div className="ui-modal-pop relative z-10 flex max-h-[82vh] w-full max-w-3xl flex-col overflow-hidden rounded-[30px] border border-gray-100 bg-white p-5 shadow-2xl sm:p-6">
+          <div className="ui-modal-pop relative z-10 flex max-h-[82vh] w-full max-w-3xl flex-col overflow-hidden rounded-[30px] border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-2xl sm:p-6">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-rose-500">
                   Filters
                 </p>
-                <h2 className="mt-2 font-display text-xl font-bold text-gray-900">
+                <h2 className="mt-2 font-display text-xl font-bold text-gray-900 dark:text-slate-100">
                   Refine your browse results
                 </h2>
               </div>
@@ -957,7 +930,7 @@ export default function BrowsePage() {
               <button
                 type="button"
                 onClick={closeFilterModal}
-                className="ui-link-shift rounded-full border border-gray-200 p-2 text-gray-500 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500"
+                className="ui-link-shift rounded-full border border-gray-200 dark:border-slate-700 p-2 text-gray-500 dark:text-slate-400 transition-colors hover:border-rose-200 dark:hover:border-slate-700 hover:bg-rose-50 dark:hover:bg-slate-800 hover:text-rose-500 dark:hover:text-rose-400"
                 aria-label="Close filters"
               >
                 <X className="h-5 w-5" />
@@ -969,7 +942,7 @@ export default function BrowsePage() {
                 {renderFilterFields()}
               </div>
 
-              <div className="mt-5 flex flex-col gap-3 border-t border-gray-100 pt-4">
+              <div className="mt-5 flex flex-col gap-3 border-t border-gray-100 dark:border-slate-800 pt-4">
                 <button
                   type="submit"
                   className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md"
@@ -981,7 +954,7 @@ export default function BrowsePage() {
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 transition-colors hover:border-rose-200 hover:text-rose-600"
+                  className="ui-link-shift inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 dark:border-slate-700 px-4 py-3 text-sm font-semibold text-gray-600 dark:text-slate-300 transition-colors hover:border-rose-200 dark:hover:border-slate-600 hover:text-rose-600 dark:hover:text-rose-400"
                 >
                   <RotateCcw className="h-4 w-4" />
                   Reset Filters
@@ -1000,11 +973,11 @@ export default function BrowsePage() {
               style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
             >
               <div>
-                <h1 className="whitespace-nowrap font-display text-[1.85rem] font-bold leading-none text-slate-900">
+                <h1 className="whitespace-nowrap font-display text-[1.85rem] font-bold leading-none text-slate-900 dark:text-slate-100">
                   Find Match
                 </h1>
                 <span className="mt-4 block h-[3px] w-14 rounded-full bg-rose-500" />
-                <p className="mt-4 text-[16px] leading-8 text-slate-600 lg:whitespace-nowrap">
+                <p className="mt-4 text-[16px] leading-8 text-slate-600 dark:text-slate-400 lg:whitespace-nowrap">
                   Find and connect with your perfect life partner.
                 </p>
               </div>
@@ -1016,7 +989,7 @@ export default function BrowsePage() {
           {loading ? (
             <SkeletonGrid count={8} />
           ) : profiles.length === 0 ? (
-            <div className="ui-enter-scale ui-card-lift-soft rounded-[30px] border border-rose-100 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-8">
+            <div className="ui-enter-scale ui-card-lift-soft rounded-[30px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-8">
               <EmptyState
                 icon="search"
                 title="No profiles found"
@@ -1047,56 +1020,11 @@ export default function BrowsePage() {
               </div>
 
               {totalPages > 1 ? (
-                <div
-                  className="ui-enter-up flex flex-wrap items-center justify-center gap-3 py-2"
-                  style={{ animationDelay: "180ms", animationFillMode: "forwards" }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
-                    disabled={!hasPreviousPage}
-                    className="ui-link-shift inline-flex h-11 w-11 items-center justify-center rounded-[14px] border border-slate-200 bg-white text-slate-500 transition-all hover:border-rose-300 hover:text-rose-600 disabled:cursor-not-allowed disabled:border-slate-100 disabled:text-slate-300"
-                    aria-label="Previous page"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-
-                  {paginationItems.map((item, index) =>
-                    typeof item === "number" ? (
-                      <button
-                        key={item}
-                        type="button"
-                        onClick={() => setPage(item)}
-                        className={`ui-link-shift inline-flex h-11 min-w-[2.75rem] items-center justify-center rounded-[14px] border px-3 text-sm font-semibold transition-all ${
-                          item === page
-                            ? "border-rose-300 bg-rose-50 text-rose-600 shadow-[0_12px_24px_rgba(244,63,94,0.12)]"
-                            : "border-slate-200 bg-white text-slate-700 hover:border-rose-300 hover:text-rose-600"
-                        }`}
-                      >
-                        {item}
-                      </button>
-                    ) : (
-                      <span
-                        key={`${item}-${index}`}
-                        className="inline-flex h-11 min-w-[2.25rem] items-center justify-center text-sm font-semibold text-slate-400"
-                      >
-                        ...
-                      </span>
-                    )
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setPage((currentPage) => Math.min(totalPages, currentPage + 1))
-                    }
-                    disabled={!hasNextPage}
-                    className="ui-link-shift inline-flex h-11 w-11 items-center justify-center rounded-[14px] border border-slate-200 bg-white text-slate-500 transition-all hover:border-rose-300 hover:text-rose-600 disabled:cursor-not-allowed disabled:border-slate-100 disabled:text-slate-300"
-                    aria-label="Next page"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
+                <Pagination 
+                  currentPage={page} 
+                  totalPages={totalPages} 
+                  onPageChange={setPage} 
+                />
               ) : null}
             </>
           )}

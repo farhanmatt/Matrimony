@@ -80,7 +80,7 @@ export default async function RootLayout({
   const logoImageUrl = await getLogoImageUrl();
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className="font-sans bg-background text-foreground antialiased"
         data-logo-image-url={logoImageUrl}

@@ -111,8 +111,8 @@ export default function AccountSettingsForm({
   };
 
   const inputClass =
-    "h-11 w-full rounded-[16px] border border-slate-200 bg-white px-4 text-[15px] text-slate-700 outline-none transition-colors placeholder:text-slate-400 focus:border-rose-300";
-  const labelClass = "mb-2 block text-sm font-semibold text-slate-800";
+    "h-11 w-full rounded-[16px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 px-4 text-[15px] text-slate-700 dark:text-slate-100 outline-none transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-rose-300";
+  const labelClass = "mb-2 block text-sm font-semibold text-slate-800 dark:text-slate-200";
   const errorClass = "mt-2 text-xs text-rose-500";
 
   const passwordFields = [
@@ -142,14 +142,14 @@ export default function AccountSettingsForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
       <section id="account-details" className="scroll-mt-28">
-        <div className="mb-6 border-b border-slate-100 pb-5">
+        <div className="mb-6 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div className="flex items-center gap-3">
             <User className="h-5 w-5 text-rose-500" />
-            <h2 className="font-display text-[1.5rem] font-bold text-slate-900">
+            <h2 className="font-display text-[1.5rem] font-bold text-slate-900 dark:text-slate-100">
               Account Details
             </h2>
           </div>
-          <p className="mt-2 text-[15px] text-slate-500">
+          <p className="mt-2 text-[15px] text-slate-500 dark:text-slate-400">
             Update your personal information and email.
           </p>
         </div>
@@ -183,7 +183,7 @@ export default function AccountSettingsForm({
                 type="email"
                 value={user.email}
                 disabled
-                className={`${inputClass} cursor-not-allowed bg-slate-50 pl-12 pr-24 text-slate-500`}
+                className={`${inputClass} cursor-not-allowed bg-slate-50 dark:bg-slate-900/50 pl-12 pr-24 text-slate-500 dark:text-slate-400`}
               />
               {user.emailVerified ? (
                 <span className="absolute right-3 top-1/2 inline-flex -translate-y-1/2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
@@ -191,7 +191,7 @@ export default function AccountSettingsForm({
                 </span>
               ) : null}
             </div>
-            <p className="mt-2 text-[13px] text-slate-400">
+            <p className="mt-2 text-[13px] text-slate-400 dark:text-slate-500">
               Email changes are disabled to keep login sessions secure.
             </p>
           </div>
@@ -199,19 +199,19 @@ export default function AccountSettingsForm({
       </section>
 
       <section id="password-settings" className="scroll-mt-28">
-        <div className="mb-6 border-b border-slate-100 pb-5">
+        <div className="mb-6 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div className="flex items-center gap-3">
             <KeyRound className="h-5 w-5 text-rose-500" />
-            <h2 className="font-display text-[1.5rem] font-bold text-slate-900">
+            <h2 className="font-display text-[1.5rem] font-bold text-slate-900 dark:text-slate-100">
               Password
             </h2>
           </div>
-          <p className="mt-2 text-[15px] text-slate-500">
+          <p className="mt-2 text-[15px] text-slate-500 dark:text-slate-400">
             Change your password to keep your account secure.
           </p>
         </div>
 
-        <div className="mb-6 flex gap-3 rounded-[18px] border border-blue-100 bg-blue-50 px-4 py-4 text-blue-700">
+        <div className="mb-6 flex gap-3 rounded-[18px] border border-blue-100 dark:border-blue-900/30 bg-blue-50 dark:bg-blue-900/20 px-4 py-4 text-blue-700 dark:text-blue-300">
           <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" />
           <p className="text-[15px] leading-7">
             {user.hasPassword
@@ -267,7 +267,7 @@ export default function AccountSettingsForm({
           })}
         </div>
 
-        <p className="mt-3 text-[13px] text-slate-500">
+        <p className="mt-3 text-[13px] text-slate-500 dark:text-slate-400">
           Password must be at least 8 characters long and include uppercase, lowercase and a number.
         </p>
       </section>

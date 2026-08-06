@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useDeferredValue, useMemo } from "react";
 import { isAfter, subDays } from "date-fns";
 import {
   ArrowUpRight,
@@ -12,9 +12,12 @@ import {
   MapPin,
   Sparkles,
   Users2,
+  Search,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageLoader } from "@/components/common/LoadingSpinner";
+import Pagination from "@/components/common/Pagination";
 import LikedProfilePreviewCard from "@/components/profile/LikedProfilePreviewCard";
 import { useAutoRefresh } from "@/lib/hooks/useAutoRefresh";
 import {
@@ -100,6 +103,7 @@ export default function LikedPageClient({
   const [matches, setMatches] = useState<MatchSummary[]>(initialMatches);
   const [loading, setLoading] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOption>("recent");
+  const [currentPage, setCurrentPage] = useState(1);
   const [shortlistedProfileIds, setShortlistedProfileIds] = useState<string[]>([]);
   const [shortlistMetadata, setShortlistMetadata] =
     useState<ShortlistProfileMetadataMap>({});
@@ -109,7 +113,12 @@ export default function LikedPageClient({
   const [loadingShortlistOnlyProfiles, setLoadingShortlistOnlyProfiles] =
     useState(false);
   const [pricing, setPricing] = useState(initialPricing);
+  const [searchQuery, setSearchQuery] = useState("");
   const isShortlistView = viewMode === "shortlist";
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sortOrder, viewMode, searchQuery]);
 
   useEffect(() => {
     setLikes(initialLikes);
@@ -427,7 +436,21 @@ export default function LikedPageClient({
   );
   const hasSavedShortlist = shortlistedProfileIds.length > 0;
   const shortlistedCount = shortlistedLikes.length;
-  const visibleLikes = isShortlistView ? shortlistedLikes : activeLikes;
+
+  const rawVisibleLikes = isShortlistView ? shortlistedLikes : activeLikes;
+  
+  const visibleLikes = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return rawVisibleLikes;
+    }
+    const query = searchQuery.toLowerCase().trim();
+    return rawVisibleLikes.filter(
+      (like) =>
+        like.toProfile.fullName.toLowerCase().includes(query) ||
+        like.toProfile.id.toLowerCase().includes(query)
+    );
+  }, [rawVisibleLikes, searchQuery]);
+
   const showSavedShortlistEmptyState =
     isShortlistView &&
     hasSavedShortlist &&
@@ -454,7 +477,7 @@ export default function LikedPageClient({
   const highlightStats = [
     {
       label: isShortlistView ? "Shortlisted Profiles" : "Interests",
-      value: visibleLikes.length,
+      value: rawVisibleLikes.length,
       icon: isShortlistView ? Bookmark : Heart,
       iconClass: "bg-rose-100 text-rose-500",
     },
@@ -489,37 +512,62 @@ export default function LikedPageClient({
             <div className="ui-soft-float flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 text-rose-500 shadow-sm">
               <PageIcon className="h-4.5 w-4.5" />
             </div>
-            <h1 className="font-display text-[1.65rem] font-bold tracking-tight text-slate-900">
+            <h1 className="font-display text-[1.65rem] font-bold tracking-tight text-slate-900 dark:text-slate-100">
               {isShortlistView ? "Shortlisted Profiles" : "Interests"}
             </h1>
           </div>
-          <p className="text-[13px] text-slate-600">
+          <p className="text-[13px] text-slate-600 dark:text-slate-400">
             {isShortlistView
               ? "Showing the profiles you saved from interests and message notifications."
               : "Profiles you've shown interest in. Shortlist your favorites to keep them handy."}
           </p>
         </div>
 
-        {availableLikes.length > 0 || hasSavedShortlist ? (
+        {rawVisibleLikes.length > 0 ? (
           <div
-            className="ui-enter-right w-full xl:w-auto xl:flex-none"
+            className="ui-enter-right flex w-full flex-col gap-3 sm:flex-row sm:items-center xl:w-auto xl:flex-none"
             style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
           >
-            <label className="sr-only" htmlFor="liked-sort-order">
-              Sort interests
-            </label>
-            <select
-              id="liked-sort-order"
-              value={sortOrder}
-              onChange={(event) => setSortOrder(event.target.value as SortOption)}
-              className="ui-card-lift-soft h-10 w-full rounded-[14px] border border-gray-200 bg-white px-4 text-xs font-medium text-slate-700 outline-none transition-colors hover:border-rose-200 focus:border-rose-300 xl:w-[320px]"
-            >
+            <div className="relative w-full sm:w-[260px]">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search by name or ID..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="ui-card-lift-soft h-10 w-full rounded-[14px] border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-9 text-[13px] font-medium text-slate-700 dark:text-slate-100 outline-none transition-colors placeholder:text-slate-400 focus:border-rose-300"
+              />
+              {searchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              ) : null}
+            </div>
+            
+            <div className="w-full sm:w-[200px]">
+              <label className="sr-only" htmlFor="liked-sort">
+                Sort profiles
+              </label>
+              <select
+                id="liked-sort"
+                value={sortOrder}
+                onChange={(event) => {
+                  setSortOrder(event.target.value as SortOption);
+                  setCurrentPage(1);
+                }}
+                className="ui-card-lift-soft h-10 w-full rounded-[14px] border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 text-[13px] font-medium text-slate-700 dark:text-slate-300 outline-none transition-colors hover:border-rose-200 focus:border-rose-300"
+              >
               {sortOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   Sort By: {option.label}
                 </option>
               ))}
-            </select>
+              </select>
+            </div>
           </div>
         ) : null}
       </div>
@@ -532,10 +580,10 @@ export default function LikedPageClient({
           <div className="ui-soft-float flex h-28 w-28 items-center justify-center rounded-full bg-rose-50 text-rose-300">
             <Heart className="h-14 w-14" />
           </div>
-          <h2 className="mt-8 font-display text-[1.6rem] font-bold text-slate-900 sm:text-[1.75rem]">
+          <h2 className="mt-8 font-display text-[1.6rem] font-bold text-slate-900 dark:text-slate-100 sm:text-[1.75rem]">
             {matches.length > 0 ? "No active interests right now" : "No interests yet"}
           </h2>
-          <p className="mt-3 max-w-xl text-base text-slate-500 sm:text-[1.05rem]">
+          <p className="mt-3 max-w-xl text-base text-slate-500 dark:text-slate-400 sm:text-[1.05rem]">
             {matches.length > 0
               ? "Profiles that liked you back are available in Mutual Interest."
               : "Browse profiles and like the ones that interest you!"}
@@ -550,32 +598,32 @@ export default function LikedPageClient({
       ) : (
         <>
           <section
-            className="ui-enter-up mx-auto w-full max-w-[1420px] rounded-[12px] border border-rose-100 bg-[linear-gradient(135deg,rgba(255,255,255,0.98)_0%,rgba(255,246,249,0.94)_100%)] p-3 shadow-[0_20px_55px_rgba(15,23,42,0.05)]"
+            className="ui-enter-up mx-auto w-full max-w-[1420px] rounded-[12px] border border-rose-100 dark:border-slate-800 bg-[linear-gradient(135deg,rgba(255,255,255,0.98)_0%,rgba(255,246,249,0.94)_100%)] dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.98)_0%,rgba(15,23,42,0.94)_100%)] dark:bg-slate-900 p-2 sm:p-3 shadow-[0_20px_55px_rgba(15,23,42,0.05)]"
             style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
           >
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid grid-cols-4 gap-1.5 sm:gap-3 xl:gap-4">
               {highlightStats.map((stat, index) => {
                 const Icon = stat.icon;
 
                 return (
                   <div
                     key={stat.label}
-                    className="ui-enter-scale ui-card-lift-soft flex items-center gap-3 rounded-[18px] bg-white/70 px-3.5 py-2 backdrop-blur-sm"
+                    className="ui-enter-scale ui-card-lift-soft flex flex-col items-center justify-center sm:flex-row sm:justify-start gap-1 sm:gap-3 rounded-[10px] sm:rounded-[18px] bg-white/70 dark:bg-slate-800/70 p-1.5 sm:px-3.5 sm:py-2 backdrop-blur-sm"
                     style={{
                       animationDelay: `${180 + index * 60}ms`,
                       animationFillMode: "forwards",
                     }}
                   >
                     <div
-                      className={`ui-icon-lift flex h-10 w-10 items-center justify-center rounded-full ${stat.iconClass}`}
+                      className={`ui-icon-lift flex shrink-0 h-6 w-6 sm:h-10 sm:w-10 items-center justify-center rounded-full ${stat.iconClass}`}
                     >
-                      <Icon className="h-4 w-4" />
+                      <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
                     </div>
-                    <div>
-                      <div className="text-[1.35rem] font-bold leading-none text-slate-900">
+                    <div className="flex flex-col items-center sm:items-start text-center sm:text-left overflow-hidden">
+                      <div className="text-sm sm:text-[1.35rem] font-bold leading-none text-slate-900 dark:text-slate-100">
                         {stat.value}
                       </div>
-                      <div className="mt-1 text-[13px] font-medium text-slate-500">
+                      <div className="mt-0.5 sm:mt-1 text-[9px] sm:text-[13px] font-medium text-slate-500 dark:text-slate-400 leading-tight">
                         {stat.label}
                       </div>
                     </div>
@@ -587,16 +635,16 @@ export default function LikedPageClient({
 
           {showSavedShortlistEmptyState ? (
             <section
-              className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 bg-white px-6 py-12 text-center shadow-sm"
+              className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-12 text-center shadow-sm"
               style={{ animationDelay: "160ms", animationFillMode: "forwards" }}
             >
               <div className="ui-soft-float mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
                 <Bookmark className="h-6 w-6" />
               </div>
-              <h2 className="mt-5 font-display text-[1.6rem] font-bold text-slate-900">
+              <h2 className="mt-5 font-display text-[1.6rem] font-bold text-slate-900 dark:text-slate-100">
                 Your shortlist is still saved
               </h2>
-              <p className="mt-2 text-[15px] text-slate-500">
+              <p className="mt-2 text-[15px] text-slate-500 dark:text-slate-400">
                 Those saved profiles are not available in your current shortlist view right now.
                 They may have moved to Mutual Interest or Unlocked Profiles.
               </p>
@@ -619,16 +667,16 @@ export default function LikedPageClient({
             visibleLikes.length === 0 &&
             !loadingShortlistOnlyProfiles ? (
             <section
-              className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 bg-white px-6 py-12 text-center shadow-sm"
+              className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-12 text-center shadow-sm"
               style={{ animationDelay: "160ms", animationFillMode: "forwards" }}
             >
               <div className="ui-soft-float mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
                 <Bookmark className="h-6 w-6" />
               </div>
-              <h2 className="mt-5 font-display text-[1.6rem] font-bold text-slate-900">
+              <h2 className="mt-5 font-display text-[1.6rem] font-bold text-slate-900 dark:text-slate-100">
                 No shortlisted profiles yet
               </h2>
-              <p className="mt-2 text-[15px] text-slate-500">
+              <p className="mt-2 text-[15px] text-slate-500 dark:text-slate-400">
                 Save profiles from your interests or accept a message notification to
                 keep them here.
               </p>
@@ -643,29 +691,29 @@ export default function LikedPageClient({
             loadingShortlistOnlyProfiles &&
             visibleLikes.length === 0 ? (
             <section
-              className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 bg-white px-6 py-12 text-center shadow-sm"
+              className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-12 text-center shadow-sm"
               style={{ animationDelay: "160ms", animationFillMode: "forwards" }}
             >
               <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-rose-200 border-t-rose-500" />
-              <h2 className="mt-5 font-display text-[1.6rem] font-bold text-slate-900">
+              <h2 className="mt-5 font-display text-[1.6rem] font-bold text-slate-900 dark:text-slate-100">
                 Loading shortlisted profiles
               </h2>
-              <p className="mt-2 text-[15px] text-slate-500">
+              <p className="mt-2 text-[15px] text-slate-500 dark:text-slate-400">
                 Bringing in the profiles you saved from recent message notifications.
               </p>
             </section>
           ) : !isShortlistView && visibleLikes.length === 0 ? (
             <section
-              className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 bg-white px-6 py-12 text-center shadow-sm"
+              className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-12 text-center shadow-sm"
               style={{ animationDelay: "160ms", animationFillMode: "forwards" }}
             >
               <div className="ui-soft-float mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
                 <Bookmark className="h-6 w-6" />
               </div>
-              <h2 className="mt-5 font-display text-[1.6rem] font-bold text-slate-900">
+              <h2 className="mt-5 font-display text-[1.6rem] font-bold text-slate-900 dark:text-slate-100">
                 All interests moved to shortlist
               </h2>
-              <p className="mt-2 text-[15px] text-slate-500">
+              <p className="mt-2 text-[15px] text-slate-500 dark:text-slate-400">
                 Your shortlisted profiles are waiting in the bookmark view.
               </p>
               <Link
@@ -675,10 +723,32 @@ export default function LikedPageClient({
                 View Shortlisted Profiles
               </Link>
             </section>
+          ) : rawVisibleLikes.length > 0 && visibleLikes.length === 0 ? (
+            <section
+              className="ui-enter-scale ui-card-lift-soft rounded-[28px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-12 text-center shadow-sm"
+              style={{ animationDelay: "160ms", animationFillMode: "forwards" }}
+            >
+              <div className="ui-soft-float mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400">
+                <Search className="h-6 w-6" />
+              </div>
+              <h2 className="mt-5 font-display text-[1.6rem] font-bold text-slate-900 dark:text-slate-100">
+                No profiles found
+              </h2>
+              <p className="mt-2 text-[15px] text-slate-500 dark:text-slate-400">
+                We couldn't find any profiles matching "{searchQuery}".
+              </p>
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="ui-link-shift mt-7 inline-flex items-center justify-center rounded-[16px] border border-rose-200 dark:border-rose-500/50 px-6 py-3 text-sm font-semibold text-rose-600 dark:text-rose-400 transition-colors hover:bg-rose-50 dark:hover:bg-rose-500/10"
+              >
+                Clear Search
+              </button>
+            </section>
           ) : (
             <>
-              <section className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                {visibleLikes.map((like, index) => {
+              <section className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {visibleLikes.slice((currentPage - 1) * 8, currentPage * 8).map((like, index) => {
                   const matchInfo = matches.find(m => m.otherProfile.id === like.toProfile.id);
 
                   return (
@@ -708,6 +778,12 @@ export default function LikedPageClient({
                 })}
               </section>
 
+              <Pagination 
+                currentPage={currentPage}
+                totalPages={Math.ceil(visibleLikes.length / 8)}
+                onPageChange={setCurrentPage}
+              />
+
               <section
                 className="ui-enter-up pb-6 pt-4 text-center"
                 style={{ animationDelay: "180ms", animationFillMode: "forwards" }}
@@ -715,10 +791,10 @@ export default function LikedPageClient({
                 <div className="ui-soft-float mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-500">
                   <Sparkles className="h-6 w-6" />
                 </div>
-                <h2 className="mt-5 font-display text-[1.6rem] font-bold text-slate-900">
+                <h2 className="mt-5 font-display text-[1.6rem] font-bold text-slate-900 dark:text-slate-100">
                   Can&apos;t find the right match?
                 </h2>
-                <p className="mt-2 text-[15px] text-slate-500">
+                <p className="mt-2 text-[15px] text-slate-500 dark:text-slate-400">
                   Try browsing more profiles and like the ones that interest you.
                 </p>
                 <Link

@@ -201,8 +201,8 @@ export default function LikedProfilePreviewCard({
 
   return (
     <>
-      <article className="ui-card-lift group mx-auto w-full max-w-[288px] overflow-hidden rounded-[12px] border border-rose-100 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
-        <div className="relative h-[188px] overflow-hidden bg-[linear-gradient(135deg,#fff2f5_0%,#ffe4ec_100%)]">
+      <article className="ui-card-lift group mx-auto w-full max-w-[288px] overflow-hidden rounded-[12px] border border-rose-100 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900">
+        <div className="relative h-[188px] overflow-hidden bg-[linear-gradient(135deg,#fff2f5_0%,#ffe4ec_100%)] dark:!bg-slate-800 dark:!bg-none">
           {primaryPhoto ? (
             <Image
               src={primaryPhoto}
@@ -217,7 +217,7 @@ export default function LikedProfilePreviewCard({
             />
           ) : (
             <div className="flex h-full items-center justify-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/90 shadow-lg shadow-rose-100">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/90 shadow-lg shadow-rose-100 dark:bg-slate-800 dark:shadow-none">
                 <UserCircle2 className="h-10 w-10 text-rose-400" />
               </div>
             </div>
@@ -232,18 +232,18 @@ export default function LikedProfilePreviewCard({
               type="button"
               onClick={handleMenuToggle}
               disabled={removing}
-              className="ui-link-shift inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-600 shadow-md transition-transform hover:scale-105 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-70"
+              className="ui-link-shift inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-600 shadow-md transition-transform hover:scale-105 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
               aria-label="Open interest actions"
             >
               <EllipsisVertical className="h-4.5 w-4.5" />
             </button>
 
             {menuOpen ? (
-              <div className="ui-enter-up absolute right-0 top-11 w-48 overflow-hidden rounded-[18px] border border-rose-100 bg-white py-2 shadow-[0_20px_44px_rgba(15,23,42,0.16)]">
+              <div className="ui-enter-up absolute right-0 top-11 w-48 overflow-hidden rounded-[18px] border border-rose-100 bg-white py-2 shadow-[0_20px_44px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
                   <button
                     type="button"
                     onClick={handleShortlistToggle}
-                    className="ui-link-shift flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                    className="ui-link-shift flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-rose-400"
                   >
                     <Bookmark
                       className={`h-4 w-4 ${
@@ -260,7 +260,7 @@ export default function LikedProfilePreviewCard({
                     type="button"
                     onClick={handleUnlikeClick}
                     disabled={removing}
-                    className="ui-link-shift flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="ui-link-shift flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-rose-400"
                   >
                     <X className="h-4 w-4 text-slate-500" />
                     <span className="flex-1">Remove interest</span>
@@ -274,19 +274,19 @@ export default function LikedProfilePreviewCard({
         <div className="p-3.5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h3 className="flex items-center gap-2 text-[0.95rem] font-bold text-slate-900">
+              <h3 className="flex items-center gap-2 text-[0.95rem] font-bold text-slate-900 dark:text-slate-100">
                 <span className="truncate">
                   {profile.fullName}, {age}
                 </span>
                 <CheckCircle2 className="ui-icon-lift h-4 w-4 shrink-0 text-emerald-500" />
               </h3>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
                 {profile.profession || "Professional"}
               </p>
             </div>
           </div>
 
-          <div className="mt-3.5 space-y-2 text-[12px] text-slate-600">
+          <div className="mt-3.5 space-y-2 text-[12px] text-slate-600 dark:text-slate-300">
             <div className="flex items-center gap-2">
               <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-500" />
               <span className="truncate">{location}</span>
@@ -304,8 +304,8 @@ export default function LikedProfilePreviewCard({
                 onClick={handleChatClick}
                 className={`ui-link-shift inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors ${
                   isUnlocked 
-                    ? "border-rose-200 bg-rose-50 text-rose-500 hover:border-rose-300 hover:bg-rose-100" 
-                    : "border-slate-200 bg-slate-50 text-slate-400 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500"
+                    ? "border-rose-200 bg-rose-50 text-rose-500 hover:border-rose-300 hover:bg-rose-100 dark:border-slate-700 dark:bg-slate-800 dark:text-rose-400 dark:hover:bg-slate-700" 
+                    : "border-slate-200 bg-slate-50 text-slate-400 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-rose-400"
                 }`}
                 aria-label={`Chat with ${profile.fullName}`}
               >
@@ -322,7 +322,7 @@ export default function LikedProfilePreviewCard({
           onClick={() => setConfirmOpen(false)}
         >
           <div
-            className="ui-modal-pop w-full max-w-sm rounded-[24px] border border-rose-100 bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.14)]"
+            className="ui-modal-pop w-full max-w-sm rounded-[24px] border border-rose-100 bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.14)] dark:border-slate-700 dark:bg-slate-900"
             onClick={(event) => event.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -330,11 +330,11 @@ export default function LikedProfilePreviewCard({
           >
             <h3
               id={`unlike-confirm-title-${profile.id}`}
-              className="font-display text-xl font-bold text-slate-900"
+              className="font-display text-xl font-bold text-slate-900 dark:text-slate-100"
             >
               Remove interest?
             </h3>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
+            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
               Do you want to remove {profile.fullName} from your interests?
             </p>
 
@@ -343,7 +343,7 @@ export default function LikedProfilePreviewCard({
                 type="button"
                 onClick={() => setConfirmOpen(false)}
                 disabled={removing}
-                className="ui-link-shift inline-flex flex-1 items-center justify-center rounded-[16px] border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-rose-200 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+                className="ui-link-shift inline-flex flex-1 items-center justify-center rounded-[16px] border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-rose-200 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:border-slate-600"
               >
                 No
               </button>

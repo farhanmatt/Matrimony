@@ -74,7 +74,7 @@ export default function DashboardWelcomeIntro({
 
   return (
     <div className="ui-overlay-fade fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/55 px-4 py-8 backdrop-blur-sm">
-      <div className="ui-modal-pop w-full max-w-xl rounded-[32px] border border-rose-100 bg-white p-8 shadow-[0_28px_100px_rgba(15,23,42,0.22)] sm:p-10">
+      <div className="ui-modal-pop w-full max-w-xl rounded-[32px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-[0_28px_100px_rgba(15,23,42,0.22)] sm:p-10">
         <div className="ui-soft-float mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-rose-500 to-pink-500 text-white shadow-lg">
           <Sparkles className="h-7 w-7" />
         </div>
@@ -83,7 +83,7 @@ export default function DashboardWelcomeIntro({
           Step {currentStep + 1} of {introSteps.length}
         </p>
 
-        <h2 className="mx-auto mt-4 max-w-md text-center font-display text-3xl font-bold leading-tight text-gray-900 sm:text-4xl">
+        <h2 className="mx-auto mt-4 max-w-md text-center font-display text-3xl font-bold leading-tight text-gray-900 dark:text-slate-100 sm:text-4xl">
           {currentIntroStep.title}
         </h2>
 

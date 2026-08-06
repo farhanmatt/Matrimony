@@ -72,17 +72,17 @@ export function DashboardProfileCompletionSidebar({
     : "/dashboard/profile/create";
 
   return (
-    <section className="ui-card-lift-soft rounded-[14px] border border-gray-100 bg-white p-5 shadow-sm">
+    <section className="ui-card-lift-soft rounded-[14px] border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-lg font-bold leading-tight text-gray-900">
+        <h2 className="font-display text-lg font-bold leading-tight text-gray-900 dark:text-slate-100">
           Profile Completeness
         </h2>
-        <p className="text-xs font-semibold text-gray-500">
+        <p className="text-xs font-semibold text-gray-500 dark:text-slate-400">
           {completion.percent}% Complete
         </p>
       </div>
 
-      <div className="mt-5 h-2 overflow-hidden rounded-full bg-rose-100">
+      <div className="mt-5 h-2 overflow-hidden rounded-full bg-rose-100 dark:bg-rose-900/30">
         <div
           className="h-full rounded-full bg-gradient-to-r from-rose-500 to-pink-500 transition-all duration-700"
           style={{ width: `${completion.percent}%` }}
@@ -101,7 +101,7 @@ export function DashboardProfileCompletionSidebar({
               ) : (
                 <Circle className="h-4.5 w-4.5 text-amber-400" />
               )}
-              <span className="text-[13px] text-gray-700">{item.label}</span>
+              <span className="text-[13px] text-gray-700 dark:text-slate-300">{item.label}</span>
             </div>
           </div>
         ))}
@@ -135,23 +135,24 @@ export function DashboardProfileCompletionStatCard({
 
   return (
     <div
-      className="ui-enter-scale ui-card-lift-soft group rounded-[22px] border border-white/70 bg-white/88 px-4 py-3 shadow-sm backdrop-blur-sm xl:rounded-none xl:border-0 xl:bg-transparent xl:px-5 xl:py-1 xl:shadow-none"
+      className="ui-enter-scale ui-card-lift-soft group rounded-[16px] sm:rounded-[22px] border border-white/70 dark:border-slate-800/70 bg-white/88 dark:bg-slate-900/88 px-1 py-3 sm:px-4 sm:py-3 shadow-sm backdrop-blur-sm xl:rounded-none xl:border-0 xl:bg-transparent xl:dark:bg-transparent xl:px-5 xl:py-1 xl:shadow-none"
       style={{
         animationDelay: `${animationDelayMs}ms`,
         animationFillMode: "forwards",
       }}
     >
       <div className="flex flex-col items-center text-center">
-        <div className="ui-icon-lift inline-flex h-9 w-9 items-center justify-center rounded-full bg-indigo-50 text-indigo-500">
-          <Sparkles className="h-4 w-4" />
+        <div className="ui-icon-lift inline-flex h-6 w-6 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400">
+          <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
         </div>
-        <div className="mt-3 text-[1.5rem] font-display font-bold leading-none text-gray-900">
+        <div className="mt-1.5 sm:mt-3 text-base sm:text-[1.5rem] font-display font-bold leading-none text-gray-900 dark:text-slate-100">
           {completion.percent}%
         </div>
-        <p className="mt-2 text-[11px] font-semibold text-gray-900">
-          Profile Complete
+        <p className="mt-1 sm:mt-2 text-[9px] sm:text-[11px] font-semibold tracking-tight sm:tracking-normal text-gray-900 dark:text-slate-100 leading-tight">
+          <span className="sm:hidden">Complete</span>
+          <span className="hidden sm:inline">Profile Complete</span>
         </p>
-        <p className="mt-1 text-[9px] leading-4 text-indigo-500">
+        <p className="hidden sm:block mt-1 text-[9px] leading-4 text-indigo-500 dark:text-indigo-400">
           {completion.completedCount}/5 sections done
         </p>
       </div>

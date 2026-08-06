@@ -123,19 +123,19 @@ export default async function EditProfilePage() {
   return (
     <div>
       <h1
-        className="ui-enter-up mb-2 text-2xl font-display font-bold text-gray-900"
+        className="ui-enter-up mb-2 text-2xl font-display font-bold text-gray-900 dark:text-slate-100"
         style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
       >
         Edit Profile
       </h1>
       <p
-        className="ui-enter-up mb-8 text-sm text-gray-500"
+        className="ui-enter-up mb-8 text-sm text-gray-500 dark:text-slate-400"
         style={{ animationDelay: "110ms", animationFillMode: "forwards" }}
       >
         Keep your profile updated to improve match accuracy.
       </p>
       <div
-        className="ui-enter-scale ui-card-lift-soft rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8"
+        className="ui-enter-scale ui-card-lift-soft rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8"
         style={{ animationDelay: "180ms", animationFillMode: "forwards" }}
       >
         <ProfileForm
