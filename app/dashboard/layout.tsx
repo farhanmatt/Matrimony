@@ -12,7 +12,7 @@ import DashboardWelcomeIntro from "@/components/dashboard/DashboardWelcomeIntro"
 import DashboardSidebar from "@/components/layout/DashboardSidebar";
 import { getDashboardProfileSummary } from "@/lib/server/dashboard-page-data";
 import { getAdminSettingsSnapshot } from "@/lib/utils/admin-settings";
-import { ThemeProvider } from "@/components/dashboard/ThemeProvider";
+import { getCachedSiteBranding } from "@/lib/server/site-content";
 
 export default async function DashboardLayout({
   children,
@@ -34,15 +34,17 @@ export default async function DashboardLayout({
   };
   let profileSummary: Awaited<ReturnType<typeof getDashboardProfileSummary>> = null;
   let adminSettings = await getAdminSettingsSnapshot();
+  let branding = null;
 
   try {
-    [notificationState, introStatus, profileSummary] = await Promise.all([
+    [notificationState, introStatus, profileSummary, branding] = await Promise.all([
       getDashboardNotificationsForUser(session.user.id),
       prisma.user.findUnique({
         where: { id: session.user.id },
         select: { hasSeenDashboardIntro: true },
       }),
       getDashboardProfileSummary(session.user.id),
+      getCachedSiteBranding(),
     ]);
   } catch (error) {
     if (!isDatabaseConnectionError(error)) {
@@ -51,8 +53,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-200">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-200">
         <DashboardAutoRefresh />
         <DashboardRealtimeEvents />
         <DashboardWelcomeIntro
@@ -72,13 +73,13 @@ export default async function DashboardLayout({
           initialNotifications={notificationState.items}
           initialChatFeatureEnabled={adminSettings.isChatFeatureEnabled}
           initialHealthDetailsEnabled={adminSettings.isHealthDetailsEnabled}
+          initialLogoImageUrl={branding?.logoImageUrl ?? null}
         />
         <main className="min-h-screen pt-[72px] pb-[88px] lg:pb-0 overflow-x-hidden lg:overflow-x-visible">
           <div className="mx-auto max-w-[1600px] px-4 pt-3 pb-4 sm:px-6 sm:pt-4 sm:pb-6 lg:px-8 lg:pt-4 lg:pb-8">
             {children}
           </div>
         </main>
-      </div>
-    </ThemeProvider>
+    </div>
   );
 }

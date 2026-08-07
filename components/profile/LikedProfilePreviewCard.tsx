@@ -201,8 +201,8 @@ export default function LikedProfilePreviewCard({
 
   return (
     <>
-      <article className="ui-card-lift group mx-auto w-full max-w-[288px] overflow-hidden rounded-[12px] border border-rose-100 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900">
-        <div className="relative h-[188px] overflow-hidden bg-[linear-gradient(135deg,#fff2f5_0%,#ffe4ec_100%)] dark:!bg-slate-800 dark:!bg-none">
+      <article className="ui-card-lift group mx-auto w-full max-w-[288px] flex flex-col h-[440px] md:h-[460px] lg:h-auto lg:block overflow-hidden rounded-[12px] border border-rose-100 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900">
+        <div className="relative flex-1 lg:flex-none lg:h-[188px] overflow-hidden bg-[linear-gradient(135deg,#fff2f5_0%,#ffe4ec_100%)] dark:!bg-slate-800 dark:!bg-none">
           {primaryPhoto ? (
             <Image
               src={primaryPhoto}
@@ -271,7 +271,7 @@ export default function LikedProfilePreviewCard({
           </div>
         </div>
 
-        <div className="p-3.5">
+        <div className="shrink-0 flex flex-col p-3.5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h3 className="flex items-center gap-2 text-[0.95rem] font-bold text-slate-900 dark:text-slate-100">
@@ -298,7 +298,7 @@ export default function LikedProfilePreviewCard({
           </div>
 
           {showChatAction && isChatFeatureEnabled ? (
-            <div className="mt-4 flex justify-end">
+            <div className="mt-auto pt-4 flex justify-end">
               <button
                 type="button"
                 onClick={handleChatClick}

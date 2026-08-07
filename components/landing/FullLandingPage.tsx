@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import SiteLogo from "@/components/common/SiteLogo";
 import type { Session } from "next-auth";
 import {
   ArrowRight,
@@ -282,6 +283,7 @@ interface FullLandingPageProps {
   state?: string | null;
   pincode?: string | null;
   country?: string | null;
+  logoImageUrl?: string | null;
 }
 
 export default function FullLandingPage({
@@ -301,6 +303,7 @@ export default function FullLandingPage({
   state,
   pincode,
   country,
+  logoImageUrl,
 }: FullLandingPageProps) {
   const socialLinks = [
     {
@@ -325,8 +328,8 @@ export default function FullLandingPage({
   ];
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#fff9fb_0%,#fff4f7_40%,#ffffff_100%)] text-slate-900">
-      <LandingNavbar session={session} />
+    <main className="min-h-screen overflow-x-hidden bg-[linear-gradient(180deg,#fff9fb_0%,#fff4f7_40%,#ffffff_100%)] text-slate-900">
+      <LandingNavbar session={session} logoImageUrl={logoImageUrl} />
 
       <section className="relative overflow-hidden border-b border-rose-100/70 bg-white pt-[76px]">
         <div className="relative w-full pb-24">
@@ -670,10 +673,11 @@ export default function FullLandingPage({
             <div className="grid gap-10 py-7 lg:grid-cols-[1.1fr_0.7fr_0.7fr_1fr]">
               <div>
                 <Link href="/" className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15">
-                    <Heart className="h-5 w-5 fill-white" />
-                  </div>
-                  <div className="font-display text-2xl font-bold">FMLP Matrimony</div>
+                  <SiteLogo
+                    src={logoImageUrl || "/default-logo.svg"}
+                    alt="FMLP Matrimony logo"
+                    className="h-10 max-w-[200px]"
+                  />
                 </Link>
                 <p className="mt-4 max-w-xs text-sm leading-7 text-rose-100/85">
                   Helping you find your perfect life partner with trusted and

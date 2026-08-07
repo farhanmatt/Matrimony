@@ -24,6 +24,7 @@ export default function SiteLogo({ src, alt, className }: SiteLogoProps) {
     <div className={cn("relative block flex-none overflow-hidden", className)}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
+        suppressHydrationWarning
         src={displaySrc}
         alt={alt}
         className="block h-full w-auto max-w-full object-contain object-left"

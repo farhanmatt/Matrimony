@@ -126,12 +126,14 @@ export default function BrowseProfileCard({
 
   const handleLikeClick = (event: ReactMouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
+    event.preventDefault();
     if (loading || liked) return;
     setConfirmOpen(true);
   };
 
   const handleHealthReqClick = async (e: ReactMouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     if (healthStatus === "ACCEPTED") {
       setIsHealthModalOpen(true);
       return;

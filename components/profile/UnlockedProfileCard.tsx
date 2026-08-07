@@ -139,7 +139,7 @@ export default function UnlockedProfileCard({
 
   return (
     <article
-      className="ui-card-lift group relative cursor-pointer overflow-hidden rounded-[26px] border border-emerald-100/80 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.07)] dark:border-slate-800 dark:bg-slate-900"
+      className="ui-card-lift group relative cursor-pointer overflow-hidden rounded-[26px] border border-emerald-100/80 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.07)] dark:border-slate-800 dark:bg-slate-900 flex flex-col h-[440px] md:h-[460px] lg:h-auto lg:block"
       onClick={openProfile}
       onKeyDown={handleCardKeyDown}
       role="link"
@@ -148,8 +148,8 @@ export default function UnlockedProfileCard({
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(236,253,245,0.6)_0%,rgba(255,255,255,0)_36%)] dark:!bg-slate-800 dark:!bg-none" />
 
-      <div className="relative px-4 pb-4 pt-4">
-        <div className="relative h-[182px] overflow-hidden rounded-[20px] bg-[linear-gradient(135deg,#e8faf0_0%,#f5fff9_100%)] dark:!bg-slate-800 dark:!bg-none">
+      <div className="relative px-4 pb-4 pt-4 flex-1 flex flex-col lg:block">
+        <div className="relative flex-1 lg:flex-none lg:h-[182px] overflow-hidden rounded-[20px] bg-[linear-gradient(135deg,#e8faf0_0%,#f5fff9_100%)] dark:!bg-slate-800 dark:!bg-none">
           {primaryPhoto ? (
             <Image
               src={primaryPhoto}
@@ -227,7 +227,7 @@ export default function UnlockedProfileCard({
           </div>
         </div>
 
-        <div className="px-1 pb-1 pt-5">
+        <div className="shrink-0 flex flex-col px-1 pb-1 pt-5">
           <div className="flex items-center gap-2">
             <h3 className="font-display text-[1.52rem] font-bold tracking-tight text-slate-900 dark:text-slate-100">
               {profile.fullName.split(" ")[0]}, {age}

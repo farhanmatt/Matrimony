@@ -97,9 +97,9 @@ export function DashboardProfileCompletionSidebar({
           >
             <div className="flex items-center gap-2">
               {item.complete ? (
-                <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500" />
+                <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500 dark:text-emerald-400" />
               ) : (
-                <Circle className="h-4.5 w-4.5 text-amber-400" />
+                <Circle className="h-4.5 w-4.5 text-amber-400 dark:text-amber-500" />
               )}
               <span className="text-[13px] text-gray-700 dark:text-slate-300">{item.label}</span>
             </div>
@@ -109,7 +109,7 @@ export function DashboardProfileCompletionSidebar({
 
       <Link
         href={buttonHref}
-        className="ui-link-shift mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-[13px] font-semibold text-white shadow-lg shadow-rose-200 transition-all hover:-translate-y-0.5 hover:shadow-xl"
+        className="ui-link-shift mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-rose-600 to-pink-500 px-5 py-3 text-[13px] font-semibold text-white shadow-lg shadow-rose-200 dark:shadow-rose-900/20 transition-all hover:-translate-y-0.5 hover:shadow-xl"
       >
         {buttonLabel}
       </Link>
