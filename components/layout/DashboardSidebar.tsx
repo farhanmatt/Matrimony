@@ -58,6 +58,7 @@ export default function DashboardSidebar({
   initialNotifications = [],
   initialChatFeatureEnabled = true,
   initialHealthDetailsEnabled = true,
+  initialLogoImageUrl = null,
 }: {
   initialUser: {
     id: string;
@@ -72,6 +73,7 @@ export default function DashboardSidebar({
   initialNotifications?: DashboardNotificationItem[];
   initialChatFeatureEnabled?: boolean;
   initialHealthDetailsEnabled?: boolean;
+  initialLogoImageUrl?: string | null;
 }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -79,7 +81,13 @@ export default function DashboardSidebar({
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [hasProfile, setHasProfile] = useState(initialHasProfile);
   const [accountImage, setAccountImage] = useState<string | null>(initialAccountImage);
-  const [logoImageUrl, setLogoImageUrl] = useState<string | null>(null);
+  const [logoImageUrl, setLogoImageUrl] = useState<string | null>(() => {
+    if (initialLogoImageUrl) return initialLogoImageUrl;
+    if (typeof document !== "undefined") {
+      return document.body.dataset.logoImageUrl ?? null;
+    }
+    return null;
+  });
   const [desktopAccountOpen, setDesktopAccountOpen] = useState(false);
   const [desktopAccountMenuVisible, setDesktopAccountMenuVisible] = useState(false);
   const desktopAccountRef = useRef<HTMLDivElement | null>(null);

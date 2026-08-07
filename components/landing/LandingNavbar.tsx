@@ -21,13 +21,20 @@ const navLinks = [
 
 type LandingNavbarProps = {
   session?: Session | null;
+  logoImageUrl?: string | null;
 };
 
-export default function LandingNavbar({ session }: LandingNavbarProps) {
+export default function LandingNavbar({ session, logoImageUrl: initialLogoImageUrl }: LandingNavbarProps) {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [logoImageUrl, setLogoImageUrl] = useState<string | null>(null);
+  const [logoImageUrl, setLogoImageUrl] = useState<string | null>(() => {
+    if (initialLogoImageUrl) return initialLogoImageUrl;
+    if (typeof document !== "undefined") {
+      return document.body.dataset.logoImageUrl ?? null;
+    }
+    return null;
+  });
   const brandLogoSrc = logoImageUrl || "/default-logo.svg";
   const dashboardHref = session?.user.role === "ADMIN" ? "/admin" : "/dashboard";
 

@@ -97,9 +97,9 @@ export default function ReceivedLikePreviewCard({
 
   return (
     <article
-      className="ui-card-lift overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_14px_42px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900"
+      className="ui-card-lift overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_14px_42px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900 flex flex-col h-[440px] md:h-[460px] lg:h-auto lg:block"
     >
-      <div className="relative h-[118px] overflow-hidden bg-[linear-gradient(135deg,#fff4f7_0%,#ffe6ee_100%)] dark:!bg-slate-800 dark:!bg-none">
+      <div className="relative flex-1 lg:flex-none lg:h-[118px] overflow-hidden bg-[linear-gradient(135deg,#fff4f7_0%,#ffe6ee_100%)] dark:!bg-slate-800 dark:!bg-none">
         {primaryPhoto ? (
           <Image
             src={primaryPhoto}
@@ -155,7 +155,7 @@ export default function ReceivedLikePreviewCard({
         </button>
       </div>
 
-      <div className="px-3 py-2.5">
+      <div className="shrink-0 flex flex-col px-3 py-2.5">
         <div className="mb-1.5 min-w-0">
           <h3 className="truncate font-display text-[1.05rem] font-bold text-slate-900 dark:text-slate-100">
             {item.profile.fullName}, {age}
@@ -179,7 +179,7 @@ export default function ReceivedLikePreviewCard({
           </div>
         </div>
 
-        <div className="mt-2.5 flex flex-wrap gap-1.5">
+        <div className="mt-auto pt-2.5 flex flex-wrap gap-1.5">
           <span className="rounded-full bg-rose-50 dark:bg-slate-800 px-2.5 py-0.5 text-[11px] font-medium text-rose-600 dark:text-rose-400">
             {MARITAL_STATUS_LABELS[item.profile.maritalStatus]}
           </span>

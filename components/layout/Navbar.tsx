@@ -12,7 +12,12 @@ export default function Navbar() {
   const { data: session } = useSession();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [logoImageUrl, setLogoImageUrl] = useState<string | null>(null);
+  const [logoImageUrl, setLogoImageUrl] = useState<string | null>(() => {
+    if (typeof document !== "undefined") {
+      return document.body.dataset.logoImageUrl ?? null;
+    }
+    return null;
+  });
   const brandLogoSrc = logoImageUrl || "/default-logo.svg";
 
   useEffect(() => {

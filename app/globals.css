@@ -27,6 +27,53 @@
     --ring: 340 82% 52%;
     --radius: 0.75rem;
     --gold: 45 93% 47%;
+
+    /* Typography Scale - Mobile (Compact Default) */
+    --fs-xs: 0.7rem; --lh-xs: 0.95rem;
+    --fs-sm: 0.8125rem; --lh-sm: 1.15rem;
+    --fs-base: 0.9375rem; --lh-base: 1.4rem;
+    --fs-lg: 1.0625rem; --lh-lg: 1.6rem;
+    --fs-xl: 1.125rem; --lh-xl: 1.6rem;
+    --fs-2xl: 1.25rem; --lh-2xl: 1.75rem;
+    --fs-3xl: 1.5rem; --lh-3xl: 1.875rem;
+    --fs-4xl: 1.875rem; --lh-4xl: 2.125rem;
+    --fs-5xl: 2.25rem; --lh-5xl: 2.5rem;
+    --fs-6xl: 2.75rem; --lh-6xl: 1.1;
+    --fs-7xl: 3.25rem; --lh-7xl: 1.1;
+  }
+
+  /* Typography Scale - Tablet (768px+) */
+  @media (min-width: 768px) {
+    :root {
+      --fs-xs: 0.725rem; --lh-xs: 0.975rem;
+      --fs-sm: 0.84375rem; --lh-sm: 1.2rem;
+      --fs-base: 0.96875rem; --lh-base: 1.45rem;
+      --fs-lg: 1.09375rem; --lh-lg: 1.675rem;
+      --fs-xl: 1.1875rem; --lh-xl: 1.675rem;
+      --fs-2xl: 1.375rem; --lh-2xl: 1.875rem;
+      --fs-3xl: 1.6875rem; --lh-3xl: 2.0625rem;
+      --fs-4xl: 2.0625rem; --lh-4xl: 2.3125rem;
+      --fs-5xl: 2.625rem; --lh-5xl: 2.75rem;
+      --fs-6xl: 3.25rem; --lh-6xl: 1.05;
+      --fs-7xl: 3.875rem; --lh-7xl: 1.05;
+    }
+  }
+
+  /* Typography Scale - Desktop (1024px+) - Exact Tailwind Defaults */
+  @media (min-width: 1024px) {
+    :root {
+      --fs-xs: 0.75rem; --lh-xs: 1rem;
+      --fs-sm: 0.875rem; --lh-sm: 1.25rem;
+      --fs-base: 1rem; --lh-base: 1.5rem;
+      --fs-lg: 1.125rem; --lh-lg: 1.75rem;
+      --fs-xl: 1.25rem; --lh-xl: 1.75rem;
+      --fs-2xl: 1.5rem; --lh-2xl: 2rem;
+      --fs-3xl: 1.875rem; --lh-3xl: 2.25rem;
+      --fs-4xl: 2.25rem; --lh-4xl: 2.5rem;
+      --fs-5xl: 3rem; --lh-5xl: 1;
+      --fs-6xl: 3.75rem; --lh-6xl: 1;
+      --fs-7xl: 4.5rem; --lh-7xl: 1;
+    }
   }
 
   * {

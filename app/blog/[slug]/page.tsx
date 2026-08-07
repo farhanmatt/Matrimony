@@ -118,7 +118,7 @@ export default async function BlogArticlePage({ params }: PageProps) {
   const popularPosts = blogPosts.filter((entry) => entry.slug !== post.slug).slice(0, 5);
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#ffffff_0%,#fff7fa_56%,#ffffff_100%)]">
+    <main className="min-h-screen overflow-x-hidden bg-[linear-gradient(180deg,#ffffff_0%,#fff7fa_56%,#ffffff_100%)]">
       <LandingNavbar session={session} />
 
       <section className="pt-28 sm:pt-32">
@@ -137,31 +137,41 @@ export default async function BlogArticlePage({ params }: PageProps) {
             <span className="line-clamp-1 text-slate-900">{post.title}</span>
           </div>
 
-          <div className="ui-enter-scale relative mt-6 overflow-hidden rounded-[1rem] border border-rose-100 bg-white shadow-[0_24px_60px_rgba(244,63,94,0.08)]" style={{ animationDelay: "100ms" }}>
-            <div className="absolute inset-x-0 -inset-y-3 sm:-inset-y-4 lg:-inset-y-5">
+          <div className="ui-enter-scale relative mt-4 sm:mt-6 flex flex-col overflow-hidden rounded-[1rem] border border-rose-100 bg-white shadow-[0_24px_60px_rgba(244,63,94,0.08)] lg:block" style={{ animationDelay: "100ms" }}>
+            {/* Mobile/Tablet Image */}
+            <div className="w-full shrink-0 border-b border-rose-50/50 bg-slate-50/30 lg:hidden">
+              <img
+                src={post.imageSrc}
+                alt={post.imageAlt}
+                className="w-full h-auto object-contain"
+              />
+            </div>
+
+            {/* Desktop Image */}
+            <div className="hidden lg:block absolute inset-x-0 -inset-y-5">
               <Image
                 src={post.imageSrc}
                 alt={post.imageAlt}
                 fill
                 className="object-contain object-right"
                 priority
-                sizes="100vw"
+                sizes="50vw"
               />
             </div>
 
-            <div className="relative min-h-[340px] p-8 sm:min-h-[400px] sm:px-10 sm:py-10 lg:min-h-[460px] lg:px-14 lg:py-12">
+            <div className="relative flex-1 px-5 py-6 sm:p-8 lg:min-h-[460px] lg:px-14 lg:py-12">
               <div className="max-w-3xl lg:max-w-[46%]">
                 <span className="ui-enter-up inline-flex rounded-full bg-white/85 px-3 py-1 text-xs font-semibold text-rose-600 shadow-sm" style={{ animationDelay: "180ms" }}>
                   {post.category}
                 </span>
-                <h1 className="ui-enter-up mt-6 max-w-2xl text-4xl font-bold tracking-tight text-[#931e42] sm:text-5xl lg:text-6xl lg:leading-[0.95]" style={{ animationDelay: "240ms" }}>
+                <h1 className="ui-enter-up mt-4 sm:mt-6 max-w-2xl text-3xl font-bold tracking-tight text-[#931e42] sm:text-4xl lg:text-5xl xl:text-6xl lg:leading-[0.95]" style={{ animationDelay: "240ms" }}>
                   {post.title}
                 </h1>
-                <p className="ui-enter-up mt-6 max-w-2xl text-base leading-8 text-slate-700 sm:text-lg" style={{ animationDelay: "300ms" }}>
+                <p className="ui-enter-up mt-4 sm:mt-6 max-w-2xl text-sm leading-relaxed sm:text-base lg:text-lg sm:leading-8 text-slate-700" style={{ animationDelay: "300ms" }}>
                   {post.excerpt}
                 </p>
 
-                <div className="mt-8 flex flex-wrap items-center gap-5 text-sm text-slate-600">
+                <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-4 sm:gap-5 text-sm text-slate-600">
                   <div className="flex items-center gap-2">
                     <Heart className="h-5 w-5 fill-rose-500 text-rose-500" />
                     <div>
@@ -180,28 +190,28 @@ export default async function BlogArticlePage({ params }: PageProps) {
             </div>
           </div>
 
-          <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <article className="space-y-8">
-              <div className="ui-enter-up ui-card-lift rounded-[1.75rem] border border-rose-100 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)] sm:p-8" style={{ animationDelay: "120ms" }}>
-                <p className="text-base leading-8 text-slate-700">{post.introduction}</p>
+          <div className="mt-8 sm:mt-10 grid gap-6 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <article className="space-y-6 sm:space-y-8">
+              <div className="ui-enter-up ui-card-lift rounded-[1.25rem] sm:rounded-[1.75rem] border border-rose-100 bg-white p-5 sm:p-8 shadow-[0_18px_44px_rgba(15,23,42,0.05)]" style={{ animationDelay: "120ms" }}>
+                <p className="text-sm sm:text-base leading-relaxed sm:leading-8 text-slate-700">{post.introduction}</p>
 
-                <div className="mt-8 space-y-4">
+                <div className="mt-6 sm:mt-8 space-y-4">
                   {post.sections.map((section, index) => {
                     const Icon = articleSectionIcons[index % articleSectionIcons.length];
 
                     return (
                       <div
                         key={section.title}
-                        className="ui-card-lift-soft flex gap-4 rounded-2xl border border-rose-100 bg-white p-4 shadow-sm"
+                        className="ui-card-lift-soft flex flex-col sm:flex-row gap-3 sm:gap-4 rounded-xl sm:rounded-2xl border border-rose-100 bg-white p-4 sm:p-5 shadow-sm"
                       >
-                        <div className="ui-icon-lift flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
-                          <Icon className="h-6 w-6" />
+                        <div className="ui-icon-lift flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-rose-50 text-rose-500">
+                          <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                         </div>
                         <div>
-                          <h2 className="text-xl font-bold text-slate-900">
+                          <h2 className="text-lg sm:text-xl font-bold text-slate-900">
                             {index + 1}. {section.title}
                           </h2>
-                          <p className="mt-2 text-sm leading-7 text-slate-600">
+                          <p className="mt-2 text-sm leading-relaxed sm:leading-7 text-slate-600">
                             {section.description}
                           </p>
                         </div>
@@ -210,25 +220,25 @@ export default async function BlogArticlePage({ params }: PageProps) {
                   })}
                 </div>
 
-                <div className="ui-card-lift-soft mt-8 rounded-[1.5rem] border border-rose-100 bg-gradient-to-r from-rose-50 via-pink-50 to-white p-6">
-                  <div className="flex items-center gap-3 text-rose-600">
-                    <Check className="ui-icon-lift h-5 w-5" />
-                    <span className="text-sm font-semibold uppercase tracking-[0.2em]">
+                <div className="ui-card-lift-soft mt-6 sm:mt-8 rounded-[1.25rem] sm:rounded-[1.5rem] border border-rose-100 bg-gradient-to-r from-rose-50 via-pink-50 to-white p-5 sm:p-6">
+                  <div className="flex items-center gap-2 sm:gap-3 text-rose-600">
+                    <Check className="ui-icon-lift h-4 w-4 sm:h-5 sm:w-5" />
+                    <span className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em]">
                       Final Thought
                     </span>
                   </div>
-                  <p className="mt-3 text-base leading-8 text-slate-700">
+                  <p className="mt-3 text-sm sm:text-base leading-relaxed sm:leading-8 text-slate-700">
                     {post.finalThought}
                   </p>
                 </div>
               </div>
 
               <div>
-                <div className="mb-5 flex items-center justify-between gap-4">
-                  <h2 className="text-2xl font-bold text-slate-900">Related Articles</h2>
+                <div className="mb-4 sm:mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Related Articles</h2>
                   <Link
                     href="/blog"
-                    className="ui-link-shift inline-flex items-center gap-2 text-sm font-semibold text-rose-500 transition-colors hover:text-rose-600"
+                    className="ui-link-shift inline-flex items-center gap-1.5 sm:gap-2 text-sm font-semibold text-rose-500 transition-colors hover:text-rose-600"
                   >
                     View All Articles
                     <ArrowRight className="ui-arrow-shift h-4 w-4" />
@@ -278,8 +288,8 @@ export default async function BlogArticlePage({ params }: PageProps) {
               </div>
             </article>
 
-            <aside className="space-y-6">
-              <div className="ui-enter-right ui-card-lift rounded-[1.75rem] border border-rose-100 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)]" style={{ animationDelay: "140ms" }}>
+            <aside className="space-y-6 sm:space-y-8">
+              <div className="ui-enter-right ui-card-lift rounded-[1.25rem] sm:rounded-[1.75rem] border border-rose-100 bg-white p-5 sm:p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)]" style={{ animationDelay: "140ms" }}>
                 <h2 className="text-2xl font-bold text-slate-900">Categories</h2>
                 <div className="mt-5 space-y-2">
                   {blogCategories.map((category) => {
@@ -301,7 +311,7 @@ export default async function BlogArticlePage({ params }: PageProps) {
                 </div>
               </div>
 
-              <div className="ui-enter-right ui-card-lift rounded-[1.75rem] border border-rose-100 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)]" style={{ animationDelay: "220ms" }}>
+              <div className="ui-enter-right ui-card-lift rounded-[1.25rem] sm:rounded-[1.75rem] border border-rose-100 bg-white p-5 sm:p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)]" style={{ animationDelay: "220ms" }}>
                 <h2 className="text-2xl font-bold text-slate-900">Popular Posts</h2>
                 <div className="mt-5 space-y-4">
                   {popularPosts.map((popularPost) => {
@@ -342,7 +352,7 @@ export default async function BlogArticlePage({ params }: PageProps) {
                 </div>
               </div>
 
-              <div className="ui-enter-right ui-card-lift rounded-[1.75rem] border border-rose-100 bg-gradient-to-b from-rose-50 to-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)]" style={{ animationDelay: "300ms" }}>
+              <div className="ui-enter-right ui-card-lift rounded-[1.25rem] sm:rounded-[1.75rem] border border-rose-100 bg-gradient-to-b from-rose-50 to-white p-5 sm:p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)]" style={{ animationDelay: "300ms" }}>
                 <h2 className="text-2xl font-bold text-slate-900">
                   Subscribe to Our Newsletter
                 </h2>
@@ -367,9 +377,9 @@ export default async function BlogArticlePage({ params }: PageProps) {
         </div>
       </section>
 
-      <section className="py-16">
+      <section className="py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="ui-enter-up ui-card-lift rounded-[2rem] border border-rose-100 bg-gradient-to-r from-rose-50 via-pink-50 to-white p-8 shadow-[0_16px_40px_rgba(244,63,94,0.08)] lg:flex lg:items-center lg:justify-between">
+          <div className="ui-enter-up ui-card-lift rounded-[1.5rem] sm:rounded-[2rem] border border-rose-100 bg-gradient-to-r from-rose-50 via-pink-50 to-white p-6 sm:p-8 shadow-[0_16px_40px_rgba(244,63,94,0.08)] lg:flex lg:items-center lg:justify-between">
             <div>
               <div className="flex items-center gap-2 text-rose-500">
                 <Heart className="ui-soft-float h-5 w-5 fill-rose-100" />

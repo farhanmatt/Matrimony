@@ -667,32 +667,32 @@ export default async function DashboardPage() {
       value: stats.likesGiven,
       helper: "Profiles you reached out to",
       icon: Heart,
-      iconWrap: "bg-rose-50 text-rose-500",
-      helperColor: "text-emerald-500",
+      iconWrap: "bg-rose-50 text-rose-500 dark:bg-rose-900/30 dark:text-rose-400",
+      helperColor: "text-emerald-500 dark:text-emerald-400",
     },
     {
       label: "Likes Received",
       value: stats.likesReceived,
       helper: "People interested in you",
       icon: Users,
-      iconWrap: "bg-fuchsia-50 text-fuchsia-500",
-      helperColor: "text-sky-500",
+      iconWrap: "bg-fuchsia-50 text-fuchsia-500 dark:bg-fuchsia-900/30 dark:text-fuchsia-400",
+      helperColor: "text-sky-500 dark:text-sky-400",
     },
     {
       label: "Matches",
       value: stats.matches,
       helper: "Mutual connections",
       icon: HeartHandshake,
-      iconWrap: "bg-emerald-50 text-emerald-500",
-      helperColor: "text-emerald-500",
+      iconWrap: "bg-emerald-50 text-emerald-500 dark:bg-emerald-900/30 dark:text-emerald-400",
+      helperColor: "text-emerald-500 dark:text-emerald-400",
     },
     {
       label: "Unlocked",
       value: stats.unlocks,
       helper: "Profiles you unlocked",
       icon: Unlock,
-      iconWrap: "bg-amber-50 text-amber-500",
-      helperColor: "text-amber-500",
+      iconWrap: "bg-amber-50 text-amber-500 dark:bg-amber-900/30 dark:text-amber-400",
+      helperColor: "text-amber-500 dark:text-amber-400",
     },
   ] as const;
 
@@ -737,7 +737,7 @@ export default async function DashboardPage() {
     <div className="grid gap-6 xl:grid-cols-[minmax(0,2.05fr)_290px]">
       <div className="space-y-6">
         <section
-          className="ui-enter-up ui-card-lift-soft group relative overflow-hidden rounded-[14px] border border-rose-100 dark:border-slate-800 bg-[linear-gradient(135deg,#fff9f3_0%,#fff6ef_22%,#ffe9ef_58%,#fff7fb_100%)] dark:bg-[none] dark:bg-slate-900 shadow-[0_22px_60px_rgba(15,23,42,0.08)]"
+          className="ui-enter-up ui-card-lift-soft group relative overflow-hidden rounded-[14px] border border-rose-100 dark:border-slate-800 bg-[linear-gradient(135deg,#fff9f3_0%,#fff6ef_22%,#ffe9ef_58%,#fff7fb_100%)] dark:bg-none dark:bg-slate-900 shadow-[0_22px_60px_rgba(15,23,42,0.08)]"
           style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
         >
           <div className="absolute inset-0 dark:hidden">
@@ -778,7 +778,7 @@ export default async function DashboardPage() {
               <div className="mt-5 flex flex-wrap gap-3">
                 <Link
                   href={profile ? "/dashboard/browse" : "/dashboard/profile/create"}
-                  className="ui-link-shift inline-flex items-center gap-2.5 rounded-[10px] bg-[#e11d48] px-3.5 py-2 text-[13px] font-semibold text-white shadow-lg shadow-rose-200 transition-all hover:-translate-y-0.5 hover:bg-[#be123c] hover:shadow-xl"
+                  className="ui-link-shift inline-flex items-center gap-2.5 rounded-[10px] bg-[#e11d48] px-3.5 py-2 text-[13px] font-semibold text-white shadow-lg shadow-rose-200 dark:shadow-rose-900/20 transition-all hover:-translate-y-0.5 hover:bg-[#be123c] hover:shadow-xl"
                 >
                   {profile ? "Explore Matches" : "Create / Update Your Profile"}
                   <span className="ui-icon-lift flex h-7 w-7 items-center justify-center rounded-full bg-white dark:bg-slate-800 text-rose-600 shadow-sm">

@@ -50,13 +50,13 @@ export default function FeaturedProfilesCarousel({
               variant="scale"
             >
             <article className="landing-surface group overflow-hidden rounded-[1.5rem] border border-rose-100 bg-white shadow-[0_14px_34px_rgba(15,23,42,0.06)]">
-              <div className="relative h-64 md:h-[280px]">
+              <div className="relative h-[380px] md:h-[420px] xl:h-[280px]">
                 {profile.previewImageUrl ? (
                   <Image
                     src={profile.previewImageUrl}
                     alt="Featured profile preview"
                     fill
-                    className="landing-surface-media object-cover"
+                    className="landing-surface-media object-cover object-top"
                     sizes="(max-width: 1280px) 50vw, 16vw"
                     unoptimized
                   />

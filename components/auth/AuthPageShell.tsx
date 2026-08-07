@@ -20,7 +20,12 @@ export default function AuthPageShell({
   children,
   footer,
 }: AuthPageShellProps) {
-  const [logoImageUrl, setLogoImageUrl] = useState(DEFAULT_LOGO_IMAGE);
+  const [logoImageUrl, setLogoImageUrl] = useState(() => {
+    if (typeof document !== "undefined") {
+      return resolveAllowedImageSrc(document.body.dataset.logoImageUrl ?? "", DEFAULT_LOGO_IMAGE) ?? DEFAULT_LOGO_IMAGE;
+    }
+    return DEFAULT_LOGO_IMAGE;
+  });
 
   useEffect(() => {
     setLogoImageUrl(

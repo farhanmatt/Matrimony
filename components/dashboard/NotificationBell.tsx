@@ -799,18 +799,28 @@ export default function NotificationBell({
             }`}
             style={{ transitionDelay: open ? "60ms" : "0ms" }}
           >
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 text-rose-500 shadow-sm ui-icon-lift">
-                <Bell className="h-4.5 w-4.5" />
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white dark:bg-slate-800 text-rose-500 shadow-sm ui-icon-lift">
+                  <Bell className="h-4.5 w-4.5" />
+                </div>
+                <div>
+                  <h3 className="font-display text-base font-bold text-gray-900 dark:text-slate-100">
+                    Notifications
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">
+                    Unread chat messages and profile activity for your account.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-display text-base font-bold text-gray-900 dark:text-slate-100">
-                  Notifications
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-slate-400">
-                  Unread chat messages and profile activity for your account.
-                </p>
-              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-full p-2 text-gray-400 hover:bg-white dark:hover:bg-slate-800 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close notifications</span>
+              </button>
             </div>
           </div>
 

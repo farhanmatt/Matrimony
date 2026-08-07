@@ -61,6 +61,7 @@ export default async function HomePage() {
       state={branding.state}
       pincode={branding.pincode}
       country={branding.country}
+      logoImageUrl={branding.logoImageUrl}
     />
   );
 }
