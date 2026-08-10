@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -53,6 +53,7 @@ export default function BrowseProfileCard({
   onLike,
   isHealthDetailsEnabled = true,
 }: BrowseProfileCardProps) {
+  const router = useRouter();
   const [liked, setLiked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -173,14 +174,14 @@ export default function BrowseProfileCard({
         body: JSON.stringify({ viewedProfileId: profile.id }),
       }).catch(console.error);
     }
+    router.push(_profileHref);
   };
 
   return (
     <>
-      <Link 
-        href={_profileHref}
+      <div 
         onClick={handleCardClick}
-        className="ui-card-lift group flex h-full flex-col overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900"
+        className="ui-card-lift group flex h-full flex-col overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] cursor-pointer dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="relative h-[224px] overflow-hidden bg-[linear-gradient(135deg,#fff2f6_0%,#ffe7ee_55%,#ffeef4_100%)] dark:!bg-slate-800 dark:!bg-none">
           {primaryPhoto ? (
@@ -281,6 +282,7 @@ export default function BrowseProfileCard({
           {isHealthDetailsEnabled && (
             <div className="mt-2.5 border-t border-rose-50 pt-2.5 dark:border-slate-800">
               <button
+                type="button"
                 onClick={handleHealthReqClick}
                 disabled={healthLoading || healthStatus === "PENDING"}
                 className={cn(
@@ -298,7 +300,7 @@ export default function BrowseProfileCard({
             </div>
           )}
         </div>
-      </Link>
+      </div>
 
       {confirmOpen && typeof document !== "undefined"
         ? createPortal(

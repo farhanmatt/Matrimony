@@ -196,8 +196,9 @@ export async function GET(req: NextRequest) {
         viewsReceived: {
           where: { viewerId: currentUserProfile.id },
           take: 1,
-          select: { id: true },
+          select: { createdAt: true },
         },
+        createdAt: true,
       },
       orderBy,
     }),
@@ -223,6 +224,20 @@ export async function GET(req: NextRequest) {
           })
         : null;
 
+    const isNewlyRegistered =
+      Date.now() - new Date(profile.createdAt).getTime() <= 1000 * 60 * 60 * 24 * 14;
+    let isNew = false;
+    if (isNewlyRegistered) {
+      if (!profile.viewsReceived || profile.viewsReceived.length === 0) {
+        isNew = true;
+      } else {
+        const viewDate = new Date(profile.viewsReceived[0].createdAt).getTime();
+        if (Date.now() - viewDate <= 1000 * 60 * 60 * 24) {
+          isNew = true;
+        }
+      }
+    }
+
     return {
       id: profile.id,
       fullName: profile.fullName,
@@ -241,8 +256,7 @@ export async function GET(req: NextRequest) {
         ? `/api/profiles/preview/${encodeURIComponent(previewToken)}`
         : null,
       healthRequestStatus: healthRequestStatusMap.get(profile.id) ?? null,
-      isPremium: (profile.user?.payments?.length ?? 0) > 0,
-      isNew: (profile.viewsReceived?.length ?? 0) === 0,
+      isNew,
     };
   });
 
