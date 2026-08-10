@@ -1,47 +1,83 @@
-import { NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
-import crypto from "crypto";
+import { NextRequest, NextResponse } from "next/server";
+import { v2 as cloudinary } from "cloudinary";
+import { randomUUID } from "crypto";
+import { Readable } from "stream";
 import { auth } from "@/lib/auth";
 
-export async function POST(req: Request) {
+export const runtime = "nodejs";
+
+function ensureCloudinaryConfigured() {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new Error("Cloudinary is not configured");
+  }
+
+  cloudinary.config({
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret,
+    secure: true,
+  });
+}
+
+function uploadPdf(buffer: Buffer) {
+  ensureCloudinaryConfigured();
+  const publicId = randomUUID();
+
+  return new Promise<string>((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: "medical_reports",
+        public_id: publicId,
+        resource_type: "image", // allows PDF to image conversion for free tier
+        format: "pdf",
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        if (!result?.secure_url) {
+          reject(new Error("Cloudinary upload completed without a secure URL"));
+          return;
+        }
+
+        resolve(result.secure_url);
+      },
+    );
+
+    Readable.from(buffer).pipe(uploadStream);
+  });
+}
+
+export async function POST(req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const formData = await req.formData();
-    const file = formData.get("file") as File;
+    const file = formData.get("file");
 
-    if (!file) {
-      return new NextResponse("No file uploaded", { status: 400 });
+    if (!(file instanceof File)) {
+      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
     if (file.type !== "application/pdf") {
-      return new NextResponse("Only PDF files are allowed", { status: 400 });
+      return NextResponse.json({ error: "Only PDF files are allowed" }, { status: 400 });
     }
 
-    // Ensure the uploads directory exists
-    const uploadsDir = path.join(process.cwd(), "public", "uploads", "medical-reports");
-    await mkdir(uploadsDir, { recursive: true });
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const secureUrl = await uploadPdf(buffer);
 
-    // Generate unique filename
-    const uniqueId = crypto.randomUUID();
-    const fileName = `${session.user.id}_${uniqueId}.pdf`;
-    const filePath = path.join(uploadsDir, fileName);
-
-    // Write file to local storage
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await writeFile(filePath, buffer);
-
-    // Return the public URL for the file
-    const publicUrl = `/uploads/medical-reports/${fileName}`;
-
-    return NextResponse.json({ url: publicUrl });
+    return NextResponse.json({ url: secureUrl });
   } catch (error) {
     console.error("Error uploading PDF:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

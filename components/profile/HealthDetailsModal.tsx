@@ -116,7 +116,7 @@ export default function HealthDetailsModal({ profileId, profileName, isOpen, onC
                     <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Medical Report</p>
                     <div className="mt-1.5">
                       <a
-                        href={details.medicalReportUrl}
+                        href={getPdfCloudinaryUrl(details.medicalReportUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="-ml-3 inline-flex items-center gap-1.5 rounded-lg bg-rose-50 px-3 py-1.5 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-400 dark:hover:bg-rose-900/50"

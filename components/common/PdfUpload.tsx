@@ -2,6 +2,7 @@
 
 import { FileText, FileUp, X, Download, Loader2 } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
+import { getPdfCloudinaryUrl } from "@/lib/utils/image";
 
 interface PdfUploadProps {
   value: string | null | undefined;
@@ -95,7 +96,7 @@ export default function PdfUpload({
               <FileText className="w-8 h-8 text-rose-500 dark:text-rose-400" />
               <span className="text-xs font-medium dark:text-slate-300">Medical_Report.pdf</span>
               <a
-                href={value}
+                href={getPdfCloudinaryUrl(value)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1 z-10"
