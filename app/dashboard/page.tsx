@@ -72,7 +72,7 @@ const fallbackRecommendedProfiles = [
     profession: "Chartered Accountant",
     location: "Bangalore, Karnataka",
     image: sampleProfileImages[2],
-    badge: "Premium",
+    badge: undefined,
     gender: "FEMALE",
   },
   {
@@ -92,7 +92,7 @@ const fallbackRecommendedProfiles = [
     profession: "Software Developer",
     location: "Pune, Maharashtra",
     image: sampleProfileImages[4],
-    badge: "Premium",
+    badge: undefined,
     gender: "FEMALE",
   },
   {
@@ -122,7 +122,7 @@ const fallbackRecommendedProfiles = [
     profession: "Architect",
     location: "Coimbatore, Tamil Nadu",
     image: "/male-avatar.svg",
-    badge: "Premium",
+    badge: undefined,
     gender: "MALE",
   },
   {
@@ -152,7 +152,7 @@ const fallbackRecommendedProfiles = [
     profession: "Doctor",
     location: "Trichy, Tamil Nadu",
     image: "/male-avatar.svg",
-    badge: "Premium",
+    badge: undefined,
     gender: "MALE",
   },
   {
@@ -491,6 +491,12 @@ async function getDashboardHomeData(userId: string) {
             select: { url: true, publicId: true, isPrimary: true },
             take: 1,
           },
+          createdAt: true,
+          viewsReceived: {
+            where: { viewerId: profile.id },
+            take: 1,
+            select: { createdAt: true },
+          },
         },
       }),
       prisma.$queryRaw<
@@ -585,19 +591,35 @@ export default async function DashboardPage() {
   const fallbackRecommendedCards = fallbackRecommendedProfiles.filter(
     (candidate) => !recommendedGender || candidate.gender === recommendedGender
   );
-  const recommendedCards = recommendedProfiles.map((candidate, index) => ({
-    id: candidate.id,
-    fullName: candidate.fullName,
-    age: calculateAge(candidate.dateOfBirth),
-    profession: candidate.profession ?? "Professional",
-    location: getLocation(candidate.city, candidate.state),
-    image: getProfileCardImage(
-      getAuthenticatedProfilePreviewUrl(candidate),
-      candidate.gender,
-      index
-    ),
-    badge: index % 3 === 1 ? "Premium" : "New",
-  }));
+  const recommendedCards = recommendedProfiles.map((candidate, index) => {
+    const isNewlyRegistered =
+      Date.now() - new Date(candidate.createdAt).getTime() <= 1000 * 60 * 60 * 24 * 14;
+    let isNew = false;
+    if (isNewlyRegistered) {
+      if (!candidate.viewsReceived || candidate.viewsReceived.length === 0) {
+        isNew = true;
+      } else {
+        const viewDate = new Date(candidate.viewsReceived[0].createdAt).getTime();
+        if (Date.now() - viewDate <= 1000 * 60 * 60 * 24) {
+          isNew = true;
+        }
+      }
+    }
+
+    return {
+      id: candidate.id,
+      fullName: candidate.fullName,
+      age: calculateAge(candidate.dateOfBirth),
+      profession: candidate.profession ?? "Professional",
+      location: getLocation(candidate.city, candidate.state),
+      image: getProfileCardImage(
+        getAuthenticatedProfilePreviewUrl(candidate),
+        candidate.gender,
+        index
+      ),
+      badge: isNew ? "New" : undefined,
+    };
+  });
   const visibleRecommendedCards = recommendedCards.slice(0, 4);
   const suggestedFallbackCards =
     recommendedCards.length > 0 ? recommendedCards : fallbackRecommendedCards.slice(0, 6);

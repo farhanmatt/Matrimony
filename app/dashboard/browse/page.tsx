@@ -1010,7 +1010,7 @@ export default function BrowsePage() {
                   >
                     <BrowseProfileCard
                       profile={profile}
-                      badge={profile.isPremium ? "Premium" : profile.isNew ? "New" : undefined}
+                      badge={profile.isNew ? "New" : undefined}
                       onLike={handleProfileLike}
                       profileHref={buildProfileHref(profile.id)}
                       isHealthDetailsEnabled={isHealthDetailsEnabled}
