@@ -38,28 +38,51 @@ export default function UnlockPaymentPage({
     setStatus("processing");
 
     try {
-      const unlockRes = await fetch("/api/unlock", {
+      const reqRes = await fetch("/api/ccavenue/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ matchId }),
       });
 
-      const unlockData = await unlockRes.json();
-      if (!unlockRes.ok) {
+      const data = await reqRes.json();
+      if (!reqRes.ok) {
         setStatus("error");
-        toast.error(unlockData.error ?? "Failed to unlock profile");
+        toast.error(data.error ?? "Failed to initiate profile unlock");
         return;
       }
 
-      setStatus("success");
-      toast.success(
-        unlockData.alreadyUnlocked
-          ? "Profile already unlocked."
-          : "Profile unlocked successfully."
-      );
-      window.setTimeout(() => {
-        router.replace(returnTo);
-      }, 900);
+      if (data.alreadyUnlocked) {
+        setStatus("success");
+        toast.success("Profile already unlocked.");
+        window.setTimeout(() => {
+          router.replace(returnTo);
+        }, 900);
+        return;
+      }
+
+      // Redirect to CCAvenue
+      if (data.encRequest && data.accessCode && data.url) {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = data.url;
+
+        const encReqInput = document.createElement("input");
+        encReqInput.type = "hidden";
+        encReqInput.name = "encRequest";
+        encReqInput.value = data.encRequest;
+        form.appendChild(encReqInput);
+
+        const accessCodeInput = document.createElement("input");
+        accessCodeInput.type = "hidden";
+        accessCodeInput.name = "access_code";
+        accessCodeInput.value = data.accessCode;
+        form.appendChild(accessCodeInput);
+
+        document.body.appendChild(form);
+        form.submit();
+      } else {
+        throw new Error("Invalid response from payment gateway");
+      }
     } catch {
       setStatus("error");
       toast.error("Something went wrong. Please try again.");
