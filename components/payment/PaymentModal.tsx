@@ -128,28 +128,51 @@ export default function PaymentModal({
     setStatus("processing");
 
     try {
-      console.log("FETCHING /api/unlock...");
-      const unlockRes = await fetch("/api/unlock", {
+      console.log("FETCHING /api/ccavenue/request...");
+      const reqRes = await fetch("/api/ccavenue/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ matchId, targetProfileId, type, couponCode: appliedCoupon?.code }),
       });
-      const unlockData = await unlockRes.json();
+      const data = await reqRes.json();
 
-      if (!unlockRes.ok) {
-        toast.error(unlockData.error ?? `Failed to unlock ${type.toLowerCase()}`);
+      if (!reqRes.ok) {
+        toast.error(data.error ?? `Failed to initiate ${type.toLowerCase()} payment`);
         setStatus("error");
         return;
       }
 
-      const resolvedMatchId = unlockData.data?.matchId ?? matchId ?? "";
-      setActualMatchId(resolvedMatchId);
-      setStatus("success");
-      toast.success(
-        unlockData.alreadyUnlocked
-          ? `${type === "CHAT" ? "Chat" : "Profile"} already unlocked.`
-          : `${type === "CHAT" ? "Chat" : "Profile"} unlocked successfully.`
-      );
+      if (data.alreadyUnlocked) {
+        const resolvedMatchId = data.data?.matchId ?? matchId ?? "";
+        setActualMatchId(resolvedMatchId);
+        setStatus("success");
+        toast.success(`${type === "CHAT" ? "Chat" : "Profile"} already unlocked.`);
+        return;
+      }
+
+      // CCAvenue Redirect form submission
+      if (data.encRequest && data.accessCode && data.url) {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = data.url;
+
+        const encReqInput = document.createElement("input");
+        encReqInput.type = "hidden";
+        encReqInput.name = "encRequest";
+        encReqInput.value = data.encRequest;
+        form.appendChild(encReqInput);
+
+        const accessCodeInput = document.createElement("input");
+        accessCodeInput.type = "hidden";
+        accessCodeInput.name = "access_code";
+        accessCodeInput.value = data.accessCode;
+        form.appendChild(accessCodeInput);
+
+        document.body.appendChild(form);
+        form.submit();
+      } else {
+        throw new Error("Invalid response from payment gateway");
+      }
     } catch {
       setStatus("error");
       toast.error("Something went wrong. Please try again.");
