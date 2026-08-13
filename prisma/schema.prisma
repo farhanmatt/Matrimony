@@ -101,6 +101,7 @@ model User {
   payments              Payment[]
   unlocks               Unlock[]
   tempSelfieImages      String[] @default([])
+  tempVideoUrl          String?
 
   @@index([email])
   @@index([nameLookup])

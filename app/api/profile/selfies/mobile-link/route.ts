@@ -13,6 +13,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    let purpose = "selfie_capture";
+    try {
+      const body = await req.json();
+      if (body.purpose === "video_capture") {
+        purpose = "video_capture";
+      }
+    } catch (e) {
+      // Ignore if no body provided
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { email: true, name: true },
@@ -24,7 +34,7 @@ export async function POST(req: Request) {
 
     // Create a secure token valid for 15 minutes
     const token = jwt.sign(
-      { userId: session.user.id, purpose: "selfie_capture" },
+      { userId: session.user.id, purpose },
       JWT_SECRET,
       { expiresIn: "15m" }
     );
