@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { Video, X, Loader2, CheckCircle2, ShieldCheck, Trash2, Play, Square } from "lucide-react";
+import { Video, X, Loader2, CheckCircle2, ShieldCheck, Trash2, Play, Square, Smartphone, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 interface SelfieVideoCaptureProps {
@@ -18,12 +18,35 @@ export default function SelfieVideoCapture({ value, onChange, error, status }: S
   const [timeLeft, setTimeLeft] = useState(10);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [mobileLinkSent, setMobileLinkSent] = useState(false);
+  const [showDemoVideo, setShowDemoVideo] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (mobileLinkSent && !value) {
+      interval = setInterval(async () => {
+        try {
+          const res = await fetch("/api/profile/selfies/mobile-sync-video");
+          if (res.ok) {
+            const data = await res.json();
+            if (data.videoUrl) {
+              onChange(data.videoUrl);
+              setMobileLinkSent(false); // Stop polling after successful sync
+            }
+          }
+        } catch (e) {
+          console.error("Failed to sync mobile video", e);
+        }
+      }, 5000);
+    }
+    return () => clearInterval(interval);
+  }, [mobileLinkSent, value, onChange]);
 
   const startCamera = async () => {
     stopCamera();
@@ -158,6 +181,31 @@ export default function SelfieVideoCapture({ value, onChange, error, status }: S
     onChange(null);
   };
 
+  const sendMobileLink = async () => {
+    try {
+      toast.loading("Generating secure link...");
+      const res = await fetch("/api/profile/selfies/mobile-link", { 
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ purpose: "video_capture" })
+      });
+      if (res.ok) {
+        toast.dismiss();
+        const data = await res.json();
+        toast.success("Link sent to your registered Gmail!");
+        setMobileLinkSent(true);
+        if (data.debugLink) {
+          console.log("Mobile Video Verification Link (Debug):", data.debugLink);
+        }
+      } else {
+        throw new Error("Failed to send link");
+      }
+    } catch (e) {
+      toast.dismiss();
+      toast.error("Failed to send mobile verification link");
+    }
+  };
+
   useEffect(() => {
     return () => {
       stopCamera();
@@ -182,17 +230,37 @@ export default function SelfieVideoCapture({ value, onChange, error, status }: S
         </div>
         
         {!value && !cameraActive && !previewUrl && (
-          <button
-            type="button"
-            onClick={startCamera}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 font-medium rounded-lg hover:bg-indigo-100 transition-colors"
-          >
-            <Video className="w-4 h-4" /> Record Video
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={startCamera}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 font-medium rounded-lg hover:bg-indigo-100 transition-colors"
+            >
+              <Video className="w-4 h-4" /> Record Video
+            </button>
+            <button
+              type="button"
+              onClick={sendMobileLink}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              <Smartphone className="w-4 h-4" /> Use Mobile Phone
+            </button>
+          </div>
         )}
       </div>
 
       {error && <p className="text-sm text-red-500">{error}</p>}
+
+      {mobileLinkSent && !value && !cameraActive && (
+        <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+          <Mail className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
+          <div>
+            <h4 className="text-sm font-semibold text-blue-900">Check your email</h4>
+            <p className="text-sm text-blue-700 mt-1">We've sent a secure link to your Gmail. Open it on your phone to record your video. This page will automatically update once you've uploaded it.</p>
+          </div>
+          <Loader2 className="w-5 h-5 animate-spin text-blue-400 ml-auto shrink-0" />
+        </div>
+      )}
 
       {cameraActive && !previewUrl && (
         <div className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 shadow-xl relative animate-in fade-in slide-in-from-bottom-4">
@@ -334,6 +402,32 @@ export default function SelfieVideoCapture({ value, onChange, error, status }: S
           </button>
         </div>
       )}
+
+      {/* Demo Section */}
+      <div className="pt-6 mt-4 border-t border-gray-100">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-gray-700">For Demo:</span>
+          <button
+            type="button"
+            onClick={() => setShowDemoVideo(!showDemoVideo)}
+            className="px-4 py-1.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 transition-colors"
+          >
+            {showDemoVideo ? "Close Demo" : "Click here"}
+          </button>
+        </div>
+        
+        {showDemoVideo && (
+          <div className="mt-6 bg-black rounded-2xl overflow-hidden border border-gray-800 shadow-2xl max-w-3xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4">
+            <video 
+              src="/video.mp4" 
+              controls 
+              playsInline
+              autoPlay
+              className="w-full h-auto max-h-[75vh] object-contain mx-auto" 
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
