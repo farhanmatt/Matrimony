@@ -126,8 +126,12 @@ export function getPdfCloudinaryUrl(url: string | null | undefined) {
   }
   
   if (safeUrl.includes("/image/upload/") && !safeUrl.includes("f_auto")) {
-    return safeUrl.replace("/image/upload/", "/image/upload/f_auto,q_auto/");
+    safeUrl = safeUrl.replace("/image/upload/", "/image/upload/f_auto,q_auto/");
   }
+  
+  // Force the extension to .jpg so mobile browsers and Cloudinary always treat it as an image.
+  // This bypasses the free-tier PDF delivery restriction that causes 404s on mobile.
+  safeUrl = safeUrl.replace(/\.pdf$/i, '.jpg');
   
   return safeUrl;
 }

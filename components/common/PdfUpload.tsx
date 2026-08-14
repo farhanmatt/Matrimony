@@ -49,17 +49,22 @@ export default function PdfUpload({
     setUploadError(null);
     setIsUploading(true);
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
       const response = await fetch("/api/upload-pdf", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/pdf",
+        },
+        body: file,
       });
 
       if (!response.ok) {
-        throw new Error("Failed to upload PDF");
+        let errorMessage = "Failed to upload PDF";
+        try {
+          const errData = await response.json();
+          if (errData.error) errorMessage = errData.error;
+        } catch (_) {}
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();

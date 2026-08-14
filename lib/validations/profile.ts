@@ -229,6 +229,7 @@ function validateRequiredPhotoUploads(
     religion?: string | null;
     profileImage?: string | null;
     horoscopeImage?: string | null;
+    selfieImages?: string[];
   },
   ctx: z.RefinementCtx
 ) {
@@ -237,6 +238,14 @@ function validateRequiredPhotoUploads(
       code: z.ZodIssueCode.custom,
       message: "Profile picture is required",
       path: ["profileImage"],
+    });
+  }
+
+  if (!data.selfieImages || data.selfieImages.length === 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "At least one selfie photo is required for live verification",
+      path: ["selfieImages"],
     });
   }
 

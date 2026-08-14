@@ -406,13 +406,13 @@ export default function SelfieVideoCapture({ value, onChange, error, status }: S
       {/* Demo Section */}
       <div className="pt-6 mt-4 border-t border-gray-100">
         <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-gray-700">For Demo:</span>
+          <span className="text-sm font-medium text-gray-700">For Video Demo:</span>
           <button
             type="button"
             onClick={() => setShowDemoVideo(!showDemoVideo)}
-            className="px-4 py-1.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 transition-colors"
+            className="px-4 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 text-sm font-medium rounded-md hover:bg-indigo-100 transition-colors shadow-sm"
           >
-            {showDemoVideo ? "Close Demo" : "Click here"}
+            {showDemoVideo ? "Close Demo" : "Click Here"}
           </button>
         </div>
         

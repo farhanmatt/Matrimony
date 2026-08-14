@@ -1978,17 +1978,26 @@ export default function ProfileForm({
     router.refresh();
   };
 
+  const onFormError = (errors: any) => {
+    if (errors.selfieImages) {
+      const selfieElement = document.getElementById("selfie-verification-section");
+      if (selfieElement) {
+        selfieElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  };
+
   const handleCreateProfile = async () => {
     if (isEdit) return;
 
-    await handleSubmit(onSubmit)();
+    await handleSubmit(onSubmit, onFormError)();
   };
 
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (isEdit) {
-      await handleSubmit(onSubmit)(event);
+      await handleSubmit(onSubmit, onFormError)(event);
     }
   };
 
@@ -3404,7 +3413,7 @@ export default function ProfileForm({
         ) : null}
       </div>
       
-      <div className="pt-6 border-t border-gray-100 dark:border-slate-800">
+      <div id="selfie-verification-section" className="pt-6 border-t border-gray-100 dark:border-slate-800">
         <Controller
           name="selfieImages"
           control={control}
