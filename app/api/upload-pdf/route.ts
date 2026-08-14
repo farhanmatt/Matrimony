@@ -7,12 +7,16 @@ import { auth } from "@/lib/auth";
 export const runtime = "nodejs";
 
 function ensureCloudinaryConfigured() {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME?.trim();
+  const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
+  const apiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
 
   if (!cloudName || !apiKey || !apiSecret) {
     throw new Error("Cloudinary is not configured");
+  }
+
+  if (apiSecret.includes("***")) {
+    throw new Error("Cloudinary API Secret contains dummy asterisks. Please set the real secret in your .env file.");
   }
 
   cloudinary.config({
@@ -31,9 +35,8 @@ function uploadPdf(buffer: Buffer) {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder: "medical_reports",
-        public_id: publicId,
-        resource_type: "image", // allows PDF to image conversion for free tier
-        format: "pdf",
+        public_id: `${publicId}.pdf`,
+        resource_type: "image",
       },
       (error, result) => {
         if (error) {
@@ -61,23 +64,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const formData = await req.formData();
-    const file = formData.get("file");
-
-    if (!(file instanceof File)) {
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
-    }
-
-    if (file.type !== "application/pdf") {
+    const contentType = req.headers.get("content-type");
+    if (contentType !== "application/pdf") {
       return NextResponse.json({ error: "Only PDF files are allowed" }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const arrayBuffer = await req.arrayBuffer();
+    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+      return NextResponse.json({ error: "No file uploaded or invalid file format" }, { status: 400 });
+    }
+
+    const buffer = Buffer.from(arrayBuffer);
     const secureUrl = await uploadPdf(buffer);
 
     return NextResponse.json({ url: secureUrl });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error uploading PDF:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
 }

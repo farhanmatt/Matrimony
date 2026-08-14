@@ -197,26 +197,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         if (isAdminPortal) {
-          if (!isDefaultAdminCredentials(identifier, password)) {
-            throw new InvalidCredentialsError();
-          }
+          if (isDefaultAdminCredentials(identifier, password)) {
+            try {
+              const adminUser = await upsertAdminUser(prisma);
 
-          try {
-            const adminUser = await upsertAdminUser(prisma);
+              return {
+                id: adminUser.id,
+                name: adminUser.name,
+                email: adminUser.email,
+                image: adminUser.image,
+                role: adminUser.role,
+              };
+            } catch (error) {
+              if (isDatabaseUnavailableError(error)) {
+                throw new DatabaseUnavailableError();
+              }
 
-            return {
-              id: adminUser.id,
-              name: adminUser.name,
-              email: adminUser.email,
-              image: adminUser.image,
-              role: adminUser.role,
-            };
-          } catch (error) {
-            if (isDatabaseUnavailableError(error)) {
-              throw new DatabaseUnavailableError();
+              throw error;
             }
-
-            throw error;
           }
         }
 

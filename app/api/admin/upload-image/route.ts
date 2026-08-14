@@ -34,9 +34,9 @@ function adminGuard(session: Session | null) {
 }
 
 function ensureCloudinaryConfigured() {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME?.trim();
+  const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
+  const apiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
 
   if (!cloudName || !apiKey || !apiSecret) {
     throw new Error("Cloudinary is not configured for branding uploads");
@@ -91,9 +91,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData();
-    const file = formData.get("file");
+    const file = formData.get("file") as File | null;
 
-    if (!(file instanceof File)) {
+    if (!file || typeof (file as any).arrayBuffer !== "function") {
       return NextResponse.json({ error: "file is required" }, { status: 400 });
     }
 
