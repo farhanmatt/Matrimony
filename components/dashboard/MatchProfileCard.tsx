@@ -127,7 +127,7 @@ export default function MatchProfileCard({
               alt={`${profile.fullName} match profile`}
               fill
               className={cn(
-                "object-cover object-center opacity-90",
+                "object-cover object-top opacity-90",
                 !isUnlocked && "scale-105"
               )}
               sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 25vw"

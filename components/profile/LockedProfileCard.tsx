@@ -44,8 +44,7 @@ export default function LockedProfileCard({
             src={primaryPhoto}
             alt="Locked matrimony profile"
             fill
-            className="object-cover"
-            style={{ objectPosition: "center 12%" }}
+            className="object-cover object-top"
             sizes="(max-width: 640px) 100vw, 50vw"
           />
         ) : (
