@@ -34,6 +34,7 @@ interface LikedProfilePreviewCardProps {
     baseAmount: number;
     profileAmount: number;
     perProfileChatAmount: number;
+    isChatPaymentEnabled?: boolean;
   };
   allowUnlike?: boolean;
   profile: {
@@ -77,6 +78,8 @@ export default function LikedProfilePreviewCard({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [shortlisted, setShortlisted] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showFreeUnlockModal, setShowFreeUnlockModal] = useState(false);
+  const [unlockingFree, setUnlockingFree] = useState(false);
 
   useEffect(() => {
     setShortlisted(readShortlistedProfileIds(shortlistUserId).includes(profile.id));
@@ -189,6 +192,11 @@ export default function LikedProfilePreviewCard({
   const handleChatClick = (event: ReactMouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     if (!isUnlocked) {
+      if (pricing?.isChatPaymentEnabled === false) {
+        // Chat payment is disabled by admin, show verification confirmation instead of payment
+        setShowFreeUnlockModal(true);
+        return;
+      }
       if (!pricing) {
         toast.error("Unlock information not available for this chat.");
         return;
@@ -197,6 +205,31 @@ export default function LikedProfilePreviewCard({
       return;
     }
     router.push(`/dashboard/chat/${profile.id}`);
+  };
+
+  const handleFreeUnlockConfirm = async () => {
+    setUnlockingFree(true);
+    try {
+      const res = await fetch("/api/unlock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetProfileId: profile.id, type: "CHAT" }),
+      });
+      const data = await res.json();
+      
+      if (!res.ok) {
+        toast.error(data.error ?? "Failed to unlock chat.");
+        return;
+      }
+      
+      onUnlockSuccess?.();
+      setShowFreeUnlockModal(false);
+      router.push(`/dashboard/chat/${profile.id}`);
+    } catch (e) {
+      toast.error("Something went wrong.");
+    } finally {
+      setUnlockingFree(false);
+    }
   };
 
   return (
@@ -375,6 +408,46 @@ export default function LikedProfilePreviewCard({
             window.location.href = `/dashboard/chat/${profile.id}`;
           }}
         />
+      )}
+
+      {showFreeUnlockModal && (
+        <div
+          className="ui-overlay-fade fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
+          onClick={() => setShowFreeUnlockModal(false)}
+        >
+          <div
+            className="ui-modal-pop w-full max-w-sm rounded-[24px] border border-rose-100 bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.14)] dark:border-slate-700 dark:bg-slate-900"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <h3 className="font-display text-xl font-bold text-slate-900 dark:text-slate-100">
+              Chat Unlock Verification
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+              Are you sure you want to start a conversation with {profile.fullName}?
+            </p>
+
+            <div className="mt-5 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowFreeUnlockModal(false)}
+                disabled={unlockingFree}
+                className="ui-link-shift inline-flex flex-1 items-center justify-center rounded-[16px] border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-rose-200 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:border-slate-600"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleFreeUnlockConfirm()}
+                disabled={unlockingFree}
+                className="ui-link-shift inline-flex flex-1 items-center justify-center rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_30_rgba(244,63,94,0.24)] transition-all hover:shadow-[0_18px_36px_rgba(244,63,94,0.24)] disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {unlockingFree ? "Unlocking..." : "Confirm"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

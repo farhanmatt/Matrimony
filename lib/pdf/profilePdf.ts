@@ -241,7 +241,7 @@ export async function buildProfilePdf(document: ProfilePdfDocument) {
   const firstPage = pages[0];
 
   const addPageChrome = (page: PdfPage) => {
-    drawText(page, "FMLP Matrimony", MARGIN_X, PAGE_HEIGHT - 36, 12, "F2", COLORS.rose);
+    drawText(page, "MIP Matrimony", MARGIN_X, PAGE_HEIGHT - 36, 12, "F2", COLORS.rose);
     drawText(page, "Profile details", PAGE_WIDTH - 145, PAGE_HEIGHT - 36, 10, "F1", COLORS.gray);
     drawLine(page, MARGIN_X, PAGE_HEIGHT - 48, PAGE_WIDTH - MARGIN_X, PAGE_HEIGHT - 48, COLORS.lightGray);
   };
@@ -359,7 +359,7 @@ export async function buildProfilePdf(document: ProfilePdfDocument) {
 
   pages.forEach((page, index) => {
     drawLine(page, MARGIN_X, 34, PAGE_WIDTH - MARGIN_X, 34, COLORS.lightGray);
-    drawText(page, "Generated from FMLP Matrimony", MARGIN_X, 18, 9.5, "F1", COLORS.gray);
+    drawText(page, "Generated from MIP Matrimony", MARGIN_X, 18, 9.5, "F1", COLORS.gray);
     drawText(page, `Page ${index + 1} of ${pages.length}`, PAGE_WIDTH - 110, 18, 9.5, "F1", COLORS.gray);
   });
 

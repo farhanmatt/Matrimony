@@ -676,7 +676,7 @@ export default function FullLandingPage({
                 <Link href="/" className="flex items-center gap-3">
                   <SiteLogo
                     src={logoImageUrl || "/default-logo.svg"}
-                    alt="FMLP Matrimony logo"
+                    alt="MIP Matrimony logo"
                     className="h-10 max-w-[200px]"
                   />
                 </Link>
@@ -747,7 +747,7 @@ export default function FullLandingPage({
           </LandingReveal>
 
           <div className="border-t border-white/10 py-5 text-center text-sm text-rose-100/75">
-            © {new Date().getFullYear()} FMLP Matrimony. All Rights Reserved.
+            © {new Date().getFullYear()} MIP Matrimony. All Rights Reserved.
           </div>
         </div>
       </footer>

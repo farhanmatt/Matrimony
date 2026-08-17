@@ -165,7 +165,11 @@ export async function POST(req: NextRequest) {
     // Calculate total amount based on unlock type
     let totalAmount = 0;
     if (requestedType === "CHAT") {
-      totalAmount = perProfileChatAmount * 100;
+      if (settings?.isChatPaymentEnabled === false) {
+        totalAmount = 0;
+      } else {
+        totalAmount = perProfileChatAmount * 100;
+      }
     } else {
       totalAmount = (baseAmount + profileAmount) * 100;
     }

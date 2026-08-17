@@ -93,6 +93,7 @@ export default function LikedPageClient({
     baseAmount: number;
     profileAmount: number;
     perProfileChatAmount: number;
+    isChatPaymentEnabled?: boolean;
   };
   viewMode?: "interests" | "shortlist";
   initialChatFeatureEnabled?: boolean;

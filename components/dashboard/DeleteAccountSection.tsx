@@ -49,7 +49,7 @@ export default function DeleteAccountSection({
       }
 
       toast.success("Your account has been deleted.");
-      await signOut({ callbackUrl: "/?accountDeleted=1" });
+      await signOut({ callbackUrl: window.location.origin + "/?accountDeleted=1" });
     } catch {
       toast.error("Something went wrong while deleting your account.");
       setIsSubmitting(false);

@@ -4,8 +4,8 @@ import Footer from "@/components/layout/Footer";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Refund Policy | FMLP Matrimony",
-  description: "Read FMLP Matrimony's refund and cancellation policy regarding profile unlocks, chat unlocks, and premium payments.",
+  title: "Refund Policy | MIP Matrimony",
+  description: "Read MIP Matrimony's refund and cancellation policy regarding profile unlocks, chat unlocks, and premium payments.",
   alternates: { canonical: "/refund" },
 };
 
@@ -33,14 +33,14 @@ export default async function RefundPage() {
             <section>
               <h2>1. Overview</h2>
               <p>
-                At FMLP Matrimony, we strive to provide a transparent and seamless matchmaking experience. Our platform operates on a freemium model where basic features are free, but accessing premium features such as unlocking profiles or initiating chats requires a payment. This policy outlines our guidelines regarding refunds and cancellations for these premium services.
+                At MIP Matrimony, we strive to provide a transparent and seamless matchmaking experience. Our platform operates on a freemium model where basic features are free, but accessing premium features such as unlocking profiles or initiating chats requires a payment. This policy outlines our guidelines regarding refunds and cancellations for these premium services.
               </p>
             </section>
 
             <section>
               <h2>2. Payment Processing</h2>
               <p>
-                All financial transactions on our platform are processed securely via <strong>Instamojo</strong>. When you make a payment to unlock a profile or access chat features, the transaction is handled entirely by Instamojo. FMLP Matrimony does not store any of your sensitive banking or credit card information.
+                All financial transactions on our platform are processed securely via <strong>Instamojo</strong>. When you make a payment to unlock a profile or access chat features, the transaction is handled entirely by Instamojo. MIP Matrimony does not store any of your sensitive banking or credit card information.
               </p>
             </section>
 
@@ -92,7 +92,7 @@ export default async function RefundPage() {
             <section>
               <h2>8. Cancellation Policy</h2>
               <p>
-                Since FMLP Matrimony utilizes a pay-per-unlock model rather than a recurring subscription, there is no ongoing subscription to cancel. However, if you wish to delete your account or stop using our services, you may do so at any time from your account settings. Deleting your account will not automatically trigger a refund for past purchases.
+                Since MIP Matrimony utilizes a pay-per-unlock model rather than a recurring subscription, there is no ongoing subscription to cancel. However, if you wish to delete your account or stop using our services, you may do so at any time from your account settings. Deleting your account will not automatically trigger a refund for past purchases.
               </p>
             </section>
 

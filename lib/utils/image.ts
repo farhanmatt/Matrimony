@@ -89,7 +89,7 @@ export function getImageUploadErrorMessage(
   return rawMessage.trim() || "Failed to upload image. Please try again.";
 }
 
-export function getWatermarkedCloudinaryUrl(url: string, watermarkText = "FMLP Matrimony") {
+export function getWatermarkedCloudinaryUrl(url: string, watermarkText = "MIP Matrimony") {
   if (!url || typeof url !== "string" || !url.includes("res.cloudinary.com") || !url.includes("/upload/")) {
     return url;
   }

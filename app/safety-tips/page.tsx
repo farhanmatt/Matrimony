@@ -4,8 +4,8 @@ import Footer from "@/components/layout/Footer";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Safety Tips | FMLP Matrimony",
-  description: "Read our comprehensive safety tips and guidelines to ensure a secure and trusted matchmaking experience on FMLP Matrimony.",
+  title: "Safety Tips | MIP Matrimony",
+  description: "Read our comprehensive safety tips and guidelines to ensure a secure and trusted matchmaking experience on MIP Matrimony.",
   alternates: { canonical: "/safety-tips" },
 };
 
@@ -40,7 +40,7 @@ export default async function SafetyTipsPage() {
             <section>
               <h2>2. Keeping Personal Information Private</h2>
               <p>
-                FMLP Matrimony intentionally hides your contact number and email address from regular users. This information is only revealed when someone unlocks your profile using our secure payment gateway (Instamojo) and a mutual match is formed. Do not share your personal phone number, WhatsApp, or private email address in your bio or immediately in your first chat messages. Take time to build trust first.
+                MIP Matrimony intentionally hides your contact number and email address from regular users. This information is only revealed when someone unlocks your profile using our secure payment gateway (Instamojo) and a mutual match is formed. Do not share your personal phone number, WhatsApp, or private email address in your bio or immediately in your first chat messages. Take time to build trust first.
               </p>
             </section>
 
@@ -54,7 +54,7 @@ export default async function SafetyTipsPage() {
             <section>
               <h2>4. Safe Communication with Other Members</h2>
               <p>
-                Always use the built-in FMLP Matrimony Chat feature for initial conversations. Our chat platform is monitored for abusive language and helps protect you from unsolicited contacts. Be cautious if a member insists on moving the conversation to an external platform (like WhatsApp or Facebook) very quickly.
+                Always use the built-in MIP Matrimony Chat feature for initial conversations. Our chat platform is monitored for abusive language and helps protect you from unsolicited contacts. Be cautious if a member insists on moving the conversation to an external platform (like WhatsApp or Facebook) very quickly.
               </p>
             </section>
 
@@ -75,7 +75,7 @@ export default async function SafetyTipsPage() {
             <section>
               <h2>7. Avoiding Financial Scams and Fraudulent Requests</h2>
               <p>
-                FMLP Matrimony will <strong>never</strong> ask you for your passwords, credit card numbers, or OTPs over email or phone calls. Furthermore, you should <strong>never send money</strong> to anyone you meet on this platform, no matter what reason or emergency they claim to have. If a match asks for financial assistance, loans, or investments, cease contact and report them immediately.
+                MIP Matrimony will <strong>never</strong> ask you for your passwords, credit card numbers, or OTPs over email or phone calls. Furthermore, you should <strong>never send money</strong> to anyone you meet on this platform, no matter what reason or emergency they claim to have. If a match asks for financial assistance, loans, or investments, cease contact and report them immediately.
               </p>
             </section>
 
@@ -95,7 +95,7 @@ export default async function SafetyTipsPage() {
             <section>
               <h2>9. Protecting Account Credentials</h2>
               <p>
-                Use a strong, unique password for your FMLP Matrimony account. Do not share your login details with anyone, including family members or agents. Ensure you log out if you are using a shared or public computer.
+                Use a strong, unique password for your MIP Matrimony account. Do not share your login details with anyone, including family members or agents. Ensure you log out if you are using a shared or public computer.
               </p>
             </section>
 

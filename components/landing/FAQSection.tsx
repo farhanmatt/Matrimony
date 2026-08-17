@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils/helpers";
 
 const faqs = [
   {
-    q: "Is registration on FMLP Matrimony free?",
+    q: "Is registration on MIP Matrimony free?",
     a: "Yes! Basic registration is completely free. You can create your profile, browse matches, and show interest at no cost. Payment is only required when you want to unlock a mutual match's full contact details.",
   },
   {
@@ -55,7 +55,7 @@ export default function FAQSection({
           <div className="text-center mb-16">
             <h2 className="section-title">Frequently Asked Questions</h2>
             <p className="section-subtitle mx-auto">
-              Everything you need to know about FMLP Matrimony.
+              Everything you need to know about MIP Matrimony.
             </p>
           </div>
         ) : null}

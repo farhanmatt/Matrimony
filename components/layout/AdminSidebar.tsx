@@ -79,7 +79,7 @@ function AdminSidebarContent({
     setIsSigningOut(true);
 
     try {
-      await signOut({ callbackUrl: "/" });
+      await signOut({ callbackUrl: window.location.origin });
     } finally {
       setIsSigningOut(false);
     }

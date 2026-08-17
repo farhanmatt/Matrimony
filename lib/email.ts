@@ -107,6 +107,57 @@ function getFriendlyEmailErrorMessage(error: unknown) {
   return rawMessage;
 }
 
+
+function buildEmailTemplate(title: string, preheader: string, content: string) {
+  const currentYear = new Date().getFullYear();
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#334155;-webkit-font-smoothing:antialiased;">
+  <div style="display:none;font-size:1px;color:#f8fafc;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">
+    ${preheader}
+  </div>
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width:600px;background-color:#ffffff;border-radius:16px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.05),0 8px 10px -6px rgba(0,0,0,0.01);overflow:hidden;">
+          <tr>
+            <td align="center" style="padding:40px 40px 30px;background-color:#ffffff;border-bottom:1px solid #f1f5f9;">
+              <h1 style="margin:0;font-size:26px;font-weight:800;color:#e11d48;letter-spacing:-0.5px;text-transform:uppercase;">
+                MIP Matrimony
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:40px;">
+              ${content}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:30px 40px;background-color:#f8fafc;border-top:1px solid #f1f5f9;text-align:center;">
+              <p style="margin:0 0 10px;font-size:14px;color:#64748b;font-weight:600;">
+                MIP Matrimony
+              </p>
+              <p style="margin:0;font-size:13px;color:#94a3b8;line-height:1.6;">
+                This email was sent to you regarding your account on MIP Matrimony. If you did not request this, please ignore this email or contact support.
+              </p>
+              <p style="margin:16px 0 0;font-size:12px;color:#cbd5e1;">
+                &copy; ${currentYear} MIP Matrimony. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
 function getAppUrl() {
   return (
     process.env.NEXT_PUBLIC_APP_URL?.trim() ||
@@ -171,50 +222,33 @@ function buildProfileCreatedEmailHtml({
 }: Omit<ProfileCreatedEmailParams, "to">) {
   const appUrl = getAppUrl();
   const firstName = recipientName?.trim() || "there";
-
-  return `
-    <div style="margin:0;padding:32px 16px;background:#fff8fb;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
-      <div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #ffe4ea;border-radius:24px;overflow:hidden;box-shadow:0 20px 48px rgba(15,23,42,0.08);">
-        <div style="padding:28px 32px;background:linear-gradient(135deg,#fffafc 0%,#fff1f6 100%);border-bottom:1px solid #ffe4ea;">
-          <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:#ecfdf3;color:#047857;font-size:12px;font-weight:700;letter-spacing:0.04em;">
-            PROFILE CREATED
-          </div>
-          <h1 style="margin:18px 0 8px;font-size:32px;line-height:1.15;color:#0f172a;">Welcome to FMLP Matrimony</h1>
-          <p style="margin:0;font-size:16px;line-height:1.7;color:#475569;">
-            Hi ${firstName}, your matrimony profile has been created successfully.
-          </p>
-        </div>
-
-        <div style="padding:32px;">
-          <p style="margin:0 0 18px;font-size:16px;line-height:1.8;color:#475569;">
-            We have successfully registered your profile
-            <strong style="color:#0f172a;"> ${profileName}</strong> on FMLP Matrimony.
-            You can now browse profiles, receive likes, and find your perfect match.
-          </p>
-
-          <div style="margin:24px 0;padding:18px 20px;border-radius:18px;background:#fff7fa;border:1px solid #ffe1ea;">
-            <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#e11d48;">What you can do next</p>
-            <ul style="margin:0;padding-left:18px;color:#475569;font-size:15px;line-height:1.8;">
-              <li>Complete any remaining profile details</li>
-              <li>Browse recommended profiles</li>
-              <li>Set partner preferences</li>
-              <li>Respond to likes and mutual matches</li>
-            </ul>
-          </div>
-
-          <div style="margin-top:30px;">
-            <a href="${appUrl}/dashboard" style="display:inline-block;padding:14px 24px;border-radius:14px;background:linear-gradient(135deg,#e11d48 0%,#ec4899 100%);color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;">
-              Open Your Dashboard
-            </a>
-          </div>
-
-          <p style="margin:28px 0 0;font-size:14px;line-height:1.8;color:#64748b;">
-            If you did not create this profile, please contact support immediately.
-          </p>
-        </div>
+  const content = `
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="display:inline-block;padding:8px 16px;border-radius:999px;background:#ecfdf3;color:#047857;font-size:13px;font-weight:700;letter-spacing:0.5px;margin-bottom:20px;">
+        SUCCESSFULLY CREATED
       </div>
+      <h2 style="margin:0 0 16px;font-size:26px;font-weight:800;color:#0f172a;">Welcome to MIP Matrimony</h2>
+      <p style="margin:0;font-size:17px;line-height:1.6;color:#475569;">
+        Hi ${firstName}, your profile <strong>${profileName}</strong> is now live!
+      </p>
+    </div>
+    
+    <div style="background-color:#f8fafc;padding:24px;border-radius:16px;border:1px solid #e2e8f0;margin-bottom:32px;">
+      <p style="margin:0 0 16px;font-size:16px;font-weight:700;color:#1e293b;">What's next?</p>
+      <ul style="margin:0;padding:0 0 0 24px;font-size:15px;line-height:1.8;color:#475569;">
+        <li style="margin-bottom:8px;">Complete your bio to get 3x more matches.</li>
+        <li style="margin-bottom:8px;">Upload high-quality photos.</li>
+        <li>Browse matches and express interest!</li>
+      </ul>
+    </div>
+
+    <div style="text-align:center;">
+      <a href="${appUrl}/dashboard" style="display:inline-block;padding:16px 32px;border-radius:12px;background-color:#e11d48;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;box-shadow:0 4px 6px -1px rgba(225, 29, 72, 0.2);">
+        Go to Dashboard
+      </a>
     </div>
   `;
+  return buildEmailTemplate("Welcome to MIP Matrimony", "Your profile has been successfully created", content);
 }
 
 function buildProfileCreatedEmailText({
@@ -227,7 +261,7 @@ function buildProfileCreatedEmailText({
   return [
     `Hi ${firstName},`,
     "",
-    `Your matrimony profile "${profileName}" has been created successfully on FMLP Matrimony.`,
+    `Your matrimony profile "${profileName}" has been created successfully on MIP Matrimony.`,
     "",
     "You can now browse profiles, receive likes, and explore your matches.",
     "",
@@ -243,44 +277,28 @@ function buildProfileLikedEmailHtml({
 }: Omit<ProfileLikedEmailParams, "to">) {
   const appUrl = getAppUrl();
   const firstName = recipientName?.trim() || "there";
-  const admirerName = likedByName.trim() || "Another FMLP Matrimony member";
-
-  return `
-    <div style="margin:0;padding:32px 16px;background:#fff8fb;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
-      <div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #ffe4ea;border-radius:24px;overflow:hidden;box-shadow:0 20px 48px rgba(15,23,42,0.08);">
-        <div style="padding:28px 32px;background:linear-gradient(135deg,#fffafc 0%,#fff1f6 100%);border-bottom:1px solid #ffe4ea;">
-          <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:#fff1f2;color:#e11d48;font-size:12px;font-weight:700;letter-spacing:0.04em;">
-            NEW LIKE
-          </div>
-          <h1 style="margin:18px 0 8px;font-size:32px;line-height:1.15;color:#0f172a;">Someone liked your profile</h1>
-          <p style="margin:0;font-size:16px;line-height:1.7;color:#475569;">
-            Hi ${firstName}, you have received a new like on FMLP Matrimony.
-          </p>
-        </div>
-
-        <div style="padding:32px;">
-          <p style="margin:0 0 18px;font-size:16px;line-height:1.8;color:#475569;">
-            <strong style="color:#0f172a;">${admirerName}</strong> liked your profile. Visit your dashboard to review the profile and respond if you are interested.
-          </p>
-
-          <div style="margin:24px 0;padding:18px 20px;border-radius:18px;background:#fff7fa;border:1px solid #ffe1ea;">
-            <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#e11d48;">What you can do next</p>
-            <ul style="margin:0;padding-left:18px;color:#475569;font-size:15px;line-height:1.8;">
-              <li>Open your received likes</li>
-              <li>Review the member's profile details</li>
-              <li>Like back to create a mutual match</li>
-            </ul>
-          </div>
-
-          <div style="margin-top:30px;">
-            <a href="${appUrl}/dashboard/received-likes" style="display:inline-block;padding:14px 24px;border-radius:14px;background:linear-gradient(135deg,#e11d48 0%,#ec4899 100%);color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;">
-              View Received Likes
-            </a>
-          </div>
-        </div>
+  const admirerName = likedByName.trim() || "Another MIP Matrimony member";
+  const content = `
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="display:inline-block;padding:8px 16px;border-radius:999px;background:#fefce8;color:#a16207;font-size:13px;font-weight:700;letter-spacing:0.5px;margin-bottom:20px;">
+        NEW INTEREST
       </div>
+      <h2 style="margin:0 0 16px;font-size:26px;font-weight:800;color:#0f172a;">Someone liked your profile!</h2>
+      <p style="margin:0;font-size:17px;line-height:1.6;color:#475569;">
+        Hi ${firstName}, <strong>${admirerName}</strong> just expressed interest in your profile.
+      </p>
+    </div>
+    
+    <div style="background-color:#f8fafc;padding:24px;border-radius:16px;border:1px solid #e2e8f0;margin-bottom:32px;text-align:center;">
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#475569;">
+        Don't keep them waiting! Log in now to view their full profile and decide if you'd like to connect.
+      </p>
+      <a href="${appUrl}/dashboard/received-likes" style="display:inline-block;padding:14px 28px;border-radius:12px;background-color:#e11d48;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;">
+        View their Profile
+      </a>
     </div>
   `;
+  return buildEmailTemplate("Someone liked your profile", "You have received a new like on MIP Matrimony", content);
 }
 
 function buildProfileLikedEmailText({
@@ -289,12 +307,12 @@ function buildProfileLikedEmailText({
 }: Omit<ProfileLikedEmailParams, "to">) {
   const appUrl = getAppUrl();
   const firstName = recipientName?.trim() || "there";
-  const admirerName = likedByName.trim() || "Another FMLP Matrimony member";
+  const admirerName = likedByName.trim() || "Another MIP Matrimony member";
 
   return [
     `Hi ${firstName},`,
     "",
-    `${admirerName} liked your profile on FMLP Matrimony.`,
+    `${admirerName} liked your profile on MIP Matrimony.`,
     "",
     "Open your received likes to review their profile and respond if you are interested.",
     "",
@@ -308,33 +326,26 @@ function buildPasswordResetCodeEmailHtml({
   expiresInMinutes,
 }: Omit<PasswordResetCodeEmailParams, "to">) {
   const firstName = recipientName?.trim() || "there";
-
-  return `
-    <div style="margin:0;padding:32px 16px;background:#fff8fb;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
-      <div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #ffe4ea;border-radius:24px;overflow:hidden;box-shadow:0 20px 48px rgba(15,23,42,0.08);">
-        <div style="padding:28px 32px;background:linear-gradient(135deg,#fffafc 0%,#fff1f6 100%);border-bottom:1px solid #ffe4ea;">
-          <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:#fff1f2;color:#e11d48;font-size:12px;font-weight:700;letter-spacing:0.04em;">
-            PASSWORD RESET
-          </div>
-          <h1 style="margin:18px 0 8px;font-size:32px;line-height:1.15;color:#0f172a;">Your verification code</h1>
-          <p style="margin:0;font-size:16px;line-height:1.7;color:#475569;">
-            Hi ${firstName}, use the code below to finish resetting your FMLP Matrimony password.
-          </p>
-        </div>
-
-        <div style="padding:32px;">
-          <div style="margin:0 0 24px;padding:22px;border-radius:20px;background:#fff7fa;border:1px solid #ffe1ea;text-align:center;">
-            <p style="margin:0 0 10px;font-size:14px;font-weight:700;letter-spacing:0.08em;color:#e11d48;">VERIFICATION CODE</p>
-            <p style="margin:0;font-size:36px;font-weight:800;letter-spacing:0.3em;color:#0f172a;">${verificationCode}</p>
-          </div>
-
-          <p style="margin:0;font-size:15px;line-height:1.8;color:#475569;">
-            This code expires in ${expiresInMinutes} minutes. If you did not request a password reset, you can safely ignore this email.
-          </p>
-        </div>
-      </div>
+  const content = `
+    <h2 style="margin:0 0 20px;font-size:24px;font-weight:700;color:#0f172a;">Reset your password</h2>
+    <p style="margin:0 0 24px;font-size:16px;line-height:1.6;color:#475569;">
+      Hi ${firstName},<br><br>
+      We received a request to reset the password for your MIP Matrimony account. Use the code below to proceed.
+    </p>
+    <div style="text-align:center;margin:32px 0;padding:32px 24px;background-color:#fff1f2;border-radius:16px;border:2px dashed #fda4af;">
+      <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#e11d48;text-transform:uppercase;letter-spacing:1.5px;">Password Reset Code</p>
+      <p style="margin:0;font-size:48px;font-weight:800;letter-spacing:8px;color:#e11d48;">${verificationCode}</p>
+    </div>
+    <div style="background-color:#f8fafc;padding:20px;border-radius:12px;border-left:4px solid #cbd5e1;">
+      <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#64748b;">
+        This code expires in <strong>${expiresInMinutes} minutes</strong>. 
+      </p>
+      <p style="margin:0;font-size:14px;line-height:1.5;color:#94a3b8;">
+        If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.
+      </p>
     </div>
   `;
+  return buildEmailTemplate("Reset Password - MIP Matrimony", "Use this code to reset your password", content);
 }
 
 function buildPasswordResetCodeEmailText({
@@ -347,7 +358,7 @@ function buildPasswordResetCodeEmailText({
   return [
     `Hi ${firstName},`,
     "",
-    "Use this verification code to finish resetting your FMLP Matrimony password:",
+    "Use this verification code to finish resetting your MIP Matrimony password:",
     "",
     verificationCode,
     "",
@@ -363,33 +374,23 @@ function buildRegistrationOtpEmailHtml({
   expiresInMinutes,
 }: Omit<RegistrationOtpEmailParams, "to">) {
   const firstName = recipientName?.trim() || "there";
-
-  return `
-    <div style="margin:0;padding:32px 16px;background:#fff8fb;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
-      <div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #ffe4ea;border-radius:24px;overflow:hidden;box-shadow:0 20px 48px rgba(15,23,42,0.08);">
-        <div style="padding:28px 32px;background:linear-gradient(135deg,#fffafc 0%,#fff1f6 100%);border-bottom:1px solid #ffe4ea;">
-          <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:#fff1f2;color:#e11d48;font-size:12px;font-weight:700;letter-spacing:0.04em;">
-            EMAIL VERIFICATION
-          </div>
-          <h1 style="margin:18px 0 8px;font-size:32px;line-height:1.15;color:#0f172a;">Verify your email</h1>
-          <p style="margin:0;font-size:16px;line-height:1.7;color:#475569;">
-            Hi ${firstName}, use the OTP below to finish creating your FMLP Matrimony account.
-          </p>
-        </div>
-
-        <div style="padding:32px;">
-          <div style="margin:0 0 24px;padding:22px;border-radius:20px;background:#fff7fa;border:1px solid #ffe1ea;text-align:center;">
-            <p style="margin:0 0 10px;font-size:14px;font-weight:700;letter-spacing:0.08em;color:#e11d48;">YOUR OTP</p>
-            <p style="margin:0;font-size:36px;font-weight:800;letter-spacing:0.3em;color:#0f172a;">${verificationCode}</p>
-          </div>
-
-          <p style="margin:0;font-size:15px;line-height:1.8;color:#475569;">
-            This OTP expires in ${expiresInMinutes} minutes. Your account will only be created after this code is verified.
-          </p>
-        </div>
-      </div>
+  const content = `
+    <h2 style="margin:0 0 20px;font-size:24px;font-weight:700;color:#0f172a;">Verify your account</h2>
+    <p style="margin:0 0 24px;font-size:16px;line-height:1.6;color:#475569;">
+      Hi ${firstName},<br><br>
+      Please use the following OTP to finish creating your MIP Matrimony account.
+    </p>
+    <div style="text-align:center;margin:32px 0;padding:32px 24px;background-color:#fff1f2;border-radius:16px;border:2px dashed #fda4af;">
+      <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#e11d48;text-transform:uppercase;letter-spacing:1.5px;">Your OTP Code</p>
+      <p style="margin:0;font-size:48px;font-weight:800;letter-spacing:8px;color:#e11d48;">${verificationCode}</p>
+    </div>
+    <div style="background-color:#f8fafc;padding:20px;border-radius:12px;border-left:4px solid #cbd5e1;">
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#64748b;">
+        This OTP expires in <strong>${expiresInMinutes} minutes</strong>. Your account will only be created after this code is verified.
+      </p>
     </div>
   `;
+  return buildEmailTemplate("Your OTP Code - MIP Matrimony", "Use this OTP to finish creating your account", content);
 }
 
 function buildRegistrationOtpEmailText({
@@ -402,7 +403,7 @@ function buildRegistrationOtpEmailText({
   return [
     `Hi ${firstName},`,
     "",
-    "Use this OTP to finish creating your FMLP Matrimony account:",
+    "Use this OTP to finish creating your MIP Matrimony account:",
     "",
     verificationCode,
     "",
@@ -417,41 +418,31 @@ function buildPasswordChangedEmailHtml({
 }: Omit<PasswordChangedEmailParams, "to">) {
   const appUrl = getAppUrl();
   const firstName = recipientName?.trim() || "there";
-
-  return `
-    <div style="margin:0;padding:32px 16px;background:#fff8fb;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
-      <div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #ffe4ea;border-radius:24px;overflow:hidden;box-shadow:0 20px 48px rgba(15,23,42,0.08);">
-        <div style="padding:28px 32px;background:linear-gradient(135deg,#fffafc 0%,#fff1f6 100%);border-bottom:1px solid #ffe4ea;">
-          <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:#ecfdf3;color:#047857;font-size:12px;font-weight:700;letter-spacing:0.04em;">
-            PASSWORD UPDATED
-          </div>
-          <h1 style="margin:18px 0 8px;font-size:32px;line-height:1.15;color:#0f172a;">Your password was changed</h1>
-          <p style="margin:0;font-size:16px;line-height:1.7;color:#475569;">
-            Hi ${firstName}, your FMLP Matrimony password has been updated successfully.
-          </p>
-        </div>
-
-        <div style="padding:32px;">
-          <p style="margin:0 0 18px;font-size:16px;line-height:1.8;color:#475569;">
-            This is a confirmation that your account password was changed. If this was you, no further action is needed.
-          </p>
-
-          <div style="margin:24px 0;padding:18px 20px;border-radius:18px;background:#fff7fa;border:1px solid #ffe1ea;">
-            <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#e11d48;">Didn't make this change?</p>
-            <p style="margin:0;font-size:15px;line-height:1.8;color:#475569;">
-              Reset your password again right away and contact support if you believe someone accessed your account without permission.
-            </p>
-          </div>
-
-          <div style="margin-top:30px;">
-            <a href="${appUrl}/login" style="display:inline-block;padding:14px 24px;border-radius:14px;background:linear-gradient(135deg,#e11d48 0%,#ec4899 100%);color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;">
-              Sign In
-            </a>
-          </div>
-        </div>
-      </div>
+  const content = `
+    <h2 style="margin:0 0 16px;font-size:24px;font-weight:700;color:#0f172a;">Password Updated</h2>
+    <p style="margin:0 0 24px;font-size:16px;line-height:1.6;color:#475569;">
+      Hi ${firstName},<br><br>
+      This is a confirmation that the password for your MIP Matrimony account was recently changed.
+    </p>
+    
+    <div style="background-color:#f8fafc;padding:20px;border-radius:12px;border-left:4px solid #10b981;margin-bottom:24px;">
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#047857;font-weight:600;">
+        If you made this change, no further action is required.
+      </p>
     </div>
+
+    <div style="background-color:#fff1f2;padding:20px;border-radius:12px;border:1px solid #ffe4ea;margin-bottom:32px;">
+      <p style="margin:0 0 8px;font-size:15px;font-weight:700;color:#e11d48;">Didn't make this change?</p>
+      <p style="margin:0;font-size:14px;line-height:1.6;color:#475569;">
+        Reset your password immediately and contact support if you believe someone accessed your account without permission.
+      </p>
+    </div>
+
+    <a href="${appUrl}/login" style="display:inline-block;padding:14px 28px;border-radius:12px;background-color:#1e293b;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;">
+      Sign in to your account
+    </a>
   `;
+  return buildEmailTemplate("Password Changed - MIP Matrimony", "Your account password was successfully updated", content);
 }
 
 function buildPasswordChangedEmailText({
@@ -463,7 +454,7 @@ function buildPasswordChangedEmailText({
   return [
     `Hi ${firstName},`,
     "",
-    "Your FMLP Matrimony password has been updated successfully.",
+    "Your MIP Matrimony password has been updated successfully.",
     "",
     "If this was you, no further action is needed.",
     "",
@@ -480,7 +471,7 @@ export async function sendProfileCreatedEmail({
 }: ProfileCreatedEmailParams): Promise<SendEmailResult> {
   return sendTransactionalEmail({
     to,
-    subject: "Your FMLP Matrimony profile has been created",
+    subject: "Your MIP Matrimony profile has been created",
     html: buildProfileCreatedEmailHtml({ recipientName, profileName }),
     text: buildProfileCreatedEmailText({ recipientName, profileName }),
     skippedReason:
@@ -496,7 +487,7 @@ export async function sendProfileLikedEmail({
 }: ProfileLikedEmailParams): Promise<SendEmailResult> {
   return sendTransactionalEmail({
     to,
-    subject: "Your profile was liked on FMLP Matrimony",
+    subject: "Your profile was liked on MIP Matrimony",
     html: buildProfileLikedEmailHtml({ recipientName, likedByName }),
     text: buildProfileLikedEmailText({ recipientName, likedByName }),
     skippedReason:
@@ -513,7 +504,7 @@ export async function sendPasswordResetCodeEmail({
 }: PasswordResetCodeEmailParams): Promise<SendEmailResult> {
   return sendTransactionalEmail({
     to,
-    subject: "Your FMLP Matrimony password reset code",
+    subject: "Your MIP Matrimony password reset code",
     html: buildPasswordResetCodeEmailHtml({
       recipientName,
       verificationCode,
@@ -538,7 +529,7 @@ export async function sendRegistrationOtpEmail({
 }: RegistrationOtpEmailParams): Promise<SendEmailResult> {
   return sendTransactionalEmail({
     to,
-    subject: "Your FMLP Matrimony registration OTP",
+    subject: "Your MIP Matrimony registration OTP",
     html: buildRegistrationOtpEmailHtml({
       recipientName,
       verificationCode,
@@ -561,7 +552,7 @@ export async function sendPasswordChangedEmail({
 }: PasswordChangedEmailParams): Promise<SendEmailResult> {
   return sendTransactionalEmail({
     to,
-    subject: "Your FMLP Matrimony password was changed",
+    subject: "Your MIP Matrimony password was changed",
     html: buildPasswordChangedEmailHtml({ recipientName }),
     text: buildPasswordChangedEmailText({ recipientName }),
     skippedReason:
