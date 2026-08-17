@@ -64,6 +64,7 @@ const searchFields = [
 
 export type LandingFeaturedProfile = {
   cardKey: string;
+  nameLabel: string | null;
   nameLabelUrl: string | null;
   location: string;
   previewImageUrl: string | null;

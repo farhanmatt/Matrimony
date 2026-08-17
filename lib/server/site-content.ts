@@ -44,6 +44,9 @@ export const getCachedFeaturedProfiles = unstable_cache(
         take: 6,
         select: {
           id: true,
+          fullName: true,
+          gender: true,
+          dateOfBirth: true,
           state: true,
           country: true,
           profileImage: true,

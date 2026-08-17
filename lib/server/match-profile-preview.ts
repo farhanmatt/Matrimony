@@ -23,15 +23,5 @@ export function getProtectedMatchProfileImageUrl(
     profileImage: profile.profileImage ?? null,
     photos: profile.photos,
   });
-  const previewToken =
-    previewSource.previewUrl && previewSource.fingerprint
-      ? createFeaturedProfilePreviewToken({
-          profileId: profile.id,
-          fingerprint: previewSource.fingerprint,
-        })
-      : null;
-
-  return previewToken
-    ? `${PROTECTED_MATCH_PROFILE_IMAGE_ROUTE}/${encodeURIComponent(previewToken)}`
-    : null;
+  return previewSource.previewUrl;
 }

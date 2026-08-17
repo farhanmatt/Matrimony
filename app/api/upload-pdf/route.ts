@@ -35,8 +35,9 @@ function uploadPdf(buffer: Buffer) {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder: "medical_reports",
-        public_id: `${publicId}.pdf`,
+        public_id: publicId,
         resource_type: "image",
+        format: "pdf", // Explicitly set format to pdf to help Cloudinary identify the stream
       },
       (error, result) => {
         if (error) {

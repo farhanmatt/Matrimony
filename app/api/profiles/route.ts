@@ -252,9 +252,7 @@ export async function GET(req: NextRequest) {
       city: profile.city,
       state: profile.state,
       religion: profile.religion,
-      previewImageUrl: previewToken
-        ? `/api/profiles/preview/${encodeURIComponent(previewToken)}`
-        : null,
+      previewImageUrl: previewSource.previewUrl,
       healthRequestStatus: healthRequestStatusMap.get(profile.id) ?? null,
       isNew,
     };

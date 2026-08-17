@@ -29,7 +29,7 @@ export default function HealthDetailsPage() {
           router.push("/dashboard");
           return null;
         }
-        return res.json();
+        return res.text().then(text => text ? JSON.parse(text) : null);
       })
       .then((data) => {
         if (data && data.healthDetails) {

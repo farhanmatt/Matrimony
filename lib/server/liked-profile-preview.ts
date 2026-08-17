@@ -74,9 +74,7 @@ export function serializeProfilePreviewCard(profile: ProfilePreviewCardRecord) {
     city: profile.city,
     state: profile.state,
     religion: profile.religion,
-    previewImageUrl: previewToken
-      ? `${AUTHENTICATED_PROFILE_PREVIEW_ROUTE}/${encodeURIComponent(previewToken)}`
-      : null,
+    previewImageUrl: previewSource.previewUrl,
   };
 }
 

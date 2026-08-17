@@ -70,21 +70,9 @@ export default function FeaturedProfilesCarousel({
               </div>
               <div className="px-4 py-4 md:px-5 md:py-5">
                 <div className="min-h-[1.9rem]">
-                  {profile.nameLabelUrl ? (
-                    <Image
-                      src={profile.nameLabelUrl}
-                      alt="Featured profile name"
-                      width={360}
-                      height={42}
-                      className="block h-7 w-auto max-w-full"
-                      sizes="180px"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="text-lg font-bold text-slate-900">
-                      Featured Profile
-                    </div>
-                  )}
+                  <div className="text-lg font-bold text-slate-900 truncate">
+                    {profile.nameLabel || "Featured Profile"}
+                  </div>
                 </div>
                 <div className="mt-2 flex items-center gap-2 text-sm text-slate-500">
                   <MapPin className="h-4 w-4 text-rose-400" />
