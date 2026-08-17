@@ -146,17 +146,16 @@ export default function ProfileCard({
     >
       <div className={`relative overflow-hidden bg-gradient-to-br from-rose-50 to-pink-100 dark:!bg-slate-800 dark:!bg-none ${compact ? "h-40" : "h-48"}`}>
         {primaryPhoto ? (
-          <Image
-            src={primaryPhoto}
-            alt={`${profile.fullName} matrimony profile`}
-            fill
-            className={`ui-media-zoom object-cover transition-all duration-300 ${
-              blurPhotoPreview ? "blur-[2px] scale-105" : ""
-            }`}
-            style={{ objectPosition: "center 12%" }}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            quality={100}
-          />
+            <Image
+              src={primaryPhoto}
+              alt={`${profile.fullName} matrimony profile`}
+              fill
+              className={`ui-media-zoom object-cover object-top transition-all duration-300 ${
+                blurPhotoPreview ? "blur-[2px] scale-105" : ""
+              }`}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              quality={100}
+            />
         ) : (
           <div className="flex h-full items-center justify-center">
             <div className="ui-icon-lift flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-gray-100 dark:bg-slate-800 dark:ring-slate-700">

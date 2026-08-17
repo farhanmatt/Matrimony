@@ -189,7 +189,7 @@ export default function BrowseProfileCard({
               src={primaryPhoto}
               alt="Protected matrimony profile preview"
               fill
-              className="ui-media-zoom scale-[1.04] object-cover object-center"
+              className="ui-media-zoom scale-[1.04] object-cover object-top"
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, (max-width: 1536px) 25vw, 20vw"
               quality={75}
               unoptimized

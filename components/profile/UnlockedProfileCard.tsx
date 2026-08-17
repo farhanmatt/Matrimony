@@ -155,7 +155,7 @@ export default function UnlockedProfileCard({
               src={primaryPhoto}
               alt={`${profile.fullName} matrimony profile`}
               fill
-              className="ui-media-zoom object-cover object-center"
+              className="ui-media-zoom object-cover object-top"
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
               quality={75}
             />
