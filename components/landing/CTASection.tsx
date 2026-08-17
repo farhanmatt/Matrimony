@@ -22,7 +22,7 @@ export default function CTASection() {
 
         <p className="text-rose-100 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
           Join over 10 lakh members who have found their perfect life partner on
-          FMLP Matrimony. Registration is free and takes less than 2 minutes.
+          MIP Matrimony. Registration is free and takes less than 2 minutes.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">

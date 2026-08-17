@@ -38,7 +38,7 @@ export default function HeroSection() {
 
             <p className="text-lg text-gray-600 leading-relaxed mb-8 max-w-xl mx-auto lg:mx-0">
               Join over 10 lakh members who have found love and happiness through
-              FMLP Matrimony. Our intelligent matching system brings you closer to
+              MIP Matrimony. Our intelligent matching system brings you closer to
               your ideal partner.
             </p>
 

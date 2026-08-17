@@ -10,7 +10,7 @@ import { auth } from "@/lib/auth";
 export const metadata: Metadata = {
   title: "Expert Advice & Blog",
   description:
-    "Read expert relationship advice, matchmaking tips, and matrimony guidance from FMLP Matrimony.",
+    "Read expert relationship advice, matchmaking tips, and matrimony guidance from MIP Matrimony.",
   alternates: { canonical: "/blog" },
 };
 

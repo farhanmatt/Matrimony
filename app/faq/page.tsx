@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 export const metadata: Metadata = {
   title: "FAQ — Frequently Asked Questions",
   description:
-    "Find answers to common questions about FMLP Matrimony — how matching works, pricing, privacy, and more.",
+    "Find answers to common questions about MIP Matrimony — how matching works, pricing, privacy, and more.",
   alternates: { canonical: "/faq" },
 };
 
@@ -27,7 +27,7 @@ export default async function FAQPage() {
             Frequently Asked Questions
           </h1>
           <p className="text-gray-500">
-            Everything you need to know about FMLP Matrimony
+            Everything you need to know about MIP Matrimony
           </p>
         </div>
       </div>

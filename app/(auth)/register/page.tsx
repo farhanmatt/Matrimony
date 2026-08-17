@@ -229,7 +229,7 @@ export default function RegisterPage() {
           <Link href="/" className="ui-link-shift inline-flex items-center justify-center">
             <SiteLogo
               src={logoImageUrl}
-              alt="FMLP Matrimony logo"
+              alt="MIP Matrimony logo"
               className="ui-soft-float h-10 max-w-[220px] sm:h-16 sm:max-w-[320px]"
             />
           </Link>

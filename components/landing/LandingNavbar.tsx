@@ -112,7 +112,7 @@ export default function LandingNavbar({ session, logoImageUrl: initialLogoImageU
             <>
               <button
                 type="button"
-                onClick={() => signOut({ callbackUrl: "/" })}
+                onClick={() => signOut({ callbackUrl: window.location.origin })}
                 className="rounded-xl border border-rose-200 px-5 py-2.5 text-sm font-semibold text-rose-500 transition-colors hover:bg-rose-50"
               >
                 Logout
@@ -176,7 +176,7 @@ export default function LandingNavbar({ session, logoImageUrl: initialLogoImageU
                   type="button"
                   onClick={() => {
                     setIsMobileOpen(false);
-                    signOut({ callbackUrl: "/" });
+                    signOut({ callbackUrl: window.location.origin });
                   }}
                   className="rounded-xl border border-rose-200 px-5 py-3 text-sm font-semibold text-rose-500"
                 >

@@ -4,8 +4,8 @@ import Footer from "@/components/layout/Footer";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | FMLP Matrimony",
-  description: "Read FMLP Matrimony's privacy policy to understand how we collect, use, and protect your personal information.",
+  title: "Privacy Policy | MIP Matrimony",
+  description: "Read MIP Matrimony's privacy policy to understand how we collect, use, and protect your personal information.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -32,7 +32,7 @@ export default async function PrivacyPage() {
           <div className="prose prose-gray max-w-none prose-headings:font-display prose-headings:font-bold prose-h2:text-2xl prose-h2:text-gray-900 prose-h2:mt-10 prose-h2:mb-4 prose-p:text-gray-600 prose-p:leading-relaxed space-y-8">
             <section>
               <h2>1. Information We Collect</h2>
-              <p>When you register and use FMLP Matrimony, we collect the following types of information to provide you with our matchmaking services:</p>
+              <p>When you register and use MIP Matrimony, we collect the following types of information to provide you with our matchmaking services:</p>
               <ul className="list-disc pl-5 text-gray-600 space-y-2 mt-3">
                 <li><strong>Account Information:</strong> Your name, email address, password, and registration details.</li>
                 <li><strong>Profile Information:</strong> Comprehensive details to facilitate matches, including age, gender, date of birth, religion, caste, education, profession, location, and lifestyle choices.</li>
@@ -65,7 +65,7 @@ export default async function PrivacyPage() {
             <section>
               <h2>4. Payment Security</h2>
               <p>
-                All payments for profile unlocks or chat functionalities are securely processed via <strong>Instamojo</strong>. FMLP Matrimony does not collect, process, or store your credit card, debit card, or sensitive banking details on our servers.
+                All payments for profile unlocks or chat functionalities are securely processed via <strong>Instamojo</strong>. MIP Matrimony does not collect, process, or store your credit card, debit card, or sensitive banking details on our servers.
               </p>
             </section>
 

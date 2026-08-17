@@ -284,7 +284,7 @@ export default function DashboardSidebar({
     setIsSigningOut(true);
 
     try {
-      await signOut({ callbackUrl: "/" });
+      await signOut({ callbackUrl: window.location.origin });
     } finally {
       setIsSigningOut(false);
     }

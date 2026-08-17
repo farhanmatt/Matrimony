@@ -105,6 +105,7 @@ export async function GET() {
           baseAmount: settings.baseAmount,
           profileAmount: settings.profileAmount,
           perProfileChatAmount: settings.isChatPaymentEnabled ? settings.perProfileChatAmount : 0,
+          isChatPaymentEnabled: settings.isChatPaymentEnabled,
         }
       : undefined,
   });

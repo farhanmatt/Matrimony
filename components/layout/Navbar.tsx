@@ -88,7 +88,7 @@ export default function Navbar() {
             <>
               <button
                 type="button"
-                onClick={() => signOut({ callbackUrl: "/" })}
+                onClick={() => signOut({ callbackUrl: window.location.origin })}
                 className="ui-link-shift text-sm font-medium text-gray-700 transition-colors hover:text-rose-600"
               >
                 Logout
@@ -149,10 +149,9 @@ export default function Navbar() {
               <>
                 <button
                   type="button"
-
                   onClick={() => {
                     setIsMobileOpen(false);
-                    signOut({ callbackUrl: "/" });
+                    signOut({ callbackUrl: window.location.origin });
                   }}
                   className="btn-outline text-center text-sm py-2.5"
                 >

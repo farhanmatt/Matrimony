@@ -940,7 +940,7 @@ export default function ProfileChatSession({
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div
-        className="ui-enter-up flex items-center"
+        className="ui-enter-up hidden xl:flex items-center"
         style={{ animationDelay: "40ms", animationFillMode: "forwards" }}
       >
         <Link
@@ -952,94 +952,115 @@ export default function ProfileChatSession({
         </Link>
       </div>
 
-      <section className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)] xl:items-start">
+      <section className="flex flex-col xl:grid xl:gap-6 xl:grid-cols-[320px_minmax(0,1fr)] xl:items-start">
         <aside
-          className="ui-enter-left ui-card-lift-soft h-[420px] self-start overflow-y-auto rounded-[28px] border border-rose-100 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-5 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:h-[460px] xl:h-[520px]"
+          className="hidden xl:block ui-enter-left ui-card-lift-soft h-auto xl:h-[520px] self-start rounded-[20px] xl:rounded-[28px] border border-rose-100 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-3 sm:p-4 xl:p-5 shadow-[0_18px_45px_rgba(15,23,42,0.06)]"
           style={{ animationDelay: "110ms", animationFillMode: "forwards" }}
         >
-          <div className="flex items-center gap-4">
-            <div className="ui-icon-lift relative h-16 w-16 overflow-hidden rounded-full bg-rose-50 dark:bg-slate-800">
-              {chat.targetProfile.imageUrl ? (
-                <Image
-                  src={chat.targetProfile.imageUrl}
-                  alt={chat.targetProfile.fullName}
-                  fill
-                  className="ui-media-zoom object-cover"
-                  sizes="64px"
-                  unoptimized
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-rose-300">
-                  <UserCircle2 className="h-8 w-8" />
-                </div>
-              )}
-            </div>
-
-            <div className="min-w-0">
-              <h1 className="truncate font-display text-[1.45rem] font-bold text-slate-900 dark:text-slate-100">
-                {chat.targetProfile.fullName}
-              </h1>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                {chat.targetProfile.profession || "Matrimony Member"}
-              </p>
-              <div
-                className={`mt-2 inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                  effectiveTargetPresence.isOnline
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-rose-50 text-rose-600"
-                }`}
-              >
-                <span
-                  className={`h-2.5 w-2.5 rounded-full ${
-                    effectiveTargetPresence.isOnline
-                      ? "animate-pulse bg-emerald-50 dark:bg-slate-8000 shadow-[0_0_0_4px_rgba(34,197,94,0.12)]"
-                      : "bg-rose-500 shadow-[0_0_0_4px_rgba(244,63,94,0.1)]"
-                  }`}
-                />
-                <span>{effectiveTargetPresence.isOnline ? "Online" : "Offline"}</span>
+          <div className="flex flex-row flex-wrap xl:flex-col items-center xl:items-start gap-3 xl:gap-0">
+            <div className="flex flex-row items-center gap-3 xl:gap-4 w-full sm:w-auto xl:w-full">
+              <div className="ui-icon-lift relative h-10 w-10 xl:h-16 xl:w-16 overflow-hidden rounded-full bg-rose-50 dark:bg-slate-800 shrink-0">
+                {chat.targetProfile.imageUrl ? (
+                  <Image
+                    src={chat.targetProfile.imageUrl}
+                    alt={chat.targetProfile.fullName}
+                    fill
+                    className="ui-media-zoom object-cover"
+                    sizes="(max-width: 1280px) 40px, 64px"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-rose-300">
+                    <UserCircle2 className="h-5 w-5 xl:h-8 xl:w-8" />
+                  </div>
+                )}
               </div>
-            </div>
-          </div>
 
-          <div className="mt-5 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-            <MapPin className="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
-            <span>{chat.targetProfile.location}</span>
-          </div>
-
-          <div className="ui-card-lift-soft mt-6 rounded-[18px] bg-[linear-gradient(135deg,rgba(255,244,246,0.98)_0%,rgba(255,251,252,0.92)_100%)] p-4">
-            <div className="flex items-start gap-3">
-              <div className="ui-icon-lift flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-500">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <div>
-                <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                  Private profile thread
-                </h2>
-                <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  This chat is only for your conversation with{" "}
-                  {chat.targetProfile.fullName.split(" ")[0]} from your interest
-                  shortlist.
+              <div className="flex flex-row xl:flex-col flex-wrap xl:flex-nowrap items-center xl:items-start gap-2 xl:gap-0 min-w-0">
+                <h1 className="truncate font-display text-[1.1rem] xl:text-[1.45rem] font-bold text-slate-900 dark:text-slate-100">
+                  {chat.targetProfile.fullName}
+                </h1>
+                <p className="mt-0 xl:mt-1 text-[12px] xl:text-sm text-slate-600 dark:text-slate-300 truncate max-w-[120px] sm:max-w-none">
+                  {chat.targetProfile.profession || "Matrimony Member"}
                 </p>
+                <div
+                  className={`mt-0 xl:mt-2 inline-flex items-center gap-1.5 xl:gap-2 rounded-full px-2 xl:px-2.5 py-0.5 xl:py-1 text-[10px] xl:text-xs font-semibold shrink-0 ${
+                    effectiveTargetPresence.isOnline
+                      ? "bg-emerald-50 text-emerald-700"
+                      : "bg-rose-50 text-rose-600"
+                  }`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 xl:h-2.5 xl:w-2.5 rounded-full ${
+                      effectiveTargetPresence.isOnline
+                        ? "animate-pulse bg-emerald-50 dark:bg-slate-8000 shadow-[0_0_0_4px_rgba(34,197,94,0.12)]"
+                        : "bg-rose-500 shadow-[0_0_0_4px_rgba(244,63,94,0.1)]"
+                    }`}
+                  />
+                  <span>{effectiveTargetPresence.isOnline ? "Online" : "Offline"}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-0 xl:mt-5 flex items-center gap-1.5 xl:gap-2 text-[12px] xl:text-sm text-slate-600 dark:text-slate-300 w-full sm:w-auto xl:w-full">
+              <MapPin className="h-3.5 w-3.5 xl:h-4 xl:w-4 shrink-0 text-slate-400 dark:text-slate-500" />
+              <span className="truncate">{chat.targetProfile.location}</span>
+            </div>
+
+            <div className="hidden xl:block ui-card-lift-soft mt-0 xl:mt-6 rounded-[16px] xl:rounded-[18px] bg-[linear-gradient(135deg,rgba(255,244,246,0.98)_0%,rgba(255,251,252,0.92)_100%)] p-3 xl:p-4 shrink-0 max-w-full">
+              <div className="flex items-start gap-2.5 xl:gap-3">
+                <div className="ui-icon-lift flex h-8 w-8 xl:h-10 xl:w-10 shrink-0 items-center justify-center rounded-xl xl:rounded-2xl bg-rose-100 text-rose-500">
+                  <ShieldCheck className="h-4 w-4 xl:h-5 xl:w-5" />
+                </div>
+                <div>
+                  <h2 className="text-[13px] xl:text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    Private profile thread
+                  </h2>
+                  <p className="mt-0.5 xl:mt-1 text-[13px] xl:text-sm leading-5 xl:leading-6 text-slate-600 dark:text-slate-300">
+                    This chat is only for your conversation with{" "}
+                    {chat.targetProfile.fullName.split(" ")[0]} from your interest
+                    shortlist.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </aside>
 
         <section
-          className="ui-enter-right relative flex h-[420px] min-h-0 flex-col overflow-hidden rounded-[28px] border border-rose-100 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-[0_20px_52px_rgba(15,23,42,0.06)] sm:h-[460px] xl:h-[520px]"
+          className="ui-enter-right fixed inset-0 z-[100] flex flex-col overflow-hidden bg-slate-100/50 dark:bg-slate-950 xl:relative xl:z-auto xl:bg-white xl:dark:bg-slate-900 xl:h-[520px] xl:rounded-[28px] xl:border xl:border-rose-100 xl:dark:border-slate-800/80 xl:shadow-[0_20px_52px_rgba(15,23,42,0.06)]"
           style={{ animationDelay: "170ms", animationFillMode: "forwards" }}
         >
-          <div className="border-b border-rose-100 dark:border-slate-800/70 px-5 py-4">
-            <h2 className="font-display text-[1.3rem] font-bold text-slate-900 dark:text-slate-100">
-              Chat with {chat.targetProfile.fullName.split(" ")[0]}
-            </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Only this profile&apos;s conversation appears in this session.
-            </p>
+          <div className="border-b border-rose-100 dark:border-slate-800/70 bg-white dark:bg-slate-900 px-2 xl:px-5 py-2 xl:py-4 flex items-center gap-2 xl:gap-3">
+             <Link href="/dashboard/shortlist" className="xl:hidden flex shrink-0 items-center justify-center h-10 w-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 -ml-2 text-slate-600 dark:text-slate-300">
+                <ArrowLeft className="h-5 w-5" />
+             </Link>
+             
+             <div className="xl:hidden relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-rose-50 dark:bg-slate-800">
+               {chat.targetProfile.imageUrl ? (
+                  <Image src={chat.targetProfile.imageUrl} alt={chat.targetProfile.fullName} fill className="object-cover" sizes="40px" unoptimized />
+               ) : (
+                  <div className="flex h-full w-full items-center justify-center text-rose-300"><UserCircle2 className="h-6 w-6" /></div>
+               )}
+             </div>
+
+             <div className="flex-1 min-w-0">
+               <h2 className="font-display text-[1.15rem] xl:text-[1.3rem] font-bold text-slate-900 dark:text-slate-100 truncate">
+                 <span className="hidden xl:inline">Chat with {chat.targetProfile.fullName.split(" ")[0]}</span>
+                 <span className="xl:inline xl:hidden">{chat.targetProfile.fullName}</span>
+               </h2>
+               <p className="hidden xl:block mt-1 text-sm text-slate-500 dark:text-slate-400">
+                 Only this profile&apos;s conversation appears in this session.
+               </p>
+               <div className="xl:hidden mt-0.5 text-[12px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <span className={`h-1.5 w-1.5 rounded-full ${effectiveTargetPresence.isOnline ? "bg-emerald-500" : "bg-rose-400"}`} />
+                  {effectiveTargetPresence.isOnline ? "Online" : "Offline"}
+               </div>
+             </div>
           </div>
 
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-[linear-gradient(180deg,rgba(255,250,251,0.82)_0%,rgba(255,255,255,1)_100%)] dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.82)_0%,rgba(30,41,59,1)_100%)] px-5 py-5 pb-8">
+            <div className="min-h-0 flex-1 space-y-2 xl:space-y-4 overflow-y-auto px-3 xl:px-5 py-4 xl:py-5 pb-6">
               {chat.messages.length === 0 ? (
                 <div className="ui-enter-up flex h-full min-h-[340px] flex-col items-center justify-center text-center">
                   <div className="ui-soft-float flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 dark:bg-slate-800 text-rose-500">
@@ -1113,17 +1134,17 @@ export default function ProfileChatSession({
                         }
                         className={cn(
                           shouldHighlightMessage && "ui-message-pop",
-                          "ui-card-lift-soft max-w-[82%] rounded-[22px] px-4 py-3 shadow-sm sm:max-w-[70%]",
+                          "ui-card-lift-soft max-w-[85%] rounded-[18px] px-3 py-2 shadow-sm sm:max-w-[75%]",
                           isOwnMessage
-                            ? "bg-gradient-to-r from-rose-600 to-pink-500 text-white"
-                            : "border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200",
-                          !isOwnMessage && "cursor-pointer transition-colors hover:bg-rose-50 dark:hover:bg-slate-800/70",
+                            ? "bg-rose-500 text-white rounded-tr-sm"
+                            : "bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-sm",
+                          !isOwnMessage && "cursor-pointer transition-colors hover:bg-rose-50 dark:hover:bg-slate-700",
                           highlightedMessageId === message.id &&
-                            "ring-2 ring-amber-300 ring-offset-2 ring-offset-white",
+                            "ring-2 ring-amber-300 ring-offset-2 ring-offset-slate-100",
                           isEditingCurrentMessage &&
-                            "ring-2 ring-rose-200 ring-offset-2 ring-offset-white",
+                            "ring-2 ring-rose-200 ring-offset-2 ring-offset-slate-100",
                           isReplyActionOpen &&
-                            "ring-2 ring-rose-100 ring-offset-2 ring-offset-white"
+                            "ring-2 ring-rose-100 ring-offset-2 ring-offset-slate-100"
                         )}
                       >
                         {replyTarget ? (
@@ -1333,97 +1354,87 @@ export default function ProfileChatSession({
 
             <form
               onSubmit={handleSubmit}
-              className="border-t border-rose-100 dark:border-slate-800/70 bg-white dark:bg-slate-900 px-5 py-3"
+              className="bg-[#f0f2f5] dark:bg-slate-900 px-2 py-2 xl:border-t xl:border-rose-100 xl:dark:border-slate-800/70 xl:bg-white xl:dark:bg-slate-900 xl:px-5 xl:py-3 pb-[env(safe-area-inset-bottom,0.5rem)] xl:pb-3"
             >
-              <div
-                className={`ui-composer-shell rounded-[24px] border bg-[linear-gradient(135deg,rgba(255,251,252,0.98)_0%,rgba(255,246,248,0.92)_100%)] p-2.5 ${
-                  hasDraft
-                    ? "border-rose-200 shadow-[0_18px_34px_rgba(244,63,94,0.1)]"
-                    : "border-rose-100"
-                }`}
-              >
-                {editingMessage ? (
-                  <div className="mb-3 flex items-center justify-between gap-3 rounded-[18px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900/90 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
-                    <div className="min-w-0">
-                      <p className="font-semibold text-slate-800 dark:text-slate-200">Editing message</p>
-                      <p className="truncate text-slate-500 dark:text-slate-400">
-                        Update your message and press Save.
-                      </p>
+              <div className="flex items-end gap-2">
+                <div
+                  className={`flex-1 flex flex-col ui-composer-shell rounded-[24px] bg-white dark:bg-slate-800 p-1.5 xl:border xl:bg-[linear-gradient(135deg,rgba(255,251,252,0.98)_0%,rgba(255,246,248,0.92)_100%)] xl:p-2.5 shadow-sm ${
+                    hasDraft
+                      ? "border-rose-200 xl:shadow-[0_18px_34px_rgba(244,63,94,0.1)]"
+                      : "border-transparent xl:border-rose-100"
+                  }`}
+                >
+                  {editingMessage ? (
+                    <div className="mb-2 flex items-center justify-between gap-2 rounded-[16px] bg-slate-50 dark:bg-slate-900/90 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-slate-800 dark:text-slate-200">Editing message</p>
+                        <p className="truncate text-slate-500 dark:text-slate-400">
+                          Update your message and press Save.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={cancelEditingMessage}
+                        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={cancelEditingMessage}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 dark:text-slate-400 transition-colors hover:bg-rose-50 dark:hover:bg-slate-800 hover:text-rose-600"
-                      aria-label="Cancel editing"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : replyingMessage ? (
-                  <div className="mb-3 flex items-center justify-between gap-3 rounded-[18px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900/90 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
-                    <div className="min-w-0">
-                      <p className="font-semibold text-slate-800 dark:text-slate-200">
-                        Replying to {chat.targetProfile.fullName.split(" ")[0]}
-                      </p>
-                      <p className="truncate text-slate-500 dark:text-slate-400">
-                        {replyingMessage.content}
-                      </p>
+                  ) : replyingMessage ? (
+                    <div className="mb-2 flex items-center justify-between gap-2 rounded-[16px] bg-slate-50 dark:bg-slate-900/90 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300">
+                      <div className="min-w-0 flex-1 border-l-2 border-rose-400 pl-2">
+                        <p className="font-semibold text-rose-600 dark:text-rose-400">
+                          {chat.targetProfile.fullName.split(" ")[0]}
+                        </p>
+                        <p className="truncate text-slate-500 dark:text-slate-400">
+                          {replyingMessage.content}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={cancelReplyingMessage}
+                        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={cancelReplyingMessage}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 dark:text-slate-400 transition-colors hover:bg-rose-50 dark:hover:bg-slate-800 hover:text-rose-600"
-                      aria-label="Cancel reply"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : null}
+                  ) : null}
 
-                <textarea
-                  ref={composerRef}
-                  value={draft}
-                  onChange={(event) => setDraft(event.target.value)}
-                  onKeyDown={handleComposerKeyDown}
-                  placeholder={
-                    editingMessage
-                      ? "Edit your message..."
-                      : replyingMessage
-                        ? `Reply to ${chat.targetProfile.fullName.split(" ")[0]}...`
-                      : `Message ${chat.targetProfile.fullName.split(" ")[0]}...`
-                  }
-                  rows={2}
-                  maxLength={1000}
-                  className="w-full resize-none bg-transparent px-2 py-0.5 text-sm leading-5 text-slate-700 dark:text-slate-300 outline-none transition-colors duration-300 placeholder:text-slate-400"
-                />
-
-                <div className="mt-2 flex items-center justify-between gap-3">
-                  <div className="relative flex items-center gap-2">
+                  <div className="flex items-end gap-1 px-1">
                     <button
                       type="button"
                       onClick={() => setEmojiPickerOpen((current) => !current)}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 transition-colors hover:border-rose-200 hover:text-rose-600"
-                      aria-label="Open emoji picker"
+                      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 hover:text-rose-500 transition-colors"
                     >
-                      <SmilePlus className="h-4.5 w-4.5" />
+                      <SmilePlus className="h-5 w-5" />
                     </button>
-
+                    <textarea
+                      ref={composerRef}
+                      value={draft}
+                      onChange={(event) => setDraft(event.target.value)}
+                      onKeyDown={handleComposerKeyDown}
+                      placeholder={
+                        editingMessage
+                          ? "Edit message..."
+                          : "Message"
+                      }
+                      rows={1}
+                      maxLength={1000}
+                      className="max-h-[100px] w-full resize-none bg-transparent py-2 text-[15px] leading-5 text-slate-800 dark:text-slate-200 outline-none placeholder:text-slate-400 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                    />
+                    
                     {emojiPickerOpen ? (
                       <div
                         ref={emojiPickerRef}
-                        className="absolute bottom-full left-0 z-10 mb-3 w-[240px] rounded-[20px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 shadow-[0_20px_45px_rgba(15,23,42,0.14)]"
+                        className="absolute bottom-[60px] left-2 z-10 w-[240px] rounded-[20px] border border-rose-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 shadow-lg"
                       >
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">
-                          Add Emoji
-                        </p>
                         <div className="grid grid-cols-4 gap-2">
                           {QUICK_EMOJIS.map((emoji) => (
                             <button
                               key={emoji}
                               type="button"
                               onClick={() => insertEmoji(emoji)}
-                              className="inline-flex h-11 items-center justify-center rounded-2xl border border-transparent text-xl transition-colors hover:border-rose-100 hover:bg-rose-50 dark:hover:bg-slate-800"
-                              aria-label={`Insert ${emoji}`}
+                              className="inline-flex h-10 items-center justify-center rounded-xl text-xl hover:bg-rose-50 dark:hover:bg-slate-800"
                             >
                               {emoji}
                             </button>
@@ -1431,33 +1442,25 @@ export default function ProfileChatSession({
                         </div>
                       </div>
                     ) : null}
-
-                    <span
-                      className={`text-xs transition-all duration-300 ${
-                        hasDraft ? "text-rose-400" : "text-slate-400"
-                      }`}
-                    >
-                      {draft.length}/1000
-                    </span>
                   </div>
-
-                  <button
-                    type="submit"
-                    disabled={!canSubmitDraft}
-                    className={`ui-link-shift inline-flex items-center gap-2 rounded-[16px] bg-gradient-to-r from-rose-600 to-pink-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(244,63,94,0.2)] transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 ${
-                      canSubmitDraft ? "ui-send-ready" : ""
-                    }`}
-                  >
-                    {submitting ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : editingMessage ? (
-                      <Check className="ui-arrow-shift h-4 w-4" />
-                    ) : (
-                      <Send className="ui-arrow-shift h-4 w-4" />
-                    )}
-                    {editingMessage ? "Save" : "Send"}
-                  </button>
                 </div>
+
+                <button
+                  type="submit"
+                  disabled={!canSubmitDraft}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-500 text-white shadow-sm transition-transform active:scale-95 disabled:opacity-50 disabled:active:scale-100 xl:h-12 xl:w-[100px] xl:rounded-[16px] xl:px-4"
+                >
+                  {submitting ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : editingMessage ? (
+                    <Check className="h-5 w-5 xl:mr-2" />
+                  ) : (
+                    <Send className="h-5 w-5 ml-1 xl:ml-0 xl:mr-2" />
+                  )}
+                  <span className="hidden xl:inline font-semibold">
+                    {editingMessage ? "Save" : "Send"}
+                  </span>
+                </button>
               </div>
             </form>
           </div>

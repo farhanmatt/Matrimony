@@ -6,7 +6,7 @@ const testimonials = [
     location: "Mumbai, Maharashtra",
     since: "Married in 2023",
     rating: 5,
-    text: "We found each other on FMLP Matrimony and couldn't be happier! The mutual match feature gave us confidence that the interest was genuine. Highly recommend to everyone looking for a life partner.",
+    text: "We found each other on MIP Matrimony and couldn't be happier! The mutual match feature gave us confidence that the interest was genuine. Highly recommend to everyone looking for a life partner.",
     initial: "P",
     color: "bg-rose-500",
   },
@@ -24,7 +24,7 @@ const testimonials = [
     location: "Delhi, NCR",
     since: "Married in 2024",
     rating: 5,
-    text: "My parents found my match on FMLP Matrimony. The family-oriented design made the process comfortable and transparent. We're now happily married and expecting our first child!",
+    text: "My parents found my match on MIP Matrimony. The family-oriented design made the process comfortable and transparent. We're now happily married and expecting our first child!",
     initial: "S",
     color: "bg-amber-500",
   },
@@ -37,7 +37,7 @@ export default function TestimonialsSection() {
         <div className="text-center mb-16">
           <h2 className="section-title">Success Stories</h2>
           <p className="section-subtitle mx-auto">
-            Real stories from real couples who found love through FMLP Matrimony.
+            Real stories from real couples who found love through MIP Matrimony.
           </p>
         </div>
 

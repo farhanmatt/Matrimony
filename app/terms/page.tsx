@@ -4,8 +4,8 @@ import Footer from "@/components/layout/Footer";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Terms & Conditions | FMLP Matrimony",
-  description: "Read FMLP Matrimony's terms and conditions regarding the use of our services, eligibility, and user responsibilities.",
+  title: "Terms & Conditions | MIP Matrimony",
+  description: "Read MIP Matrimony's terms and conditions regarding the use of our services, eligibility, and user responsibilities.",
   alternates: { canonical: "/terms" },
 };
 
@@ -33,14 +33,14 @@ export default async function TermsPage() {
             <section>
               <h2>1. Acceptance of Terms</h2>
               <p>
-                By registering an account and accessing the FMLP Matrimony platform, you explicitly agree to comply with and be bound by these Terms & Conditions. If you do not agree to these terms, please do not use our services.
+                By registering an account and accessing the MIP Matrimony platform, you explicitly agree to comply with and be bound by these Terms & Conditions. If you do not agree to these terms, please do not use our services.
               </p>
             </section>
 
             <section>
               <h2>2. Eligibility to Use the Platform</h2>
               <p>
-                You must be of legal marriageable age in your jurisdiction (e.g., 18 years for women and 21 years for men in India) to create an account on FMLP Matrimony. By using this platform, you represent and warrant that you have the right, authority, and legal capacity to enter into this agreement and that you are not prohibited or prevented by any applicable law from entering into a matrimony contract.
+                You must be of legal marriageable age in your jurisdiction (e.g., 18 years for women and 21 years for men in India) to create an account on MIP Matrimony. By using this platform, you represent and warrant that you have the right, authority, and legal capacity to enter into this agreement and that you are not prohibited or prevented by any applicable law from entering into a matrimony contract.
               </p>
             </section>
 
@@ -54,7 +54,7 @@ export default async function TermsPage() {
             <section>
               <h2>4. User Responsibilities</h2>
               <p>
-                You agree to use FMLP Matrimony exclusively for the purpose of finding a life partner. You are responsible for ensuring that all interactions, both online and offline, are conducted respectfully and with good intent. You agree not to harass, abuse, or engage in any predatory behavior toward other members.
+                You agree to use MIP Matrimony exclusively for the purpose of finding a life partner. You are responsible for ensuring that all interactions, both online and offline, are conducted respectfully and with good intent. You agree not to harass, abuse, or engage in any predatory behavior toward other members.
               </p>
             </section>
 
@@ -75,14 +75,14 @@ export default async function TermsPage() {
             <section>
               <h2>7. Health Information and Medical Report Upload</h2>
               <p>
-                If enabled by the platform administration, you may have the option to provide health-related details (e.g., blood pressure, diabetes status) and securely upload medical reports (PDF). You represent that any such health information provided is completely truthful and belongs to you. FMLP Matrimony acts only as a facilitator and does not independently verify the medical authenticity of these documents.
+                If enabled by the platform administration, you may have the option to provide health-related details (e.g., blood pressure, diabetes status) and securely upload medical reports (PDF). You represent that any such health information provided is completely truthful and belongs to you. MIP Matrimony acts only as a facilitator and does not independently verify the medical authenticity of these documents.
               </p>
             </section>
 
             <section>
               <h2>8. Interest, Shortlist, and Match Features</h2>
               <p>
-                FMLP Matrimony provides tools to express interest (Likes), shortlist, and form matches with other profiles. These features are meant to facilitate initial contact. We do not guarantee a response or a successful match from any expressed interest.
+                MIP Matrimony provides tools to express interest (Likes), shortlist, and form matches with other profiles. These features are meant to facilitate initial contact. We do not guarantee a response or a successful match from any expressed interest.
               </p>
             </section>
 
@@ -126,7 +126,7 @@ export default async function TermsPage() {
             <section>
               <h2>13. User-Generated Content</h2>
               <p>
-                Any content you upload, including text in the bio, chat messages, and images, remains your property. However, by uploading content to FMLP Matrimony, you grant us a worldwide, non-exclusive license to use, display, and process it as necessary to provide the matrimonial service.
+                Any content you upload, including text in the bio, chat messages, and images, remains your property. However, by uploading content to MIP Matrimony, you grant us a worldwide, non-exclusive license to use, display, and process it as necessary to provide the matrimonial service.
               </p>
             </section>
 
@@ -147,14 +147,14 @@ export default async function TermsPage() {
             <section>
               <h2>16. Intellectual Property Rights</h2>
               <p>
-                All content, trademarks, logos, and software used on the FMLP Matrimony platform are the exclusive property of FMLP Matrimony and its licensors. You may not reproduce, modify, or distribute any of our intellectual property without prior written consent.
+                All content, trademarks, logos, and software used on the MIP Matrimony platform are the exclusive property of MIP Matrimony and its licensors. You may not reproduce, modify, or distribute any of our intellectual property without prior written consent.
               </p>
             </section>
 
             <section>
               <h2>17. Limitation of Liability</h2>
               <p>
-                FMLP Matrimony acts purely as an intermediary facilitating connections. We do not authenticate the background, financial status, or character of any member. We shall not be held liable for any direct, indirect, incidental, or consequential damages arising from your use of the platform, interactions with other members, or any marriages resulting from matches made on the platform. Members are urged to conduct their own independent verification.
+                MIP Matrimony acts purely as an intermediary facilitating connections. We do not authenticate the background, financial status, or character of any member. We shall not be held liable for any direct, indirect, incidental, or consequential damages arising from your use of the platform, interactions with other members, or any marriages resulting from matches made on the platform. Members are urged to conduct their own independent verification.
               </p>
             </section>
 

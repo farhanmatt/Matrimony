@@ -7,15 +7,15 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export const metadata: Metadata = {
-  title: "FMLP Matrimony - Find Your Perfect Life Partner",
+  title: "MIP Matrimony - Find Your Perfect Life Partner",
   description:
-    "Find your perfect life partner with FMLP Matrimony. Explore verified profiles, success stories, membership plans, and premium matchmaking support.",
+    "Find your perfect life partner with MIP Matrimony. Explore verified profiles, success stories, membership plans, and premium matchmaking support.",
   alternates: { canonical: "/" },
   other: {
     "application/ld+json": JSON.stringify({
       "@context": "https://schema.org",
       "@type": "WebSite",
-      name: "FMLP Matrimony",
+      name: "MIP Matrimony",
       url: process.env.NEXT_PUBLIC_APP_URL,
       description:
         "A trusted Indian matrimony platform connecting families and individuals through verified matchmaking.",

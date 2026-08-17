@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 export const metadata: Metadata = {
   title: "Contact Us",
   description:
-    "Get in touch with the FMLP Matrimony support team. We're available 24/7 to help you with your matrimony journey.",
+    "Get in touch with the MIP Matrimony support team. We're available 24/7 to help you with your matrimony journey.",
   alternates: { canonical: "/contact" },
 };
 

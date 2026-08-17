@@ -9,11 +9,11 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
   ),
   title: {
-    default: "FMLP Matrimony - Find Your Perfect Life Partner",
-    template: "%s | FMLP Matrimony",
+    default: "MIP Matrimony - Find Your Perfect Life Partner",
+    template: "%s | MIP Matrimony",
   },
   description:
-    "FMLP Matrimony is a trusted matrimony platform connecting families and individuals to find their ideal life partner. Join thousands of happy couples today.",
+    "MIP Matrimony is a trusted matrimony platform connecting families and individuals to find their ideal life partner. Join thousands of happy couples today.",
   keywords: [
     "matrimony",
     "matrimonial",
@@ -26,14 +26,14 @@ export const metadata: Metadata = {
     "groom",
     "Indian matrimony",
   ],
-  authors: [{ name: "FMLP Matrimony" }],
-  creator: "FMLP Matrimony",
+  authors: [{ name: "MIP Matrimony" }],
+  creator: "MIP Matrimony",
   openGraph: {
     type: "website",
     locale: "en_IN",
     url: process.env.NEXT_PUBLIC_APP_URL,
-    siteName: "FMLP Matrimony",
-    title: "FMLP Matrimony - Find Your Perfect Life Partner",
+    siteName: "MIP Matrimony",
+    title: "MIP Matrimony - Find Your Perfect Life Partner",
     description:
       "India's most trusted matrimony platform. Create your profile, find matches, and begin your journey to a lifetime of happiness.",
     images: [
@@ -41,13 +41,13 @@ export const metadata: Metadata = {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "FMLP Matrimony - Matrimony Platform",
+        alt: "MIP Matrimony - Matrimony Platform",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "FMLP Matrimony - Find Your Perfect Life Partner",
+    title: "MIP Matrimony - Find Your Perfect Life Partner",
     description:
       "India's most trusted matrimony platform. Create your profile and find your ideal match.",
     images: ["/og-image.jpg"],

@@ -19,7 +19,7 @@ export default async function Footer() {
                 <Heart className="w-5 h-5 text-white fill-white" />
               </div>
               <span className="font-display text-xl font-bold text-white">
-                FMLP Matrimony
+                MIP Matrimony
               </span>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed mb-5">
@@ -130,7 +130,7 @@ export default async function Footer() {
         </div>
 
         <div className="ui-enter-up mt-12 flex flex-col items-center justify-between gap-4 border-t border-gray-800 pt-8 text-sm text-gray-500 sm:flex-row" style={{ animationDelay: "120ms" }}>
-          <p>© {new Date().getFullYear()} FMLP Matrimony. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} MIP Matrimony. All rights reserved.</p>
           <p className="flex items-center gap-1">
             Made with <Heart className="ui-soft-float h-4 w-4 fill-rose-500 text-rose-500" /> in India
           </p>

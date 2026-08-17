@@ -88,6 +88,7 @@ export async function getLikedPageData(userId: string) {
       baseAmount: settings.baseAmount,
       profileAmount: settings.profileAmount,
       perProfileChatAmount: settings.perProfileChatAmount,
+      isChatPaymentEnabled: settings.isChatPaymentEnabled,
     },
   };
 }
@@ -108,6 +109,7 @@ export async function getMatchesPageData(userId: string) {
         baseAmount: settings.baseAmount,
         profileAmount: settings.profileAmount,
         perProfileChatAmount: settings.perProfileChatAmount,
+        isChatPaymentEnabled: settings.isChatPaymentEnabled,
       },
     };
   }
@@ -205,6 +207,7 @@ export async function getMatchesPageData(userId: string) {
       baseAmount: settings.baseAmount,
       profileAmount: settings.profileAmount,
       perProfileChatAmount: settings.perProfileChatAmount,
+      isChatPaymentEnabled: settings.isChatPaymentEnabled,
     },
   };
 }
