@@ -299,17 +299,7 @@ function getAuthenticatedProfilePreviewUrl(profile: {
     profileImage: profile.profileImage ?? null,
     photos: profile.photos,
   });
-  const previewToken =
-    previewSource.previewUrl && previewSource.fingerprint
-      ? createFeaturedProfilePreviewToken({
-          profileId: profile.id,
-          fingerprint: previewSource.fingerprint,
-        })
-      : null;
-
-  return previewToken
-    ? `/api/profiles/preview/${encodeURIComponent(previewToken)}`
-    : null;
+  return previewSource.previewUrl;
 }
 
 async function getDashboardHomeData(userId: string) {

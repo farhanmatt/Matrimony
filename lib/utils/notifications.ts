@@ -60,17 +60,7 @@ function getNotificationActorImageUrl(profile: {
     ...profile,
     profileImage: profile.profileImage ?? null,
   });
-  const previewToken =
-    previewSource.previewUrl && previewSource.fingerprint
-      ? createFeaturedProfilePreviewToken({
-          profileId: profile.id,
-          fingerprint: previewSource.fingerprint,
-        })
-      : null;
-
-  return previewToken
-    ? `${AUTHENTICATED_NOTIFICATION_PROFILE_IMAGE_ROUTE}/${encodeURIComponent(previewToken)}`
-    : null;
+  return previewSource.previewUrl;
 }
 
 function getMessagePreview(content: string, maxLength = 90) {

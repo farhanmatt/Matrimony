@@ -51,17 +51,7 @@ function getProtectedChatImageUrl(profile: {
     ...profile,
     profileImage: profile.profileImage ?? null,
   });
-  const previewToken =
-    previewSource.previewUrl && previewSource.fingerprint
-      ? createFeaturedProfilePreviewToken({
-          profileId: profile.id,
-          fingerprint: previewSource.fingerprint,
-        })
-      : null;
-
-  return previewToken
-    ? `${PROTECTED_CHAT_PROFILE_IMAGE_ROUTE}/${encodeURIComponent(previewToken)}`
-    : null;
+  return previewSource.previewUrl;
 }
 
 async function resolveChatAccess(targetProfileId: string, userId: string) {

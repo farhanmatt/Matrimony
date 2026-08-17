@@ -212,6 +212,9 @@ export function getFeaturedProfileNameLabelUrl(token: string) {
 
 export function toPublicLandingFeaturedProfile(profile: {
   id: string;
+  fullName: string;
+  gender: Gender;
+  dateOfBirth: Date;
   state: string | null;
   country: string | null;
   profileImage: string | null;
@@ -231,12 +234,9 @@ export function toPublicLandingFeaturedProfile(profile: {
 
   return {
     cardKey: previewToken ?? profile.id,
-    nameLabelUrl: previewToken
-      ? getFeaturedProfileNameLabelUrl(previewToken)
-      : null,
+    nameLabel: getFeaturedProfileMaskedNameLabel(profile),
+    nameLabelUrl: null, // Keep for backward compatibility if needed, or remove
     location: getPublicFeaturedProfileLocation(profile.state, profile.country),
-    previewImageUrl: previewToken
-      ? getFeaturedProfilePreviewUrl(previewToken)
-      : null,
+    previewImageUrl: previewSource.previewUrl,
   };
 }
