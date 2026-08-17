@@ -22,6 +22,7 @@ type FeaturedProfilePreviewSource = {
 
 export type PublicLandingFeaturedProfile = {
   cardKey: string;
+  nameLabel: string | null;
   nameLabelUrl: string | null;
   location: string;
   previewImageUrl: string | null;
