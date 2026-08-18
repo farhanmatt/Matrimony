@@ -353,6 +353,17 @@ export default function ProfileChatSession({
     };
   }, [refreshPresence]);
 
+  // Fast polling to ensure real-time message delivery even if SSE is unreliable in serverless
+  useEffect(() => {
+    if (!chat || chat.status !== "ACCEPTED") return;
+    
+    const syncInterval = window.setInterval(() => {
+      void loadChat({ showLoading: false, showError: false });
+    }, 2500);
+    
+    return () => window.clearInterval(syncInterval);
+  }, [chat?.status, loadChat]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat?.messages.length]);
@@ -717,7 +728,7 @@ export default function ProfileChatSession({
         : null,
     };
 
-    setSubmitting(true);
+    // Removed setSubmitting(true) to keep UI instantly responsive
     setDraft("");
     setEmojiPickerOpen(false);
     setAnimatedOutgoingMessageId(optimisticMessageId);
@@ -793,8 +804,6 @@ export default function ProfileChatSession({
       toast.error(
         error instanceof Error ? error.message : "Unable to send message"
       );
-    } finally {
-      setSubmitting(false);
     }
   };
 
