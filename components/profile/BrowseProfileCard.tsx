@@ -238,7 +238,7 @@ export default function BrowseProfileCard({
           </button>
         </div>
 
-        <div className="flex flex-1 flex-col px-3.5 pb-2.5 pt-2.5">
+        <div className="flex flex-col px-3.5 pb-2.5 pt-2.5 md:flex-1">
           <div className="flex items-start gap-2">
             <h3 className="min-w-0 flex-1 truncate font-display text-[1rem] font-bold leading-none text-slate-900 sm:text-[1.1rem] dark:text-slate-100">
               {profile.fullName}, {age}
