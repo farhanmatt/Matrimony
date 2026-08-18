@@ -26,8 +26,8 @@ function useDashboardProfileCompletion(
       return;
     }
 
-    const syncDraftCompletion = () => {
-      const draft = loadCreateProfileDraft(session?.user?.id);
+    const syncDraftCompletion = async () => {
+      const draft = await loadCreateProfileDraft(session?.user?.id);
 
       if (!draft?.values) {
         setCompletion(initialCompletion);

@@ -1334,25 +1334,36 @@ export default function ProfileForm({
       return;
     }
 
-    const savedDraft = loadCreateProfileDraft(session.user.id);
-    if (savedDraft) {
-      if (
-        inactiveProfileUpdatedAt &&
-        (!savedDraft.updatedAt || savedDraft.updatedAt < inactiveProfileUpdatedAt)
-      ) {
-        clearCreateProfileDraft(session.user.id);
-        clearShortlistedProfileIds(session.user.id);
-      } else {
-        setIncomeSelectValue(getAnnualIncomeSelectValue(savedDraft.values.income));
-        reset(getProfileFormDefaults(savedDraft.values));
-        setCurrentStep(Math.max(savedDraft.currentStep, 0));
-        setMaxStepReached(Math.max(savedDraft.maxStepReached ?? 0, savedDraft.currentStep, 0));
+    let isMounted = true;
+    async function loadDraft() {
+      const savedDraft = await loadCreateProfileDraft(session?.user?.id);
+      if (!isMounted) return;
+
+      if (savedDraft) {
+        if (
+          inactiveProfileUpdatedAt &&
+          (!savedDraft.updatedAt || savedDraft.updatedAt < inactiveProfileUpdatedAt)
+        ) {
+          clearCreateProfileDraft(session?.user?.id);
+          clearShortlistedProfileIds(session?.user?.id);
+        } else {
+          setIncomeSelectValue(getAnnualIncomeSelectValue(savedDraft.values.income));
+          reset(getProfileFormDefaults(savedDraft.values));
+          setCurrentStep(Math.max(savedDraft.currentStep, 0));
+          setMaxStepReached(Math.max(savedDraft.maxStepReached ?? 0, savedDraft.currentStep, 0));
+        }
+      } else if (inactiveProfileUpdatedAt) {
+        // Even if no draft exists, we should clear shortlists if we have an INACTIVE profile
+        clearShortlistedProfileIds(session?.user?.id);
       }
-    } else if (inactiveProfileUpdatedAt) {
-      // Even if no draft exists, we should clear shortlists if we have an INACTIVE profile
-      clearShortlistedProfileIds(session.user.id);
+      setIsCreateDraftHydrated(true);
     }
-    setIsCreateDraftHydrated(true);
+    
+    loadDraft();
+
+    return () => {
+      isMounted = false;
+    };
   }, [inactiveProfileUpdatedAt, isEdit, reset, session?.user?.id]);
 
   useEffect(() => {
@@ -1855,9 +1866,13 @@ export default function ProfileForm({
       return;
     }
 
-    setCurrentStep((step) =>
-      Math.min(step + 1, activeCreateProfileSteps.length - 1)
-    );
+    const nextStep = Math.min(currentStep + 1, activeCreateProfileSteps.length - 1);
+    setCurrentStep(nextStep);
+    saveCreateProfileDraft(session?.user?.id, {
+      currentStep: nextStep,
+      maxStepReached: Math.max(maxStepReached, nextStep),
+      values: getValues(),
+    }, true);
     scrollToTop();
   };
 
@@ -1888,7 +1903,7 @@ export default function ProfileForm({
       currentStep,
       maxStepReached,
       values: getValues(),
-    });
+    }, true);
 
     toast.success("Progress saved. You can continue your profile later.");
     router.push("/dashboard");

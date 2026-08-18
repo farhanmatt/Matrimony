@@ -108,7 +108,7 @@ export default function SelfieCapture({ value = [], onChange, error }: SelfieCap
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-emerald-500" /> Live Verification
+            <ShieldCheck className="w-5 h-5 text-emerald-500" /> Live Verification <span className="text-red-500">*</span>
           </h3>
           <p className="text-sm text-gray-500">Capture up to 4 real-time selfies for profile verification.</p>
         </div>
@@ -163,6 +163,13 @@ export default function SelfieCapture({ value = [], onChange, error }: SelfieCap
               screenshotFormat="image/jpeg"
               videoConstraints={{ facingMode: "user" }}
               className="w-full h-full object-cover"
+              playsInline={true}
+              forceScreenshotSourceSize={true}
+              onUserMediaError={(err) => {
+                setCameraActive(false);
+                toast.error("Camera access denied. Please allow camera permissions in your browser to capture your selfie.");
+                console.error("Camera error:", err);
+              }}
             />
             
             <div className="absolute inset-0 pointer-events-none border-[3px] border-white/20 rounded-2xl m-4"></div>
