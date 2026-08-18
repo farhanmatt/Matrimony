@@ -102,6 +102,7 @@ model User {
   unlocks               Unlock[]
   tempSelfieImages      String[] @default([])
   tempVideoUrl          String?
+  profileDraft          Json?
 
   @@index([email])
   @@index([nameLookup])
