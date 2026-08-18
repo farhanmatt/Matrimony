@@ -105,8 +105,7 @@ export default function ReceivedLikePreviewCard({
             src={primaryPhoto}
             alt="Protected matrimony profile preview"
             fill
-            className="ui-media-zoom scale-[1.04] object-cover blur-[4px]"
-            style={{ objectPosition: "center 12%" }}
+            className="ui-media-zoom scale-[1.04] object-cover object-top"
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
             quality={75}
             unoptimized

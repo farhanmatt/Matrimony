@@ -132,7 +132,13 @@ export default function PaymentModal({
       const reqRes = await fetch("/api/ccavenue/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matchId, targetProfileId, type, couponCode: appliedCoupon?.code }),
+        body: JSON.stringify({ 
+          matchId, 
+          targetProfileId, 
+          type, 
+          couponCode: appliedCoupon?.code,
+          returnUrl: window.location.pathname + window.location.search
+        }),
       });
       const data = await reqRes.json();
 
