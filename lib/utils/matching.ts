@@ -26,8 +26,15 @@ async function cleanupStaleMatchIfUnused(profileAId: string, profileBId: string)
   }
 }
 
-export async function syncMatchesFromMutualLikes() {
+export async function syncMatchesFromMutualLikes(profileId?: string) {
   const likes = await prisma.like.findMany({
+    ...(profileId
+      ? {
+          where: {
+            OR: [{ fromProfileId: profileId }, { toProfileId: profileId }],
+          },
+        }
+      : {}),
     select: {
       fromProfileId: true,
       toProfileId: true,
@@ -63,26 +70,15 @@ export async function syncMatchesFromMutualLikes() {
     return 0;
   }
 
-  const results = await Promise.all(
-    Array.from(mutualPairs.values()).map(async (pair) => {
-      try {
-        return await prisma.match.upsert({
-          where: { profileAId_profileBId: pair },
-          update: {},
-          create: pair,
-        });
-      } catch (error: any) {
-        if (error.code === "P2002") {
-          return await prisma.match.findUnique({
-            where: { profileAId_profileBId: pair },
-          });
-        }
-        throw error;
-      }
-    })
-  );
+  const newMatches = Array.from(mutualPairs.values());
+  if (newMatches.length > 0) {
+    await prisma.match.createMany({
+      data: newMatches,
+      skipDuplicates: true,
+    });
+  }
 
-  return results.length;
+  return newMatches.length;
 }
 
 export async function hasMutualLike(profileAId: string, profileBId: string) {
@@ -245,8 +241,15 @@ export async function findUnlockForProfiles(
  * Get all currently valid mutual matches for a profile.
  * Stale match rows without unlocks are cleaned up automatically.
  */
-export async function syncMatchesFromConversations() {
+export async function syncMatchesFromConversations(profileId?: string) {
   const conversations = await prisma.chatConversation.findMany({
+    ...(profileId
+      ? {
+          where: {
+            OR: [{ profileAId: profileId }, { profileBId: profileId }],
+          },
+        }
+      : {}),
     select: {
       profileAId: true,
       profileBId: true,
@@ -255,27 +258,22 @@ export async function syncMatchesFromConversations() {
 
   if (conversations.length === 0) return 0;
 
-  const results = await Promise.all(
-    conversations.map(async (conv) => {
-      const pair = { profileAId: conv.profileAId, profileBId: conv.profileBId };
-      try {
-        return await prisma.match.upsert({
-          where: { profileAId_profileBId: pair },
-          update: {},
-          create: pair,
-        });
-      } catch (error: any) {
-        if (error.code === "P2002") {
-          return prisma.match.findUnique({
-            where: { profileAId_profileBId: pair },
-          });
-        }
-        throw error;
-      }
-    })
+  const newMatches = conversations.map((conv) => 
+    normalizeMatchPair(conv.profileAId, conv.profileBId)
+  );
+  
+  const uniqueMatches = Array.from(
+    new Map(newMatches.map((m) => [`${m.profileAId}|${m.profileBId}`, m])).values()
   );
 
-  return results.length;
+  if (uniqueMatches.length > 0) {
+    await prisma.match.createMany({
+      data: uniqueMatches,
+      skipDuplicates: true,
+    });
+  }
+
+  return uniqueMatches.length;
 }
 
 export async function findOrCreateMatch(profileAId: string, profileBId: string) {
@@ -299,8 +297,8 @@ export async function findOrCreateMatch(profileAId: string, profileBId: string) 
 
 
 export async function getMatchesForProfile(profileId: string) {
-  await syncMatchesFromMutualLikes();
-  await syncMatchesFromConversations();
+  await syncMatchesFromMutualLikes(profileId);
+  await syncMatchesFromConversations(profileId);
 
   const matches = await prisma.match.findMany({
     where: {

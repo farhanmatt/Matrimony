@@ -234,15 +234,15 @@ export default function LikedProfilePreviewCard({
 
   return (
     <>
-      <article className="ui-card-lift group mx-auto w-full max-w-[288px] flex flex-col h-[440px] md:h-[460px] lg:h-auto lg:block overflow-hidden rounded-[12px] border border-rose-100 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900">
-        <div className="relative flex-1 lg:flex-none lg:h-[188px] overflow-hidden bg-[linear-gradient(135deg,#fff2f5_0%,#ffe4ec_100%)] dark:!bg-slate-800 dark:!bg-none">
+      <article className="ui-card-lift group mx-auto w-full max-w-[288px] lg:max-w-none flex h-[440px] md:h-[460px] lg:h-full flex-col overflow-hidden rounded-[12px] border border-rose-100 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900">
+        <div className="relative flex-1 lg:flex-none lg:h-[224px] overflow-hidden bg-[linear-gradient(135deg,#fff2f5_0%,#ffe4ec_100%)] dark:!bg-slate-800 dark:!bg-none">
           {primaryPhoto ? (
             <Image
               src={primaryPhoto}
               alt="Protected matrimony profile preview"
               fill
-              className="ui-media-zoom object-cover object-center"
-              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
+              className="ui-media-zoom scale-[1.04] object-cover object-top"
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, (max-width: 1536px) 25vw, 20vw"
               quality={75}
               unoptimized
               draggable={false}
@@ -304,7 +304,7 @@ export default function LikedProfilePreviewCard({
           </div>
         </div>
 
-        <div className="shrink-0 flex flex-col p-3.5">
+        <div className="flex flex-1 flex-col px-3.5 pb-2.5 pt-2.5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h3 className="flex items-center gap-2 text-[0.95rem] font-bold text-slate-900 dark:text-slate-100">

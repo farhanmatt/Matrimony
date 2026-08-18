@@ -120,9 +120,7 @@ export async function GET(req: NextRequest) {
     userId: { not: session.user.id },
     likesReceived: {
       none: {
-        fromProfile: {
-          userId: session.user.id,
-        },
+        fromProfileId: currentUserProfile.id,
       },
     },
     ...(gender && { gender: gender as "MALE" | "FEMALE" | "OTHER" }),
