@@ -459,9 +459,7 @@ async function getDashboardHomeData(userId: string) {
           ...(recommendedGender ? { gender: recommendedGender } : {}),
           likesReceived: {
             none: {
-              fromProfile: {
-                userId,
-              },
+              fromProfileId: profile.id,
             },
           },
         },
@@ -868,13 +866,13 @@ export default async function DashboardPage() {
               {visibleRecommendedCards.map((candidate, index) => (
                 <article
                   key={candidate.id}
-                  className="ui-enter-scale ui-card-lift group overflow-hidden rounded-[18px] border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm"
+                  className="ui-enter-scale ui-card-lift group mx-auto w-full max-w-[288px] lg:max-w-none flex h-[440px] md:h-[460px] lg:h-full flex-col overflow-hidden rounded-[18px] border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm"
                   style={{
                     animationDelay: `${220 + index * 70}ms`,
                     animationFillMode: "forwards",
                   }}
                 >
-                  <div className="relative h-56 bg-rose-50 dark:bg-slate-800/50">
+                  <div className="relative flex-1 lg:flex-none lg:h-[224px] bg-rose-50 dark:bg-slate-800/50">
                     <Image
                       src={candidate.image}
                       alt={candidate.fullName}

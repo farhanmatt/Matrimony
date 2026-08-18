@@ -97,16 +97,16 @@ export default function ReceivedLikePreviewCard({
 
   return (
     <article
-      className="ui-card-lift overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_14px_42px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900 flex flex-col h-[440px] md:h-[460px] lg:h-auto lg:block"
+      className="ui-card-lift mx-auto w-full max-w-[288px] lg:max-w-none overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_14px_42px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900 flex flex-col h-[440px] md:h-[460px] lg:h-full"
     >
-      <div className="relative flex-1 lg:flex-none lg:h-[118px] overflow-hidden bg-[linear-gradient(135deg,#fff4f7_0%,#ffe6ee_100%)] dark:!bg-slate-800 dark:!bg-none">
+      <div className="relative flex-1 lg:flex-none lg:h-[224px] overflow-hidden bg-[linear-gradient(135deg,#fff4f7_0%,#ffe6ee_100%)] dark:!bg-slate-800 dark:!bg-none">
         {primaryPhoto ? (
           <Image
             src={primaryPhoto}
             alt="Protected matrimony profile preview"
             fill
             className="ui-media-zoom scale-[1.04] object-cover object-top"
-            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, (max-width: 1536px) 25vw, 20vw"
             quality={75}
             unoptimized
             draggable={false}
@@ -154,7 +154,7 @@ export default function ReceivedLikePreviewCard({
         </button>
       </div>
 
-      <div className="shrink-0 flex flex-col px-3 py-2.5">
+      <div className="flex flex-1 flex-col px-3.5 pb-2.5 pt-2.5">
         <div className="mb-1.5 min-w-0">
           <h3 className="truncate font-display text-[1.05rem] font-bold text-slate-900 dark:text-slate-100">
             {item.profile.fullName}, {age}

@@ -118,8 +118,8 @@ export default function MatchProfileCard({
   };
 
   return (
-    <article className="relative overflow-hidden rounded-[12px] border border-rose-100/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_24px_70px_rgba(15,23,42,0.07)]">
-      <div className="relative h-[260px] overflow-visible border-b border-rose-100/70 dark:border-slate-800">
+    <article className="relative flex flex-col mx-auto w-full max-w-[288px] h-[440px] md:h-[460px] lg:max-w-none lg:h-full overflow-hidden rounded-[12px] border border-rose-100/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_24px_70px_rgba(15,23,42,0.07)]">
+      <div className="relative flex-1 lg:flex-none lg:h-[224px] overflow-visible border-b border-rose-100/70 dark:border-slate-800">
         <div className="absolute inset-0 overflow-hidden rounded-t-[12px] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.95)_0%,_rgba(255,240,245,0.92)_42%,_rgba(255,232,239,0.88)_100%)] dark:!bg-none dark:bg-slate-800">
           {primaryPhoto ? (
             <Image
@@ -127,11 +127,11 @@ export default function MatchProfileCard({
               alt={`${profile.fullName} match profile`}
               fill
               className={cn(
-                "object-cover object-top",
-                !isUnlocked && "scale-105"
+                "ui-media-zoom object-cover object-top",
+                !isUnlocked ? "scale-[1.05]" : "scale-[1.04]"
               )}
-              sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 25vw"
-              quality={100}
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, (max-width: 1536px) 25vw, 20vw"
+              quality={75}
               unoptimized
             />
           ) : null}
@@ -200,7 +200,7 @@ export default function MatchProfileCard({
           ) : null}
         </div>
 
-        <div className="flex h-[260px] items-center justify-center">
+        <div className="flex h-full lg:h-[224px] items-center justify-center">
           <div
             className={cn(
               "flex h-16 w-16 items-center justify-center rounded-[12px] shadow-[0_22px_46px_rgba(244,114,182,0.18)]",
@@ -223,7 +223,7 @@ export default function MatchProfileCard({
         </div>
       </div>
 
-      <div className="space-y-2 px-4 pb-3 pt-3">
+      <div className="flex flex-1 flex-col px-3.5 pb-2.5 pt-2.5">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
             <h3 className="font-display text-[0.94rem] font-bold text-slate-900 dark:text-slate-100">
