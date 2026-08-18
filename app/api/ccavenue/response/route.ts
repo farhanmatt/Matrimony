@@ -11,13 +11,13 @@ export async function POST(req: NextRequest) {
     const encResp = formData.get("encResp");
     
     if (!encResp || typeof encResp !== "string") {
-      return NextResponse.redirect(new URL("/?payment=error", req.url));
+      return NextResponse.redirect(new URL("/?payment=error", req.url), 303);
     }
 
     const workingKey = process.env.CCAVENUE_WORKING_KEY;
     if (!workingKey) {
       console.error("Missing CCAvenue working key");
-      return NextResponse.redirect(new URL("/?payment=error", req.url));
+      return NextResponse.redirect(new URL("/?payment=error", req.url), 303);
     }
 
     const decrypted = decrypt(encResp, workingKey);
@@ -33,10 +33,11 @@ export async function POST(req: NextRequest) {
     const requestedType = params.get("merchant_param1") as "PROFILE" | "CHAT" | null;
     const paymentId = params.get("merchant_param2");
     const appliedCoupon = params.get("merchant_param3");
+    const returnUrl = params.get("merchant_param4");
 
     if (!order_id || !paymentId) {
       console.error("Missing required parameters in CCAvenue response");
-      return NextResponse.redirect(new URL("/?payment=error", req.url));
+      return NextResponse.redirect(new URL("/?payment=error", req.url), 303);
     }
 
     const payment = await prisma.payment.findUnique({
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     if (!payment) {
       console.error("Payment record not found for:", paymentId);
-      return NextResponse.redirect(new URL("/?payment=error", req.url));
+      return NextResponse.redirect(new URL("/?payment=error", req.url), 303);
     }
 
     // Since amount from CCavenue is in rupees and our DB stores paise (amount = rupees * 100)
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
     
     if (expectedRupees !== receivedRupees) {
       console.error("Amount mismatch:", expectedRupees, "vs", receivedRupees);
-      return NextResponse.redirect(new URL("/?payment=error", req.url));
+      return NextResponse.redirect(new URL("/?payment=error", req.url), 303);
     }
 
     const match = await prisma.match.findUnique({
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
 
     if (!match) {
       console.error("Match not found");
-      return NextResponse.redirect(new URL("/?payment=error", req.url));
+      return NextResponse.redirect(new URL("/?payment=error", req.url), 303);
     }
 
     const ownProfile = await prisma.profile.findUnique({
@@ -73,13 +74,20 @@ export async function POST(req: NextRequest) {
 
     if (!ownProfile) {
       console.error("Profile not found");
-      return NextResponse.redirect(new URL("/?payment=error", req.url));
+      return NextResponse.redirect(new URL("/?payment=error", req.url), 303);
     }
 
     // Ensure we redirect gracefully depending on success
-    const redirectBase = requestedType === "CHAT" 
+    let redirectBase = returnUrl || (requestedType === "CHAT" 
       ? `/dashboard/matches/${payment.matchId}?chat=true`
-      : `/dashboard/matches/${payment.matchId}`;
+      : `/dashboard/matches/${payment.matchId}`);
+
+    // If returning to a general page (not a specific match page) and it's a CHAT unlock,
+    // we should still append chat=true if they unlocked chat, though the UI may not auto-open it.
+    // The user's request is just to "preserve user's current page"
+    if (requestedType === "CHAT" && !redirectBase.includes("chat=true") && !returnUrl) {
+      redirectBase += "?chat=true";
+    }
 
     if (order_status !== "Success") {
       await prisma.payment.update({
@@ -90,7 +98,7 @@ export async function POST(req: NextRequest) {
           status: "FAILED",
         }
       });
-      return NextResponse.redirect(new URL(`${redirectBase}&payment=failed`, req.url));
+      return NextResponse.redirect(new URL(`${redirectBase}${redirectBase.includes("?") ? "&" : "?"}payment=failed`, req.url), 303);
     }
 
     // SUCCESS flow
@@ -215,9 +223,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.redirect(new URL(`${redirectBase}${redirectBase.includes("?") ? "&" : "?"}payment=success`, req.url));
+    return NextResponse.redirect(new URL(`${redirectBase}${redirectBase.includes("?") ? "&" : "?"}payment=success`, req.url), 303);
   } catch (error) {
     console.error("Error processing CCAvenue response:", error);
-    return NextResponse.redirect(new URL("/?payment=error", req.url));
+    return NextResponse.redirect(new URL("/?payment=error", req.url), 303);
   }
 }

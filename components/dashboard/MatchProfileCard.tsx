@@ -119,7 +119,7 @@ export default function MatchProfileCard({
 
   return (
     <article className="relative overflow-hidden rounded-[12px] border border-rose-100/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_24px_70px_rgba(15,23,42,0.07)]">
-      <div className="relative min-h-[138px] overflow-visible border-b border-rose-100/70 dark:border-slate-800">
+      <div className="relative h-[260px] overflow-visible border-b border-rose-100/70 dark:border-slate-800">
         <div className="absolute inset-0 overflow-hidden rounded-t-[12px] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.95)_0%,_rgba(255,240,245,0.92)_42%,_rgba(255,232,239,0.88)_100%)] dark:!bg-none dark:bg-slate-800">
           {primaryPhoto ? (
             <Image
@@ -127,7 +127,7 @@ export default function MatchProfileCard({
               alt={`${profile.fullName} match profile`}
               fill
               className={cn(
-                "object-cover object-top opacity-90",
+                "object-cover object-top",
                 !isUnlocked && "scale-105"
               )}
               sizes="(max-width: 768px) 100vw, (max-width: 1400px) 50vw, 25vw"
@@ -200,7 +200,7 @@ export default function MatchProfileCard({
           ) : null}
         </div>
 
-        <div className="flex min-h-[138px] items-center justify-center">
+        <div className="flex h-[260px] items-center justify-center">
           <div
             className={cn(
               "flex h-16 w-16 items-center justify-center rounded-[12px] shadow-[0_22px_46px_rgba(244,114,182,0.18)]",
@@ -223,8 +223,8 @@ export default function MatchProfileCard({
         </div>
       </div>
 
-      <div className="space-y-3 px-5 pb-4 pt-3">
-        <div className="space-y-2">
+      <div className="space-y-2 px-4 pb-3 pt-3">
+        <div className="space-y-1.5">
           <div className="flex items-center gap-2">
             <h3 className="font-display text-[0.94rem] font-bold text-slate-900 dark:text-slate-100">
               {firstName}
@@ -240,7 +240,7 @@ export default function MatchProfileCard({
             {profile.religion ? ` - ${profile.religion}` : ""}
           </p>
 
-          <div className="space-y-1 text-[14px] text-slate-700 dark:text-slate-300">
+          <div className="space-y-0.5 text-[14px] text-slate-700 dark:text-slate-300">
             <div className="flex items-center gap-2">
               <Briefcase className="h-4 w-4 text-slate-400" />
               <span>{profile.profession || "Professional"}</span>

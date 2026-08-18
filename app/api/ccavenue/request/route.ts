@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   let requestedType: "PROFILE" | "CHAT" = "PROFILE";
 
   try {
-    const { matchId, targetProfileId, couponCode, type = "PROFILE" } = await req.json();
+    const { matchId, targetProfileId, couponCode, type = "PROFILE", returnUrl } = await req.json();
     requestedType = type === "CHAT" ? "CHAT" : "PROFILE";
 
     if ((!matchId || typeof matchId !== "string") && (!targetProfileId || typeof targetProfileId !== "string")) {
@@ -216,6 +216,7 @@ export async function POST(req: NextRequest) {
       merchant_param1: requestedType, // Pass type to response
       merchant_param2: payment.id, // Pass payment ID
       merchant_param3: appliedCoupon || "", // Pass applied coupon
+      merchant_param4: returnUrl || "", // Pass return URL
     };
 
     const queryParams = new URLSearchParams(paymentData).toString();
