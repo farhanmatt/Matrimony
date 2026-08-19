@@ -154,7 +154,7 @@ export default function ReceivedLikePreviewCard({
         </button>
       </div>
 
-      <div className="flex flex-1 flex-col px-3.5 pb-2.5 pt-2.5">
+      <div className="flex flex-col px-3.5 pb-2.5 pt-2.5 lg:flex-1">
         <div className="mb-1.5 min-w-0">
           <h3 className="truncate font-display text-[1.05rem] font-bold text-slate-900 dark:text-slate-100">
             {item.profile.fullName}, {age}
