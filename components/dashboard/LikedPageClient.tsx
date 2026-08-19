@@ -63,6 +63,7 @@ interface MatchSummary {
   id: string;
   isProfileUnlocked?: boolean;
   isChatUnlocked?: boolean;
+  isAcceptedChat?: boolean;
   otherProfile: {
     id: string;
   };
@@ -228,14 +229,20 @@ export default function LikedPageClient({
     const matchedProfileIdSet = new Set(
       matches.map((match) => match.otherProfile.id)
     );
+    const acceptedChatProfileIdSet = new Set(
+      matches.filter((match) => match.isAcceptedChat).map((match) => match.otherProfile.id)
+    );
 
-    const nextShortlistedProfileIds = shortlistedProfileIds.filter(
+    const mergedShortlistedIds = new Set([...shortlistedProfileIds, ...Array.from(acceptedChatProfileIdSet)]);
+
+    const nextShortlistedProfileIds = Array.from(mergedShortlistedIds).filter(
       (profileId) => {
         const shortlistSource = shortlistMetadata[profileId]?.source ?? "interest";
         return (
           shortlistSource === "message" ||
           likedProfileIdSet.has(profileId) ||
-          matchedProfileIdSet.has(profileId)
+          matchedProfileIdSet.has(profileId) ||
+          acceptedChatProfileIdSet.has(profileId)
         );
       }
     );
