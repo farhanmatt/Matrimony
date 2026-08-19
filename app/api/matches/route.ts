@@ -29,6 +29,17 @@ export async function GET(req: NextRequest) {
     select: { baseAmount: true, profileAmount: true, perProfileChatAmount: true, isChatPaymentEnabled: true },
   });
 
+  const acceptedConversations = await prisma.chatConversation.findMany({
+    where: {
+      OR: [{ profileAId: ownProfile.id }, { profileBId: ownProfile.id }],
+      status: "ACCEPTED",
+    },
+    select: { profileAId: true, profileBId: true },
+  });
+  const acceptedChatProfileIds = new Set(
+    acceptedConversations.flatMap((c) => [c.profileAId, c.profileBId])
+  );
+
   let filteredMatches = matches;
   if (!summaryOnly) {
     const otherProfileIds = matches.map((match) =>
@@ -66,6 +77,7 @@ export async function GET(req: NextRequest) {
           isChatUnlocked: match.unlocks.some(
             (unlock) => unlock.userId === session.user.id && unlock.type === "CHAT"
           ),
+          isAcceptedChat: acceptedChatProfileIds.has(otherProfile.id),
           otherProfile: serializeProfilePreviewCard(otherProfile as any),
         };
       }),
