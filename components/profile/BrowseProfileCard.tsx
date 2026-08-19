@@ -166,22 +166,10 @@ export default function BrowseProfileCard({
     return "Health Req";
   };
 
-  const handleCardClick = () => {
-    if (badge === "New") {
-      fetch("/api/profile/view", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ viewedProfileId: profile.id }),
-      }).catch(console.error);
-    }
-    router.push(_profileHref);
-  };
-
   return (
     <>
       <div 
-        onClick={handleCardClick}
-        className="ui-card-lift group mx-auto w-full max-w-[288px] lg:max-w-none flex h-[440px] md:h-[460px] lg:h-full flex-col overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] cursor-pointer dark:border-slate-800 dark:bg-slate-900"
+        className="ui-card-lift group mx-auto w-full max-w-[288px] lg:max-w-none flex h-[440px] md:h-[460px] lg:h-full flex-col overflow-hidden rounded-[16px] border border-rose-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="relative flex-1 lg:flex-none lg:h-[224px] overflow-hidden bg-[linear-gradient(135deg,#fff2f6_0%,#ffe7ee_55%,#ffeef4_100%)] dark:!bg-slate-800 dark:!bg-none">
           {primaryPhoto ? (

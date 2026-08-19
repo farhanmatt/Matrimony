@@ -304,7 +304,7 @@ export default function LikedProfilePreviewCard({
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col px-3.5 pb-2.5 pt-2.5">
+        <div className="flex flex-col px-3.5 pb-2.5 pt-2.5 lg:flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h3 className="flex items-center gap-2 text-[0.95rem] font-bold text-slate-900 dark:text-slate-100">

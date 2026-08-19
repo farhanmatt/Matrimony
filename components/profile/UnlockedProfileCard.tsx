@@ -10,22 +10,15 @@ import type {
 import { useEffect, useRef, useState } from "react";
 import {
   BadgeCheck,
-  Briefcase,
   Copy,
   EllipsisVertical,
   ExternalLink,
-  GraduationCap,
-  MapPin,
   MessageCircle,
-  Ruler,
-  UserRound,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
   calculateAge,
-  cmToFeetInches,
   formatDate,
-  MARITAL_STATUS_LABELS,
 } from "@/lib/utils/helpers";
 
 export interface UnlockedProfileCardData {
@@ -79,16 +72,7 @@ export default function UnlockedProfileCard({
     null;
   const age = calculateAge(profile.dateOfBirth);
   const profileHref = `/dashboard/profile/${profile.id}?source=unlocked`;
-  const location =
-    [profile.city, profile.state].filter(Boolean).join(", ") || "Location not added";
-  const educationLabel =
-    profile.course || profile.education || "Education details not added";
-  const religionLabel =
-    [profile.religion, profile.caste].filter(Boolean).join(", ") || "Cultural details available";
-  const statusFacts = [
-    profile.height ? cmToFeetInches(profile.height) : null,
-    MARITAL_STATUS_LABELS[profile.maritalStatus],
-  ].filter((value): value is string => Boolean(value));
+
   const normalizedPhone = normalizePhoneNumber(profile.phone);
   const whatsappHref = normalizedPhone ? `https://wa.me/${normalizedPhone}` : null;
 
@@ -227,7 +211,7 @@ export default function UnlockedProfileCard({
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col px-3.5 pb-2.5 pt-2.5">
+        <div className="flex flex-col px-3.5 pb-2.5 pt-2.5 lg:flex-1">
           <div className="flex items-center gap-2">
             <h3 className="font-display text-[1.52rem] font-bold tracking-tight text-slate-900 dark:text-slate-100">
               {profile.fullName.split(" ")[0]}, {age}
@@ -235,30 +219,7 @@ export default function UnlockedProfileCard({
             <BadgeCheck className="ui-icon-lift h-[18px] w-[18px] text-emerald-500" />
           </div>
 
-          <div className="mt-4 space-y-2.5 text-[14px] text-slate-600 dark:text-slate-300">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
-              <span className="truncate">{location}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Briefcase className="h-4 w-4 shrink-0 text-slate-400" />
-              <span className="truncate">{profile.profession || "Professional"}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <GraduationCap className="h-4 w-4 shrink-0 text-slate-400" />
-              <span className="truncate">{educationLabel}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <UserRound className="h-4 w-4 shrink-0 text-slate-400" />
-              <span className="truncate">{religionLabel}</span>
-            </div>
-            {statusFacts.length > 0 ? (
-              <div className="flex items-center gap-2">
-                <Ruler className="h-4 w-4 shrink-0 text-slate-400" />
-                <span className="truncate">{statusFacts.join(" | ")}</span>
-              </div>
-            ) : null}
-          </div>
+
 
           <div className="ui-card-lift-soft mt-4 rounded-[14px] bg-[linear-gradient(90deg,rgba(236,253,245,0.95)_0%,rgba(240,253,244,0.72)_100%)] px-4 py-2.5 text-center text-[13px] font-semibold text-emerald-700 dark:!bg-emerald-900/30 dark:!bg-none dark:text-emerald-400">
             Unlocked on {formatDate(unlockedAt)}
